@@ -4,10 +4,10 @@
 // the caller and passed in with `StartRound`, so this module stays testable and
 // free of side effects. Playback itself is driven by whoever reads the state.
 
-import { balanceOf, createAccounts, type Accounts } from '@/helpers/money'
-import type { PooledTrack } from '@/helpers/trackUnion'
+import { balanceOf, createAccounts, type Accounts } from "@/helpers/money";
+import type { PooledTrack } from "@/helpers/trackUnion";
 
-import { drawDirection, type RewardDirection } from './rewards'
+import { drawDirection, type RewardDirection } from "./rewards";
 import {
   GamePhase,
   SuspensionReason,
@@ -16,70 +16,70 @@ import {
   type GameRules,
   type PlayerId,
   type Suspension,
-} from './types'
+} from "./types";
 
 export type GameState = {
-  phase: GamePhase
-  round: number
-  players: readonly GamePlayer[]
-  rules: GameRules
+  phase: GamePhase;
+  round: number;
+  players: readonly GamePlayer[];
+  rules: GameRules;
   /** What each player has banked so far. */
-  accounts: Accounts
+  accounts: Accounts;
   /** Which way this round's stake moves; null when the mode has no direction. */
-  direction: RewardDirection | null
+  direction: RewardDirection | null;
   /** The stake the buzzer stopped the counter at, or null if nobody has. */
-  pendingAmount: number | null
+  pendingAmount: number | null;
   /** Tracks not played yet; refilled by the caller when it empties. */
-  pool: readonly PooledTrack[]
+  pool: readonly PooledTrack[];
   /**
    * Every track heard so far, across this whole series of games. Carried
    * through a rematch and reloaded when the same playlists are picked again,
    * so a second game does not replay the first one's songs.
    */
-  playedIds: readonly string[]
-  track: PooledTrack | null
+  playedIds: readonly string[];
+  track: PooledTrack | null;
   /** Where the snippet started — the point playback resumes from. */
-  startPositionMs: number
+  startPositionMs: number;
   /** Who is sitting out the current round, and why. */
-  suspension: Suspension | null
+  suspension: Suspension | null;
   /** Who will sit out the next round, and why. */
-  pendingSuspension: Suspension | null
+  pendingSuspension: Suspension | null;
   /** Who pressed together, while the tie is on screen. */
-  tiedPlayerIds: readonly PlayerId[]
-  buzzedPlayerId: PlayerId | null
+  tiedPlayerIds: readonly PlayerId[];
+  buzzedPlayerId: PlayerId | null;
   /** How the last answer was marked, for the screen that follows a verdict. */
-  lastVerdict: { playerId: PlayerId; verdict: Verdict; amount: number } | null
-  winnerId: PlayerId | null
-}
+  lastVerdict: { playerId: PlayerId; verdict: Verdict; amount: number } | null;
+  winnerId: PlayerId | null;
+};
 
 export type GameAction =
   | {
-      type: 'start-round'
-      track: PooledTrack
-      startPositionMs: number
-      pool: readonly PooledTrack[]
+      type: "start-round";
+      track: PooledTrack;
+      startPositionMs: number;
+      pool: readonly PooledTrack[];
       /** Drawn by the caller, so the random mode stays out of the reducer. */
-      direction: RewardDirection | null
+      direction: RewardDirection | null;
     }
   /** `amount` is the stake as it stood on screen at the moment of the press. */
-  | { type: 'buzz'; playerId: PlayerId; amount: number }
+  | { type: "buzz"; playerId: PlayerId; amount: number }
   /** Two or more were indistinguishable; the next round is theirs alone. */
-  | { type: 'tie'; playerIds: readonly PlayerId[] }
-  | { type: 'guess-window-elapsed' }
-  | { type: 'reveal' }
-  | { type: 'judge'; verdict: Verdict }
+  | { type: "tie"; playerIds: readonly PlayerId[] }
+  | { type: "guess-window-elapsed" }
+  | { type: "reveal" }
+  | { type: "judge"; verdict: Verdict }
   /** Edit mode: the host rewrites the standings directly. */
   | {
-      type: 'apply-edit'
-      accounts: Accounts
-      suspendedNext: readonly PlayerId[]
+      type: "apply-edit";
+      accounts: Accounts;
+      suspendedNext: readonly PlayerId[];
     }
   | {
-      type: 'reset'
-      players: readonly GamePlayer[]
-      rules: GameRules
-      tracks: readonly PooledTrack[]
-    }
+      type: "reset";
+      players: readonly GamePlayer[];
+      rules: GameRules;
+      tracks: readonly PooledTrack[];
+    };
 
 export function createGameState(
   players: readonly GamePlayer[],
@@ -88,7 +88,7 @@ export function createGameState(
   /** Tracks this group has already heard from the same playlists. */
   playedIds: readonly string[] = [],
 ): GameState {
-  const unheard = tracks.filter((track) => !playedIds.includes(track.id))
+  const unheard = tracks.filter((track) => !playedIds.includes(track.id));
 
   return {
     phase: GamePhase.Idle,
@@ -111,7 +111,7 @@ export function createGameState(
     buzzedPlayerId: null,
     lastVerdict: null,
     winnerId: null,
-  }
+  };
 }
 
 /** Whether this player's key should do anything right now. */
@@ -120,19 +120,19 @@ export function canBuzz(state: GameState, playerId: PlayerId): boolean {
     state.phase === GamePhase.Listening &&
     state.buzzedPlayerId === null &&
     !(state.suspension?.playerIds.includes(playerId) ?? false)
-  )
+  );
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
-    case 'start-round': {
+    case "start-round": {
       if (state.phase === GamePhase.Finished) {
-        return state
+        return state;
       }
 
       // An empty pool means this draw came from a refill — everything has been
       // heard, so the history starts over with the track just drawn.
-      const exhausted = state.pool.length === 0
+      const exhausted = state.pool.length === 0;
 
       return {
         ...state,
@@ -151,12 +151,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         // shuts everyone else out — comes into force now.
         suspension: state.pendingSuspension,
         pendingSuspension: null,
-      }
+      };
     }
 
-    case 'buzz': {
+    case "buzz": {
       if (!canBuzz(state, action.playerId)) {
-        return state
+        return state;
       }
 
       return {
@@ -166,53 +166,51 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         // Frozen here: the player gets what the counter showed, not what it
         // would have shown a tick later.
         pendingAmount: action.amount,
-      }
+      };
     }
 
-    case 'tie': {
+    case "tie": {
       if (state.phase !== GamePhase.Listening || state.buzzedPlayerId !== null) {
-        return state
+        return state;
       }
 
       // Nobody answers a tie. The round that follows is a run-off, so everyone
       // who did not press together sits it out.
       const others = state.players
         .map((player) => player.id)
-        .filter((playerId) => !action.playerIds.includes(playerId))
+        .filter((playerId) => !action.playerIds.includes(playerId));
 
       return {
         ...state,
         phase: GamePhase.Tied,
         tiedPlayerIds: action.playerIds,
         pendingSuspension:
-          others.length > 0
-            ? { playerIds: others, reason: SuspensionReason.TieRunOff }
-            : null,
-      }
+          others.length > 0 ? { playerIds: others, reason: SuspensionReason.TieRunOff } : null,
+      };
     }
 
-    case 'guess-window-elapsed': {
+    case "guess-window-elapsed": {
       if (state.phase !== GamePhase.Listening) {
-        return state
+        return state;
       }
 
-      return { ...state, phase: GamePhase.TimedOut }
+      return { ...state, phase: GamePhase.TimedOut };
     }
 
-    case 'reveal': {
+    case "reveal": {
       if (state.phase !== GamePhase.Buzzed) {
-        return state
+        return state;
       }
 
-      return { ...state, phase: GamePhase.Revealed }
+      return { ...state, phase: GamePhase.Revealed };
     }
 
-    case 'judge': {
-      const playerId = state.buzzedPlayerId
-      const amount = state.pendingAmount ?? 0
+    case "judge": {
+      const playerId = state.buzzedPlayerId;
+      const amount = state.pendingAmount ?? 0;
 
       if (state.phase !== GamePhase.Revealed || playerId === null) {
-        return state
+        return state;
       }
 
       // A verdict does not start the next round: it puts the answer on screen,
@@ -231,11 +229,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             action.verdict === Verdict.Incorrect
               ? { playerIds: [playerId], reason: SuspensionReason.WrongAnswer }
               : null,
-        }
+        };
       }
 
-      const accounts = { ...state.accounts, [playerId]: balanceOf(state.accounts, playerId) + amount }
-      const hasWon = (accounts[playerId] ?? 0) >= state.rules.targetMoney
+      const accounts = {
+        ...state.accounts,
+        [playerId]: balanceOf(state.accounts, playerId) + amount,
+      };
+      const hasWon = (accounts[playerId] ?? 0) >= state.rules.targetMoney;
 
       return {
         ...state,
@@ -245,10 +246,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         lastVerdict: { playerId, verdict: Verdict.Correct, amount },
         pendingSuspension: null,
         winnerId: hasWon ? playerId : null,
-      }
+      };
     }
 
-    case 'apply-edit': {
+    case "apply-edit": {
       // Only between rounds, where the hidden code is listened for anyway —
       // rewriting the standings mid-round would race the countdown.
       if (
@@ -256,7 +257,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         state.phase !== GamePhase.Judged &&
         state.phase !== GamePhase.Tied
       ) {
-        return state
+        return state;
       }
 
       // Reaching the target ends the game however the money got there, so the
@@ -264,26 +265,29 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const winner =
         state.players.find(
           (player) => balanceOf(action.accounts, player.id) >= state.rules.targetMoney,
-        ) ?? null
+        ) ?? null;
 
       return {
         ...state,
         accounts: { ...action.accounts },
         pendingSuspension:
           action.suspendedNext.length > 0
-            ? { playerIds: [...action.suspendedNext], reason: SuspensionReason.Manual }
+            ? {
+                playerIds: [...action.suspendedNext],
+                reason: SuspensionReason.Manual,
+              }
             : null,
         phase: winner ? GamePhase.Finished : state.phase,
         winnerId: winner ? winner.id : state.winnerId,
-      }
+      };
     }
 
-    case 'reset':
+    case "reset":
       // A rematch keeps the history: the whole point is that a second game does
       // not replay the first one's songs.
-      return createGameState(action.players, action.rules, action.tracks, state.playedIds)
+      return createGameState(action.players, action.rules, action.tracks, state.playedIds);
 
     default:
-      return state
+      return state;
   }
 }

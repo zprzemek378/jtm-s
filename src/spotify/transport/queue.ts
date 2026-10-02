@@ -10,7 +10,7 @@
 // A request says what it needs through a policy rather than by picking a queue,
 // so the decision sits next to the call it describes.
 
-import { PRIORITY_AGING_MS, REQUEST_GAP_MS } from '@/constants/spotify'
+import { PRIORITY_AGING_MS, REQUEST_GAP_MS } from "@/constants/spotify";
 
 /**
  * How badly a request wants to go first, from 0 to 10.
@@ -27,13 +27,13 @@ export const Priority = {
   Playback: 7,
   /** Pausing because somebody buzzed. Must feel instant. */
   Urgent: 10,
-} as const
+} as const;
 
-export const MAX_PRIORITY = 10
+export const MAX_PRIORITY = 10;
 
 export type RequestPolicy = {
   /** From `Priority`, or a number from 0 to 10. Defaults to `Background`. */
-  priority?: number
+  priority?: number;
 
   /**
    * Makes a newer request replace one with the same key that has not started.
@@ -48,38 +48,38 @@ export type RequestPolicy = {
    * resuming are not two versions of the same thing, and merging them would
    * lose one.
    */
-  coalesceKey?: string
+  coalesceKey?: string;
 
   /**
    * Whether a 429 is waited out and retried. True by default, and false where
    * pressing on is the greater risk — a rate limit during the playlist scan
    * means the walk is already at the edge of the quota.
    */
-  retryRateLimit?: boolean
-}
+  retryRateLimit?: boolean;
+};
 
 type Entry = {
-  run: () => Promise<unknown>
-  priority: number
-  coalesceKey: string | undefined
-  enqueuedAt: number
-  promise: Promise<unknown>
-  settle: (outcome: () => Promise<unknown>) => void
-}
+  run: () => Promise<unknown>;
+  priority: number;
+  coalesceKey: string | undefined;
+  enqueuedAt: number;
+  promise: Promise<unknown>;
+  settle: (outcome: () => Promise<unknown>) => void;
+};
 
 function sleep(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds))
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-const waiting: Entry[] = []
-let draining = false
-let lastStartedAt = 0
+const waiting: Entry[] = [];
+let draining = false;
+let lastStartedAt = 0;
 
 /** Priority as it stands now, including whatever waiting has earned. */
 function standing(entry: Entry, now: number): number {
-  const earned = Math.floor((now - entry.enqueuedAt) / PRIORITY_AGING_MS)
+  const earned = Math.floor((now - entry.enqueuedAt) / PRIORITY_AGING_MS);
 
-  return Math.min(MAX_PRIORITY, entry.priority + earned)
+  return Math.min(MAX_PRIORITY, entry.priority + earned);
 }
 
 /**
@@ -90,47 +90,47 @@ function standing(entry: Entry, now: number): number {
  */
 function takeNext(): Entry | undefined {
   if (waiting.length === 0) {
-    return undefined
+    return undefined;
   }
 
-  const now = Date.now()
-  let best = 0
+  const now = Date.now();
+  let best = 0;
 
   for (let index = 1; index < waiting.length; index += 1) {
     if (standing(waiting[index]!, now) > standing(waiting[best]!, now)) {
-      best = index
+      best = index;
     }
   }
 
-  return waiting.splice(best, 1)[0]
+  return waiting.splice(best, 1)[0];
 }
 
 async function drain(): Promise<void> {
   if (draining) {
-    return
+    return;
   }
 
-  draining = true
+  draining = true;
 
   try {
     while (waiting.length > 0) {
-      const sinceLast = Date.now() - lastStartedAt
+      const sinceLast = Date.now() - lastStartedAt;
 
       if (sinceLast < REQUEST_GAP_MS) {
-        await sleep(REQUEST_GAP_MS - sinceLast)
+        await sleep(REQUEST_GAP_MS - sinceLast);
       }
 
-      const entry = takeNext()
+      const entry = takeNext();
 
       if (!entry) {
-        break
+        break;
       }
 
-      lastStartedAt = Date.now()
-      entry.settle(entry.run)
+      lastStartedAt = Date.now();
+      entry.settle(entry.run);
     }
   } finally {
-    draining = false
+    draining = false;
   }
 }
 
@@ -141,29 +141,29 @@ async function drain(): Promise<void> {
  * call is as quick as it ever was; only a burst is spaced out.
  */
 export function schedule<T>(task: () => Promise<T>, policy: RequestPolicy = {}): Promise<T> {
-  const { priority = Priority.Background, coalesceKey } = policy
+  const { priority = Priority.Background, coalesceKey } = policy;
 
   if (coalesceKey !== undefined) {
-    const queued = waiting.find((entry) => entry.coalesceKey === coalesceKey)
+    const queued = waiting.find((entry) => entry.coalesceKey === coalesceKey);
 
     // Keeps its place in the queue and its promise; only the work changes, so
     // everyone waiting on it gets the newest answer rather than a stale one.
     if (queued) {
-      queued.run = task
+      queued.run = task;
 
-      return queued.promise as Promise<T>
+      return queued.promise as Promise<T>;
     }
   }
 
-  let settle!: Entry['settle']
+  let settle!: Entry["settle"];
   const promise = new Promise<T>((resolve, reject) => {
     settle = (outcome) => {
       // The queue moves on to the next request without waiting for this one to
       // finish travelling; the gap governs when requests start, not how long
       // they take.
-      outcome().then(resolve as (value: unknown) => void, reject)
-    }
-  })
+      outcome().then(resolve as (value: unknown) => void, reject);
+    };
+  });
 
   waiting.push({
     run: task,
@@ -172,14 +172,14 @@ export function schedule<T>(task: () => Promise<T>, policy: RequestPolicy = {}):
     enqueuedAt: Date.now(),
     promise,
     settle,
-  })
+  });
 
-  void drain()
+  void drain();
 
-  return promise
+  return promise;
 }
 
 /** How many requests are waiting. Used by the tests, and useful in a console. */
 export function queueDepth(): number {
-  return waiting.length
+  return waiting.length;
 }

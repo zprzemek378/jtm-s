@@ -1,16 +1,16 @@
-import { useId, type InputHTMLAttributes, type ReactNode } from 'react'
+import { useId, type InputHTMLAttributes, type ReactNode } from "react";
 
-import styles from './Input.module.scss'
+import styles from "./Input.module.scss";
 
-type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'children'> & {
+type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "children"> & {
   /** Visible label; pass `hideLabel` to keep it for screen readers only. */
-  label?: ReactNode
-  hideLabel?: boolean
+  label?: ReactNode;
+  hideLabel?: boolean;
   /** Explanation shown under the field. */
-  hint?: ReactNode
+  hint?: ReactNode;
   /** Replaces the hint and marks the field as invalid. */
-  error?: ReactNode
-}
+  error?: ReactNode;
+};
 
 export function Input({
   label,
@@ -21,10 +21,10 @@ export function Input({
   id,
   ...rest
 }: InputProps) {
-  const generatedId = useId()
-  const inputId = id ?? generatedId
-  const describedById = `${inputId}-description`
-  const description = error ?? hint
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const describedById = `${inputId}-description`;
+  const description = error ?? hint;
 
   return (
     <div className={className ? `${styles.field} ${className}` : styles.field}>
@@ -46,5 +46,5 @@ export function Input({
         </p>
       ) : null}
     </div>
-  )
+  );
 }

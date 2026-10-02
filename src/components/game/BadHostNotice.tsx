@@ -1,7 +1,7 @@
-import { useLanguage } from '@/i18n/useLanguage'
-import { isRedirectHostAcceptable, loopbackAddress } from '@/spotify/auth/clientId'
+import { useLanguage } from "@/i18n/useLanguage";
+import { isRedirectHostAcceptable, loopbackAddress } from "@/spotify/auth/clientId";
 
-import styles from './BadHostNotice.module.scss'
+import styles from "./BadHostNotice.module.scss";
 
 /**
  * Shown when the page is served from an address Spotify refuses as a redirect
@@ -10,23 +10,23 @@ import styles from './BadHostNotice.module.scss'
  * nothing useful.
  */
 export function BadHostNotice() {
-  const { t } = useLanguage()
+  const { t } = useLanguage();
 
   if (isRedirectHostAcceptable()) {
-    return null
+    return null;
   }
 
-  const fixed = loopbackAddress()
+  const fixed = loopbackAddress();
 
   return (
     <div className={styles.notice} role="alert">
-      <p>{t('spotify.badHost', { host: window.location.host })}</p>
+      <p>{t("spotify.badHost", { host: window.location.host })}</p>
       <p className={styles.fix}>
-        {t('spotify.badHostFix')}{' '}
+        {t("spotify.badHostFix")}{" "}
         <a className={styles.link} href={fixed}>
           {fixed}
         </a>
       </p>
     </div>
-  )
+  );
 }

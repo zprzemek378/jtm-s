@@ -1,23 +1,23 @@
-import { useId, type ReactNode } from 'react'
+import { useId, type ReactNode } from "react";
 
-import { Button } from './Button'
-import { ButtonVariant } from './buttonVariant'
-import styles from './NumberStepper.module.scss'
+import { Button } from "./Button";
+import { ButtonVariant } from "./buttonVariant";
+import styles from "./NumberStepper.module.scss";
 
 type NumberStepperProps = {
-  value: number
-  min: number
-  max: number
+  value: number;
+  min: number;
+  max: number;
   /** How much one press moves the value. */
-  step?: number
-  onChange: (value: number) => void
-  label: string
-  hint?: string
-  decreaseLabel: string
-  increaseLabel: string
+  step?: number;
+  onChange: (value: number) => void;
+  label: string;
+  hint?: string;
+  decreaseLabel: string;
+  increaseLabel: string;
   /** Renders the value — money, seconds, whatever the number means. */
-  format?: (value: number) => ReactNode
-}
+  format?: (value: number) => ReactNode;
+};
 
 /**
  * A whole number chosen with two buttons — the shape that works for counts the
@@ -35,8 +35,8 @@ export function NumberStepper({
   increaseLabel,
   format,
 }: NumberStepperProps) {
-  const id = useId()
-  const clamp = (next: number) => Math.min(max, Math.max(min, next))
+  const id = useId();
+  const clamp = (next: number) => Math.min(max, Math.max(min, next));
 
   return (
     <div className={styles.field}>
@@ -70,5 +70,5 @@ export function NumberStepper({
       </div>
       {hint ? <p className={styles.hint}>{hint}</p> : null}
     </div>
-  )
+  );
 }

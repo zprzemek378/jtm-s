@@ -6,13 +6,13 @@
 // already heard stay out of the draw. Change the playlists and the history no
 // longer applies, so it starts over.
 
-import { STORAGE_KEYS, readStoredJson, writeStoredJson } from '@/storage/localStorage'
+import { STORAGE_KEYS, readStoredJson, writeStoredJson } from "@/storage/localStorage";
 
 type StoredHistory = {
   /** Identifies the playlist selection the history belongs to. */
-  key: string
-  trackIds: string[]
-}
+  key: string;
+  trackIds: string[];
+};
 
 /**
  * Identifies a selection of playlists, regardless of the order they were
@@ -20,20 +20,20 @@ type StoredHistory = {
  * chosen.
  */
 export function selectionKey(playlistIds: readonly string[]): string {
-  return [...playlistIds].sort().join('|')
+  return [...playlistIds].sort().join("|");
 }
 
 /** What this selection has already played, or nothing for a new selection. */
 export function readPlayedTracks(key: string): readonly string[] {
-  const stored = readStoredJson<StoredHistory>(STORAGE_KEYS.playedTracks)
+  const stored = readStoredJson<StoredHistory>(STORAGE_KEYS.playedTracks);
 
   if (!stored || stored.key !== key || !Array.isArray(stored.trackIds)) {
-    return []
+    return [];
   }
 
-  return stored.trackIds.filter((id): id is string => typeof id === 'string')
+  return stored.trackIds.filter((id): id is string => typeof id === "string");
 }
 
 export function writePlayedTracks(key: string, trackIds: readonly string[]): void {
-  writeStoredJson(STORAGE_KEYS.playedTracks, { key, trackIds: [...trackIds] })
+  writeStoredJson(STORAGE_KEYS.playedTracks, { key, trackIds: [...trackIds] });
 }

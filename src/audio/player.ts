@@ -7,59 +7,59 @@
 // playing, and a ten-second fanfare should not follow the table into the next
 // game.
 
-import type { SoundEvent } from '@/constants/soundChoices'
-import { isSoundEnabled } from '@/settings/sound'
+import type { SoundEvent } from "@/constants/soundChoices";
+import { isSoundEnabled } from "@/settings/sound";
 
-import { pickChoice } from './sounds'
-import { SOUND_CHOICES } from '@/constants/soundChoices'
-import { availableFiles, fileUrl } from './soundFiles'
+import { pickChoice } from "./sounds";
+import { SOUND_CHOICES } from "@/constants/soundChoices";
+import { availableFiles, fileUrl } from "./soundFiles";
 
 /** `HTMLMediaElement.HAVE_METADATA` — enough loaded to know the duration. */
-const HAVE_METADATA = 1
+const HAVE_METADATA = 1;
 
-const elements = new Map<string, HTMLAudioElement>()
+const elements = new Map<string, HTMLAudioElement>();
 
 /** What is sounding for each moment, and whether it may be cut off. */
-const sounding = new Map<SoundEvent, { element: HTMLAudioElement; cutShort: boolean }>()
+const sounding = new Map<SoundEvent, { element: HTMLAudioElement; cutShort: boolean }>();
 
 function elementFor(url: string): HTMLAudioElement {
-  const known = elements.get(url)
+  const known = elements.get(url);
 
   if (known) {
-    return known
+    return known;
   }
 
-  const element = new Audio(url)
-  element.preload = 'auto'
-  elements.set(url, element)
+  const element = new Audio(url);
+  element.preload = "auto";
+  elements.set(url, element);
 
-  return element
+  return element;
 }
 
 function start(element: HTMLAudioElement, startAtMs = 0): void {
-  const from = Math.max(0, startAtMs) / 1000
+  const from = Math.max(0, startAtMs) / 1000;
 
   try {
     // Seeking needs the duration, which is known once the metadata has loaded —
     // normally long before, since every file is fetched when the game starts.
     // When it has not, the position is set the moment it becomes possible.
     if (element.readyState >= HAVE_METADATA) {
-      element.currentTime = from
+      element.currentTime = from;
     } else {
       element.addEventListener(
-        'loadedmetadata',
+        "loadedmetadata",
         () => {
           try {
-            element.currentTime = from
+            element.currentTime = from;
           } catch {
             // Nothing to do; it plays from the beginning.
           }
         },
         { once: true },
-      )
+      );
     }
 
-    void element.play().catch(() => undefined)
+    void element.play().catch(() => undefined);
   } catch {
     // An element that cannot be rewound or played is not worth a broken round.
   }
@@ -73,19 +73,19 @@ function start(element: HTMLAudioElement, startAtMs = 0): void {
  */
 export function playSound(event: SoundEvent): void {
   if (!isSoundEnabled()) {
-    return
+    return;
   }
 
-  const choice = pickChoice(SOUND_CHOICES[event] ?? [])
-  const url = choice?.file ? fileUrl(choice.file) : null
+  const choice = pickChoice(SOUND_CHOICES[event] ?? []);
+  const url = choice?.file ? fileUrl(choice.file) : null;
 
   if (!url) {
-    return
+    return;
   }
 
-  const element = elementFor(url)
-  sounding.set(event, { element, cutShort: choice?.cutShort === true })
-  start(element, choice?.startAtMs)
+  const element = elementFor(url);
+  sounding.set(event, { element, cutShort: choice?.cutShort === true });
+  start(element, choice?.startAtMs);
 }
 
 /**
@@ -95,17 +95,17 @@ export function playSound(event: SoundEvent): void {
  * the whole point of marking the exceptions.
  */
 export function stopSound(event: SoundEvent): void {
-  const playing = sounding.get(event)
+  const playing = sounding.get(event);
 
   if (!playing?.cutShort) {
-    return
+    return;
   }
 
-  sounding.delete(event)
+  sounding.delete(event);
 
   try {
-    playing.element.pause()
-    playing.element.currentTime = 0
+    playing.element.pause();
+    playing.element.currentTime = 0;
   } catch {
     // Nothing to do; it will simply finish on its own.
   }
@@ -114,7 +114,7 @@ export function stopSound(event: SoundEvent): void {
 /** Silences every cue that may be cut off — used when a game screen closes. */
 export function stopCutShortSounds(): void {
   for (const event of [...sounding.keys()]) {
-    stopSound(event)
+    stopSound(event);
   }
 }
 
@@ -126,10 +126,10 @@ export function stopCutShortSounds(): void {
  */
 export function primeSounds(): void {
   for (const name of availableFiles()) {
-    const url = fileUrl(name)
+    const url = fileUrl(name);
 
     if (url) {
-      elementFor(url).load()
+      elementFor(url).load();
     }
   }
 }

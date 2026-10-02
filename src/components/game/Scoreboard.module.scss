@@ -15,7 +15,9 @@
   border: 1px solid color-mix(in oklab, hsl(var(--player-hue) 70% 45%) 45%, $c-border);
   border-radius: $radius-md;
   background-color: color-mix(in oklab, hsl(var(--player-hue) 70% 45%) 10%, $c-surface);
-  transition: opacity $transition-fast, border-color $transition-fast,
+  transition:
+    opacity $transition-fast,
+    border-color $transition-fast,
     box-shadow $transition-fast;
 }
 

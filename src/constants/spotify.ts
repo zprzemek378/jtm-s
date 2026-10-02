@@ -84,7 +84,7 @@ export const QUEUE_LOOKAHEAD = 20;
  * half requests a second sits well inside every figure the developer community
  * reports as safe.
  */
-export const REQUEST_GAP_MS = 80
+export const REQUEST_GAP_MS = 80;
 
 /**
  * How long a waiting request takes to gain a point of priority.
@@ -94,7 +94,7 @@ export const REQUEST_GAP_MS = 80
  * raises a request's standing until it outranks the traffic ahead of it, so
  * nothing is starved however busy the queue gets.
  */
-export const PRIORITY_AGING_MS = 500
+export const PRIORITY_AGING_MS = 500;
 
 export const SEEK_COMMIT_DELAY_MS = 200;
 

@@ -6,8 +6,8 @@
  * One hue per slot, spread around the colour wheel. The avatar renders it
  * through `color-mix()` so it stays readable in both themes.
  */
-export const PLAYER_HUES: readonly number[] = [145, 210, 24, 280, 0, 190, 50, 320]
+export const PLAYER_HUES: readonly number[] = [145, 210, 24, 280, 0, 190, 50, 320];
 
 export function playerHue(index: number): number {
-  return PLAYER_HUES[index % PLAYER_HUES.length] ?? 0
+  return PLAYER_HUES[index % PLAYER_HUES.length] ?? 0;
 }

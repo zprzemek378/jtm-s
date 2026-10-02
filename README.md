@@ -34,9 +34,9 @@ lokalnej.
 3. Dodaj Redirect URI, dokładnie w tej postaci:
    - `http://127.0.0.1:5173/` — dla dewelopmentu,
    - `https://<user>.github.io/jtm-s/` — jeśli wdrażasz na GitHub Pages.
-4. W ustawieniach aplikacji (*User Management*) dopisz każde konto Spotify, które
-   ma móc się zalogować. Aplikacja w trybie *development* wpuszcza **do 5 kont**
-   (tak podaje dokumentacja *Quota modes*), a dopisanie konta to jednorazowa
+4. W ustawieniach aplikacji (_User Management_) dopisz każde konto Spotify, które
+   ma móc się zalogować. Aplikacja w trybie _development_ wpuszcza **do 5 kont**
+   (tak podaje dokumentacja _Quota modes_), a dopisanie konta to jednorazowa
    czynność właściciela aplikacji — po stronie grającego zostaje sam przycisk
    „Zaloguj". Właściciel aplikacji też musi mieć Premium, żeby aplikacja w tym
    trybie działała.
@@ -91,11 +91,11 @@ Wersja trzymana jest w `package.json`, pokazuje się małym drukiem na dole lewe
 paska i jest podbijana na podstawie opisów commitów — zgodnie z **SemVer** i
 **Conventional Commits**:
 
-| typ commita | efekt | przykład |
-|---|---|---|
+| typ commita                            | efekt | przykład          |
+| -------------------------------------- | ----- | ----------------- |
 | `feat!:` lub stopka `BREAKING CHANGE:` | MAJOR | `1.4.7` → `2.0.0` |
-| `feat:` | MINOR | `1.4.7` → `1.5.0` |
-| **wszystko inne** | PATCH | `1.4.7` → `1.4.8` |
+| `feat:`                                | MINOR | `1.4.7` → `1.5.0` |
+| **wszystko inne**                      | PATCH | `1.4.7` → `1.4.8` |
 
 Trzeci wiersz jest dosłowny: `fix:`, `chore:`, `docs:`, opis bez przedrostka —
 każdy push na `main` dostaje nową wersję. Nie chodzi o schludną numerację, tylko
@@ -155,7 +155,7 @@ Nie włączaj przy tym ostrej ochrony `main`, bo blokowałaby commit wydania.
 
 Workflow `.github/workflows/deploy.yml` buduje i publikuje aplikację przy pushu
 na `main`. Przed pierwszym wdrożeniem dodaj w repozytorium sekret
-`VITE_SPOTIFY_CLIENT_ID_1` (*Settings → Secrets and variables → Actions*, sekcja
+`VITE_SPOTIFY_CLIENT_ID_1` (_Settings → Secrets and variables → Actions_, sekcja
 **Repository secrets** — sekret dodany pod środowiskiem `github-pages` nie będzie
 widoczny dla zadania budującego). Sekrety nazywają się dokładnie tak jak zmienne
 w `.env`, więc kolejne aplikacje dodajesz jako `VITE_SPOTIFY_CLIENT_ID_2` i tak
@@ -167,7 +167,7 @@ każdy sekret, którego nazwa pasuje do wzorca `VITE_SPOTIFY_CLIENT_ID_<n>` albo
 nazwany inaczej — łącznie z tokenem, którym to zadanie działa — jest pomijany, a
 w logu pojawia się wyłącznie ich liczba, nigdy wartości.
 
-Po nieudanym wdrożeniu uruchamiaj **Run workflow**, a nie *Re-run all jobs* —
+Po nieudanym wdrożeniu uruchamiaj **Run workflow**, a nie _Re-run all jobs_ —
 ponowne uruchomienie tego samego przebiegu zostawia w nim dwa artefakty o nazwie
 `github-pages` i `actions/deploy-pages` odmawia publikacji.
 
@@ -185,9 +185,9 @@ wskazuje na HEAD, więc nie ma nic nowego do podbicia, a dodatkowo wydanie jest
 zastrzeżone wyłącznie dla `main`.
 
 **Wymaga to jednorazowego ustawienia.** Środowisko `github-pages` domyślnie
-wpuszcza tylko gałąź domyślną i odrzuci taga komunikatem *„Tag … is not allowed
-to deploy to github-pages due to environment protection rules"*. W *Settings →
-Environments → github-pages → Deployment branches and tags* dodaj regułę: Ref
+wpuszcza tylko gałąź domyślną i odrzuci taga komunikatem _„Tag … is not allowed
+to deploy to github-pages due to environment protection rules"_. W _Settings →
+Environments → github-pages → Deployment branches and tags_ dodaj regułę: Ref
 type **Tag**, wzorzec **`v*`**. Warto zrobić to zawczasu i raz sprawdzić, że
 działa — ta furtka jest warta tyle, ile jej dostępność w momencie, gdy jest
 potrzebna.
@@ -202,7 +202,7 @@ scalonym pull requeście i scal powstałego PR-a z tytułem zaczynającym się o
 
 **Aplikacji nie buduje się i nie wysyła ręcznie.** Build dzieje się wyłącznie w
 GitHub Actions, przy pushu na `main`, a cały jego przebieg widać w logu zakładki
-*Actions*. W repozytorium nie ma skompilowanych plików — `dist` jest w
+_Actions_. W repozytorium nie ma skompilowanych plików — `dist` jest w
 `.gitignore`.
 
 Żeby obejrzeć dokładnie to, co zostanie opublikowane, jeszcze przed pushem:
@@ -230,19 +230,19 @@ równolegle. Jedna kolejka sprawia, że tempo jest faktem, a nie nadzieją.
 Żądanie nie wybiera kolejki, tylko **deklaruje, czego potrzebuje**:
 
 ```ts
-await request(getAccessToken, '/me/player/play?...', init, {
-  priority: Priority.Playback,   // 0–10, kto idzie pierwszy
-  coalesceKey: 'seek',           // nowsze zastępuje nierozpoczęte
-  retryRateLimit: false,         // czy ponawiać po 429
-})
+await request(getAccessToken, "/me/player/play?...", init, {
+  priority: Priority.Playback, // 0–10, kto idzie pierwszy
+  coalesceKey: "seek", // nowsze zastępuje nierozpoczęte
+  retryRateLimit: false, // czy ponawiać po 429
+});
 ```
 
-| priorytet | wartość | co tam trafia |
-|---|---|---|
-| `Urgent` | 10 | pauza po zgłoszeniu, pobranie tokenu |
-| `Playback` | 7 | start utworu, przewijanie, losowanie |
-| `Catalogue` | 3 | playlisty, utwory, profil |
-| `Background` | 0 | cokolwiek, na co nikt nie czeka |
+| priorytet    | wartość | co tam trafia                        |
+| ------------ | ------- | ------------------------------------ |
+| `Urgent`     | 10      | pauza po zgłoszeniu, pobranie tokenu |
+| `Playback`   | 7       | start utworu, przewijanie, losowanie |
+| `Catalogue`  | 3       | playlisty, utwory, profil            |
+| `Background` | 0       | cokolwiek, na co nikt nie czeka      |
 
 **Czekanie podnosi priorytet** o jeden co `PRIORITY_AGING_MS` (500 ms), aż do
 dziesiątki. Bez tego skan playlisty, który wysyła setki poleceń odtwarzania,
@@ -260,7 +260,7 @@ Są dwie, i powyżej folderu `playback/` nie powinno mieć znaczenia, którą co
 leci:
 
 - **`playback/viaRest.ts`** — zwykłe żądania Web API. Odtwarzacz potrafi
-  sterować tylko tym, co już na nim jest, więc *umieszczenie* utworu na
+  sterować tylko tym, co już na nim jest, więc _umieszczenie_ utworu na
   urządzeniu musi iść tą drogą.
 - **`playback/viaSdk.ts`** — polecenia, które należą do odtwarzacza w
   przeglądarce: pauza, wznowienie, przewijanie, głośność.

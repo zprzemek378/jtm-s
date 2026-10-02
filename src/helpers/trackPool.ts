@@ -2,13 +2,13 @@
 // and refills itself from the full list once it runs dry.
 
 export type Draw<T> = {
-  item: T
+  item: T;
   /** What is left after this draw — already refilled if the pool was empty. */
-  remaining: T[]
-}
+  remaining: T[];
+};
 
 export function createPool<T>(all: readonly T[]): T[] {
-  return [...all]
+  return [...all];
 }
 
 /**
@@ -22,15 +22,15 @@ export function drawFromPool<T>(
   all: readonly T[],
   random: () => number = Math.random,
 ): Draw<T> | null {
-  const source = pool.length > 0 ? pool : all
+  const source = pool.length > 0 ? pool : all;
 
   if (source.length === 0) {
-    return null
+    return null;
   }
 
-  const index = Math.min(source.length - 1, Math.floor(random() * source.length))
-  const item = source[index] as T
-  const remaining = [...source.slice(0, index), ...source.slice(index + 1)]
+  const index = Math.min(source.length - 1, Math.floor(random() * source.length));
+  const item = source[index] as T;
+  const remaining = [...source.slice(0, index), ...source.slice(index + 1)];
 
-  return { item, remaining }
+  return { item, remaining };
 }

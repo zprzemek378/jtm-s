@@ -10,7 +10,9 @@
   font-size: $text-sm;
   font-weight: 500;
   white-space: nowrap;
-  transition: background-color $transition-fast, border-color $transition-fast,
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast,
     color $transition-fast;
 
   &:disabled {

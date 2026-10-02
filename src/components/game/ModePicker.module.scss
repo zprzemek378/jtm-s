@@ -14,7 +14,9 @@
   border-radius: $radius-sm;
   background-color: $c-surface;
   text-align: left;
-  transition: background-color $transition-fast, border-color $transition-fast;
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast;
 
   &:hover {
     border-color: $c-border-strong;

@@ -40,7 +40,9 @@
   color: $c-text-muted;
   font-size: $text-lg;
   line-height: 1;
-  transition: background-color $transition-fast, color $transition-fast,
+  transition:
+    background-color $transition-fast,
+    color $transition-fast,
     border-color $transition-fast;
 
   &:hover {
@@ -96,7 +98,9 @@
   color: $c-text-muted;
   text-decoration: none;
   white-space: nowrap;
-  transition: background-color $transition-fast, color $transition-fast;
+  transition:
+    background-color $transition-fast,
+    color $transition-fast;
 
   &:hover {
     background-color: $c-surface-alt;

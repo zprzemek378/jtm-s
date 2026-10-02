@@ -1,20 +1,20 @@
 /** Whole seconds left, never negative — what a countdown should display. */
 export function msToWholeSeconds(milliseconds: number): number {
-  return Math.max(0, Math.ceil(milliseconds / 1000))
+  return Math.max(0, Math.ceil(milliseconds / 1000));
 }
 
 /** `m:ss`, for track lengths and playback positions. */
 export function formatDuration(milliseconds: number): string {
-  const totalSeconds = Math.max(0, Math.round(milliseconds / 1000))
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
+  const totalSeconds = Math.max(0, Math.round(milliseconds / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
 
-  return `${minutes}:${String(seconds).padStart(2, '0')}`
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
 /** Joins artist names the way Spotify shows them. */
 export function formatArtists(names: readonly string[]): string {
-  return names.join(', ')
+  return names.join(", ");
 }
 
 /**
@@ -23,11 +23,11 @@ export function formatArtists(names: readonly string[]): string {
  */
 export function formatSharePercent(poolSize: number): string {
   if (poolSize <= 0) {
-    return '0'
+    return "0";
   }
 
   return (100 / poolSize)
     .toFixed(2)
-    .replace(/(\.\d*?)0+$/, '$1')
-    .replace(/\.$/, '')
+    .replace(/(\.\d*?)0+$/, "$1")
+    .replace(/\.$/, "");
 }

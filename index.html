@@ -16,15 +16,15 @@
       // A stored choice wins, otherwise the system decides — the same rule
       // ThemeProvider applies; keep the two in step.
       try {
-        var stored = localStorage.getItem('jtm-s.theme')
+        var stored = localStorage.getItem("jtm-s.theme");
         document.documentElement.dataset.theme =
-          stored === 'light' || stored === 'dark'
+          stored === "light" || stored === "dark"
             ? stored
-            : matchMedia('(prefers-color-scheme: dark)').matches
-              ? 'dark'
-              : 'light'
+            : matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
       } catch (error) {
-        document.documentElement.dataset.theme = 'light'
+        document.documentElement.dataset.theme = "light";
       }
     </script>
     <script type="module" src="/src/main.tsx"></script>

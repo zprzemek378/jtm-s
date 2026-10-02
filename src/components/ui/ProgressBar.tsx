@@ -1,23 +1,23 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from "react";
 
-import { ProgressTone } from './progressTone'
-import styles from './ProgressBar.module.scss'
+import { ProgressTone } from "./progressTone";
+import styles from "./ProgressBar.module.scss";
 
 type ProgressBarProps = {
-  value: number
-  max: number
+  value: number;
+  max: number;
   /** Text shown under the bar, typically counters. */
-  label?: ReactNode
-  ariaLabel?: string
-  tone?: ProgressTone
+  label?: ReactNode;
+  ariaLabel?: string;
+  tone?: ProgressTone;
   /** Thicker bar, for the countdown that carries the round. */
-  tall?: boolean
+  tall?: boolean;
   /**
    * Skips the width transition. A countdown updates ten times a second, and an
    * easing on every step makes it look like it is lagging behind.
    */
-  instant?: boolean
-}
+  instant?: boolean;
+};
 
 export function ProgressBar({
   value,
@@ -28,10 +28,10 @@ export function ProgressBar({
   tall = false,
   instant = false,
 }: ProgressBarProps) {
-  const percent = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0
+  const percent = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
   const fillClassNames = [styles.fill, styles[tone], instant ? styles.instant : null]
     .filter(Boolean)
-    .join(' ')
+    .join(" ");
 
   return (
     <div className={styles.wrapper}>
@@ -47,5 +47,5 @@ export function ProgressBar({
       </div>
       {label ? <div className={styles.label}>{label}</div> : null}
     </div>
-  )
+  );
 }

@@ -16,31 +16,31 @@
 
 export type KeyPress = {
   /** Monotonic id, so the list has stable keys even with identical presses. */
-  id: number
+  id: number;
   /** Milliseconds since the page's time origin. */
-  at: number
+  at: number;
   /** The physical key, e.g. `KeyQ`. */
-  code: string
+  code: string;
   /** What the layout produced, e.g. `q`. */
-  key: string
+  key: string;
   /** Gap from the previous press; null for the first one. */
-  deltaMs: number | null
+  deltaMs: number | null;
   /** False when the event carried no usable timestamp and the clock was read. */
-  fromEvent: boolean
-}
+  fromEvent: boolean;
+};
 
 export type IntervalStats = {
-  count: number
-  minMs: number
-  maxMs: number
-  meanMs: number
+  count: number;
+  minMs: number;
+  maxMs: number;
+  meanMs: number;
   /**
    * Pairs of presses the clock could not tell apart — their timestamps came
    * out identical. Not a measurement of zero: it means the two landed inside
    * one tick of a clock the browser has deliberately coarsened.
    */
-  sameTick: number
-}
+  sameTick: number;
+};
 
 /**
  * The timestamp to trust for an event.
@@ -49,26 +49,23 @@ export type IntervalStats = {
  * are interchangeable — but some environments report 0, and a zero here would
  * turn into an enormous fake gap.
  */
-export function pressTime(
-  eventTimeStamp: number,
-  now: number,
-): { at: number; fromEvent: boolean } {
+export function pressTime(eventTimeStamp: number, now: number): { at: number; fromEvent: boolean } {
   return Number.isFinite(eventTimeStamp) && eventTimeStamp > 0
     ? { at: eventTimeStamp, fromEvent: true }
-    : { at: now, fromEvent: false }
+    : { at: now, fromEvent: false };
 }
 
 /** Gaps between consecutive presses, ignoring the first one's empty delta. */
 export function intervalStats(presses: readonly KeyPress[]): IntervalStats | null {
   const deltas = presses
     .map((press) => press.deltaMs)
-    .filter((delta): delta is number => delta !== null)
+    .filter((delta): delta is number => delta !== null);
 
   if (deltas.length === 0) {
-    return null
+    return null;
   }
 
-  const total = deltas.reduce((sum, delta) => sum + delta, 0)
+  const total = deltas.reduce((sum, delta) => sum + delta, 0);
 
   return {
     count: deltas.length,
@@ -76,7 +73,7 @@ export function intervalStats(presses: readonly KeyPress[]): IntervalStats | nul
     maxMs: Math.max(...deltas),
     meanMs: total / deltas.length,
     sameTick: deltas.filter((delta) => delta === 0).length,
-  }
+  };
 }
 
 /**
@@ -87,13 +84,13 @@ export function intervalStats(presses: readonly KeyPress[]): IntervalStats | nul
  * contradicts the screen — which is exactly what happened when the display
  * rounded and the comparison did not.
  */
-export const INTERVAL_DECIMALS = 3
+export const INTERVAL_DECIMALS = 3;
 
 /** An interval at the precision the interface works in. */
 export function roundInterval(milliseconds: number): number {
-  const factor = 10 ** INTERVAL_DECIMALS
+  const factor = 10 ** INTERVAL_DECIMALS;
 
-  return Math.round(milliseconds * factor) / factor
+  return Math.round(milliseconds * factor) / factor;
 }
 
 /**
@@ -105,14 +102,14 @@ export function roundInterval(milliseconds: number): number {
  */
 export function formatInterval(milliseconds: number): string {
   if (milliseconds >= 1000) {
-    return `${(milliseconds / 1000).toFixed(3)} s`
+    return `${(milliseconds / 1000).toFixed(3)} s`;
   }
 
   if (milliseconds > 0 && milliseconds < 0.001) {
-    return `${(milliseconds * 1000).toFixed(1)} µs`
+    return `${(milliseconds * 1000).toFixed(1)} µs`;
   }
 
-  return `${milliseconds.toFixed(INTERVAL_DECIMALS)} ms`
+  return `${milliseconds.toFixed(INTERVAL_DECIMALS)} ms`;
 }
 
 /**
@@ -126,18 +123,18 @@ export function measureClockResolution(
   now: () => number = () => performance.now(),
   samples = 5,
 ): number {
-  let smallest = Number.POSITIVE_INFINITY
+  let smallest = Number.POSITIVE_INFINITY;
 
   for (let sample = 0; sample < samples; sample += 1) {
-    const start = now()
-    let next = start
+    const start = now();
+    let next = start;
     // Spinning is the point: we are looking for the first value that differs.
     while (next === start) {
-      next = now()
+      next = now();
     }
 
-    smallest = Math.min(smallest, next - start)
+    smallest = Math.min(smallest, next - start);
   }
 
-  return Number.isFinite(smallest) ? smallest : 0
+  return Number.isFinite(smallest) ? smallest : 0;
 }

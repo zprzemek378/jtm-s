@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect } from "react";
 
 /**
  * Grabs the next key the host presses, for assigning a player's buzzer.
@@ -14,24 +14,24 @@ export function useKeyCapture(
 ): void {
   useEffect(() => {
     if (!capturing) {
-      return
+      return;
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      event.preventDefault()
-      event.stopPropagation()
+      event.preventDefault();
+      event.stopPropagation();
 
-      if (event.code === 'Escape') {
-        onCancel()
+      if (event.code === "Escape") {
+        onCancel();
 
-        return
+        return;
       }
 
-      onCapture(event.code)
-    }
+      onCapture(event.code);
+    };
 
-    document.addEventListener('keydown', handleKeyDown, { capture: true })
+    document.addEventListener("keydown", handleKeyDown, { capture: true });
 
-    return () => document.removeEventListener('keydown', handleKeyDown, { capture: true })
-  }, [capturing, onCancel, onCapture])
+    return () => document.removeEventListener("keydown", handleKeyDown, { capture: true });
+  }, [capturing, onCancel, onCapture]);
 }

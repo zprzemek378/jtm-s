@@ -4,8 +4,12 @@
 // a host finds out what their own keyboard and browser can actually resolve,
 // and that number is what belongs here.
 
-import { DEFAULT_TIE_THRESHOLD_MS, MAX_TIE_THRESHOLD_MS, MIN_TIE_THRESHOLD_MS } from '@/constants/gameRules'
-import { STORAGE_KEYS, readStoredString, writeStoredString } from '@/storage/localStorage'
+import {
+  DEFAULT_TIE_THRESHOLD_MS,
+  MAX_TIE_THRESHOLD_MS,
+  MIN_TIE_THRESHOLD_MS,
+} from "@/constants/gameRules";
+import { STORAGE_KEYS, readStoredString, writeStoredString } from "@/storage/localStorage";
 
 /**
  * On unless it was explicitly switched off.
@@ -16,38 +20,38 @@ import { STORAGE_KEYS, readStoredString, writeStoredString } from '@/storage/loc
  * whose hardware disagrees.
  */
 export function areTiesEnabled(): boolean {
-  return readStoredString(STORAGE_KEYS.tiesEnabled) !== 'false'
+  return readStoredString(STORAGE_KEYS.tiesEnabled) !== "false";
 }
 
 export function setTiesEnabled(enabled: boolean): void {
-  writeStoredString(STORAGE_KEYS.tiesEnabled, String(enabled))
+  writeStoredString(STORAGE_KEYS.tiesEnabled, String(enabled));
 }
 
 export function clampTieThreshold(value: number): number {
   if (!Number.isFinite(value)) {
-    return DEFAULT_TIE_THRESHOLD_MS
+    return DEFAULT_TIE_THRESHOLD_MS;
   }
 
-  return Math.min(MAX_TIE_THRESHOLD_MS, Math.max(MIN_TIE_THRESHOLD_MS, value))
+  return Math.min(MAX_TIE_THRESHOLD_MS, Math.max(MIN_TIE_THRESHOLD_MS, value));
 }
 
 export function readTieThreshold(): number {
-  const stored = readStoredString(STORAGE_KEYS.tieThreshold)
+  const stored = readStoredString(STORAGE_KEYS.tieThreshold);
 
   if (stored === null) {
-    return DEFAULT_TIE_THRESHOLD_MS
+    return DEFAULT_TIE_THRESHOLD_MS;
   }
 
-  const parsed = Number.parseFloat(stored)
+  const parsed = Number.parseFloat(stored);
 
-  return Number.isFinite(parsed) ? clampTieThreshold(parsed) : DEFAULT_TIE_THRESHOLD_MS
+  return Number.isFinite(parsed) ? clampTieThreshold(parsed) : DEFAULT_TIE_THRESHOLD_MS;
 }
 
 export function writeTieThreshold(value: number): void {
-  writeStoredString(STORAGE_KEYS.tieThreshold, String(clampTieThreshold(value)))
+  writeStoredString(STORAGE_KEYS.tieThreshold, String(clampTieThreshold(value)));
 }
 
 /** The threshold a game should run with: null when ties are switched off. */
 export function activeTieThreshold(): number | null {
-  return areTiesEnabled() ? readTieThreshold() : null
+  return areTiesEnabled() ? readTieThreshold() : null;
 }

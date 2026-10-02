@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from "react";
 
-import { SEEK_COMMIT_DELAY_MS, SEEK_STEP_MS } from '@/constants/spotify'
-import { formatDuration } from '@/helpers/format'
-import { useLanguage } from '@/i18n/useLanguage'
-import { usePlaybackPosition } from '@/spotify/playback/usePlaybackPosition'
-import { useSpotify } from '@/spotify/useSpotify'
+import { SEEK_COMMIT_DELAY_MS, SEEK_STEP_MS } from "@/constants/spotify";
+import { formatDuration } from "@/helpers/format";
+import { useLanguage } from "@/i18n/useLanguage";
+import { usePlaybackPosition } from "@/spotify/playback/usePlaybackPosition";
+import { useSpotify } from "@/spotify/useSpotify";
 
-import styles from './TrackScrubber.module.scss'
+import styles from "./TrackScrubber.module.scss";
 
 /**
  * Where the track has got to, and a handle to move it.
@@ -16,53 +16,53 @@ import styles from './TrackScrubber.module.scss'
  * snippet happened to land.
  */
 export function TrackScrubber() {
-  const { t } = useLanguage()
-  const { seek } = useSpotify()
-  const { position, settle } = usePlaybackPosition(true)
+  const { t } = useLanguage();
+  const { seek } = useSpotify();
+  const { position, settle } = usePlaybackPosition(true);
   /** Where the handle is being held, while it is being held. */
-  const [dragMs, setDragMs] = useState<number | null>(null)
-  const dragRef = useRef<number | null>(null)
-  const commitTimerRef = useRef<number | null>(null)
+  const [dragMs, setDragMs] = useState<number | null>(null);
+  const dragRef = useRef<number | null>(null);
+  const commitTimerRef = useRef<number | null>(null);
 
   // A round can end with a seek still waiting out its delay; it must not fire
   // into the next one.
   useEffect(
     () => () => {
       if (commitTimerRef.current !== null) {
-        window.clearTimeout(commitTimerRef.current)
+        window.clearTimeout(commitTimerRef.current);
       }
     },
     [],
-  )
+  );
   // Nothing is loaded yet, or the duration has not arrived: a slider with no
   // scale would only be something to fidget with.
   if (!position || position.durationMs <= 0) {
-    return null
+    return null;
   }
 
-  const shownMs = dragMs ?? position.positionMs
+  const shownMs = dragMs ?? position.positionMs;
 
   const cancelPendingCommit = () => {
     if (commitTimerRef.current !== null) {
-      window.clearTimeout(commitTimerRef.current)
-      commitTimerRef.current = null
+      window.clearTimeout(commitTimerRef.current);
+      commitTimerRef.current = null;
     }
-  }
+  };
 
   const commit = () => {
-    cancelPendingCommit()
+    cancelPendingCommit();
 
-    const target = dragRef.current
+    const target = dragRef.current;
 
     if (target === null) {
-      return
+      return;
     }
 
-    dragRef.current = null
-    setDragMs(null)
-    settle(target)
-    void seek(target)
-  }
+    dragRef.current = null;
+    setDragMs(null);
+    settle(target);
+    void seek(target);
+  };
 
   /**
    * Moves the handle now and seeks once the host has finished moving it.
@@ -72,13 +72,13 @@ export function TrackScrubber() {
    * the Client ID, so it would take everyone's evening with it.
    */
   const moveTo = (positionMs: number) => {
-    const clamped = Math.min(position.durationMs, Math.max(0, positionMs))
+    const clamped = Math.min(position.durationMs, Math.max(0, positionMs));
 
-    dragRef.current = clamped
-    setDragMs(clamped)
-    cancelPendingCommit()
-    commitTimerRef.current = window.setTimeout(commit, SEEK_COMMIT_DELAY_MS)
-  }
+    dragRef.current = clamped;
+    setDragMs(clamped);
+    cancelPendingCommit();
+    commitTimerRef.current = window.setTimeout(commit, SEEK_COMMIT_DELAY_MS);
+  };
 
   return (
     <div className={styles.scrubber}>
@@ -89,25 +89,25 @@ export function TrackScrubber() {
         max={position.durationMs}
         step={1000}
         value={Math.round(shownMs)}
-        aria-label={t('game.seek')}
+        aria-label={t("game.seek")}
         aria-valuetext={`${formatDuration(shownMs)} / ${formatDuration(position.durationMs)}`}
         onChange={(event) => moveTo(Number(event.target.value))}
         // The arrows move by a useful amount rather than by the slider's own
         // step, which would be a second at a time.
         onKeyDown={(event) => {
           const direction =
-            event.key === 'ArrowRight' || event.key === 'ArrowUp'
+            event.key === "ArrowRight" || event.key === "ArrowUp"
               ? 1
-              : event.key === 'ArrowLeft' || event.key === 'ArrowDown'
+              : event.key === "ArrowLeft" || event.key === "ArrowDown"
                 ? -1
-                : 0
+                : 0;
 
           if (direction === 0) {
-            return
+            return;
           }
 
-          event.preventDefault()
-          moveTo((dragRef.current ?? position.positionMs) + direction * SEEK_STEP_MS)
+          event.preventDefault();
+          moveTo((dragRef.current ?? position.positionMs) + direction * SEEK_STEP_MS);
         }}
         // Letting go is unambiguous, so it seeks at once instead of waiting out
         // the delay a keypress needs.
@@ -119,5 +119,5 @@ export function TrackScrubber() {
         <span className={styles.total}>{formatDuration(position.durationMs)}</span>
       </p>
     </div>
-  )
+  );
 }
