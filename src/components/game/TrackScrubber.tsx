@@ -6,22 +6,7 @@ import { useLanguage } from '@/i18n/useLanguage'
 import { usePlaybackPosition } from '@/spotify/playback/usePlaybackPosition'
 import { useSpotify } from '@/spotify/useSpotify'
 
-import { Button } from '../ui/Button'
-import { ButtonVariant } from '../ui/buttonVariant'
 import styles from './TrackScrubber.module.scss'
-
-/**
- * Where to look for the chorus, as fractions of the track.
- *
- * Spotify used to expose an audio analysis with the track's sections, from
- * which a chorus could be guessed; it has returned 403 for applications created
- * since late 2024, and there has never been a "most replayed" figure of the
- * kind YouTube shows. So this is a guess and nothing more: in most pop songs
- * the first chorus arrives around a third of the way in, with later ones around
- * the middle and the final third. Pressing again tries the next one, which
- * makes hunting for it a matter of three presses rather than a drag.
- */
-const CHORUS_GUESSES = [0.3, 0.5, 0.7]
 
 /**
  * Where the track has got to, and a handle to move it.
@@ -30,12 +15,7 @@ const CHORUS_GUESSES = [0.3, 0.5, 0.7]
  * when the table wants to hear a particular part rather than wherever the
  * snippet happened to land.
  */
-type TrackScrubberProps = {
-  /** Identifies the track, so the run of guesses starts over on a new one. */
-  trackId: string
-}
-
-export function TrackScrubber({ trackId }: TrackScrubberProps) {
+export function TrackScrubber() {
   const { t } = useLanguage()
   const { seek } = useSpotify()
   const { position, settle } = usePlaybackPosition(true)
@@ -54,15 +34,6 @@ export function TrackScrubber({ trackId }: TrackScrubberProps) {
     },
     [],
   )
-  /**
-   * How many guesses have been tried, and for which track.
-   *
-   * The track is kept alongside the count rather than reset from an effect, so
-   * a new round simply reads as "none tried yet" without a second render.
-   */
-  const [guesses, setGuesses] = useState({ trackId, tried: 0 })
-  const tried = guesses.trackId === trackId ? guesses.tried : 0
-
   // Nothing is loaded yet, or the duration has not arrived: a slider with no
   // scale would only be something to fidget with.
   if (!position || position.durationMs <= 0) {
@@ -109,15 +80,6 @@ export function TrackScrubber({ trackId }: TrackScrubberProps) {
     commitTimerRef.current = window.setTimeout(commit, SEEK_COMMIT_DELAY_MS)
   }
 
-  const tryNextGuess = () => {
-    const fraction = CHORUS_GUESSES[tried % CHORUS_GUESSES.length] ?? CHORUS_GUESSES[0]!
-    const target = Math.round(position.durationMs * fraction)
-
-    setGuesses({ trackId, tried: tried + 1 })
-    settle(target)
-    void seek(target)
-  }
-
   return (
     <div className={styles.scrubber}>
       <input
@@ -156,13 +118,6 @@ export function TrackScrubber({ trackId }: TrackScrubberProps) {
         <span>{formatDuration(shownMs)}</span>
         <span className={styles.total}>{formatDuration(position.durationMs)}</span>
       </p>
-
-      <div className={styles.guessRow}>
-        <Button variant={ButtonVariant.Secondary} onClick={tryNextGuess}>
-          {t('game.chorusGuess')}
-        </Button>
-        <span className={styles.guessHint}>{t('game.chorusGuessHint')}</span>
-      </div>
     </div>
   )
 }
