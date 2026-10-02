@@ -1,7 +1,7 @@
 {
   "name": "jtm-s",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,8 @@
     "build:pages": "VITE_BASE=/jtm-s/ npm run build",
     "preview:pages": "VITE_BASE=/jtm-s/ vite preview --host 127.0.0.1 --port 4173",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "release": "commit-and-tag-version"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -22,6 +23,7 @@
     "@types/react-dom": "^19.2.4",
     "@types/spotify-web-playback-sdk": "^0.1.19",
     "@vitejs/plugin-react": "^6.1.0",
+    "commit-and-tag-version": "^13.2.1",
     "oxlint": "^1.79.0",
     "sass": "^1.103.1",
     "typescript": "~6.0.2",

@@ -77,6 +77,8 @@ export function AppLayout() {
             <LanguageSwitcher compact={collapsed} />
             <ThemeToggle compact={collapsed} />
           </div>
+
+          <p className={styles.version}>v{__APP_VERSION__}</p>
         </div>
       </aside>
 

@@ -1,4 +1,4 @@
-import { copyFileSync } from 'node:fs'
+import { copyFileSync, readFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 
 import react from '@vitejs/plugin-react'
@@ -24,7 +24,22 @@ function githubPagesSpaFallback(): Plugin {
   }
 }
 
+/**
+ * Read rather than imported, because a JSON import would need an assertion that
+ * sits awkwardly with this project's TypeScript settings. `package.json` stays
+ * the single place a version number is written down; everything else, including
+ * the git tag, follows from it.
+ */
+const { version } = JSON.parse(
+  readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf8'),
+) as { version: string }
+
 export default defineConfig({
+  // Substituted into the bundle at build time, so the running app can show the
+  // version it was actually built from.
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+  },
   // A project page lives under /<repo>/, so CI passes VITE_BASE.
   // Local dev and local builds stay at the root.
   base: process.env.VITE_BASE ?? '/',

@@ -129,6 +129,16 @@
   gap: $space-2;
 }
 
+// Small and quiet: useful when someone reports a problem, invisible otherwise.
+.version {
+  margin-top: auto;
+  padding-top: $space-3;
+  font-size: $text-xs;
+  color: $c-text-muted;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
 .main {
   flex: 1;
   min-width: 0;
@@ -146,7 +156,8 @@
 // the brand and the handle.
 .collapsed {
   .nav,
-  .controls {
+  .controls,
+  .version {
     display: none;
   }
 }

@@ -6,7 +6,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  # Write, because a push to main that earns a new version gets the version
+  # bump, the changelog entry and the tag committed back here before the build.
+  contents: write
   pages: write
   id-token: write
 
@@ -20,6 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Versioning reads the commits back to the last tag, so the shallow
+          # clone a workflow gets by default is not enough.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -29,6 +35,37 @@ jobs:
       - run: npm ci
 
       - run: npm run lint
+
+      # Only feat, fix and anything breaking move the version. Without this
+      # check a release would be cut for a typo in the README, because the
+      # release tool falls back to a patch bump when it finds nothing.
+      - id: version
+        run: |
+          last=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          range=${last:+$last..HEAD}
+          subjects=$(git log --format=%s ${range:-HEAD})
+          bodies=$(git log --format=%B ${range:-HEAD})
+
+          if echo "$subjects" | grep -qE '^(feat|fix)(\([^)]*\))?!?:' \
+            || echo "$subjects" | grep -qE '^[a-z]+(\([^)]*\))?!:' \
+            || echo "$bodies" | grep -qE '^BREAKING[ -]CHANGE:'; then
+            echo 'release=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'release=false' >> "$GITHUB_OUTPUT"
+            echo 'Nothing since the last tag earns a version; publishing as is.'
+          fi
+
+      # Runs before the build, so the version shown in the corner of the
+      # published app is the one just tagged rather than the previous one.
+      #
+      # `[skip ci]` keeps this push from starting a second run: the deployment
+      # for these commits is the one already in progress here.
+      - if: steps.version.outputs.release == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          npm run release -- --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'
+          git push --follow-tags origin HEAD:main
 
       - run: npm run build
         env:

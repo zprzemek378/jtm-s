@@ -85,6 +85,65 @@ Dlatego Client ID trzymamy poza repozytorium (`.env` jest w `.gitignore`), a w C
 wstrzykujemy go z sekretu — nie ma go w kodzie źródłowym, w historii gita ani w
 logach Actions.
 
+## Wersjonowanie
+
+Wersja trzymana jest w `package.json`, pokazuje się małym drukiem na dole lewego
+paska i jest podbijana na podstawie opisów commitów — zgodnie z **SemVer** i
+**Conventional Commits**:
+
+| typ commita | efekt | przykład |
+|---|---|---|
+| `fix:` | PATCH | `1.4.7` → `1.4.8` |
+| `feat:` | MINOR | `1.4.7` → `1.5.0` |
+| `feat!:` lub stopka `BREAKING CHANGE:` | MAJOR | `1.4.7` → `2.0.0` |
+| `chore:`, `docs:`, `ci:`, `test:`, `style:` | bez zmiany | — |
+
+**Dzieje się to samo, przy każdym pushu na `main`** — czy to ze scalenia pull
+requesta, czy prosto z Twojego komputera. Workflow czyta commity od ostatniego
+taga, podbija wersję, dopisuje `CHANGELOG.md`, tworzy commit `chore(release):`
+i tag, wypycha to z powrotem, a dopiero potem buduje — więc numer w rogu
+opublikowanej aplikacji zawsze zgadza się z tagiem.
+
+Podbicie jest **jedno na push, nie jedno na commit**: narzędzie patrzy na
+wszystko od ostatniego taga naraz i wybiera najwyższy znaleziony typ. Dwa
+`feat:` i jeden `fix:` w jednym pushu to jedno podbicie MINOR, choć w changelogu
+wylądują wszystkie trzy wpisy.
+
+Jeśli **nic** od ostatniego taga nie zasługuje na wersję — same `chore:`, `docs:`
+albo opisy bez przedrostka — krok wydania jest pomijany, a aplikacja i tak się
+publikuje. Bez tego zabezpieczenia poprawka literówki w README generowałaby nowe
+wydanie, bo narzędzie domyślnie podbija wtedy PATCH.
+
+Przy scalaniu pull requesta ze squashem pamiętaj, że GitHub podpowiada tytuł
+PR-a, a nie commit konwencjonalny. To pole jest edytowalne w momencie scalania i
+to właśnie ta wiadomość trafia do `main` i decyduje o wersji.
+
+Można też wydać ręcznie, lokalnie:
+
+```bash
+npm run release -- --dry-run   # pokazuje co by się stało, nic nie zmienia
+npm run release                # podbija, dopisuje changelog, taguje
+git push --follow-tags
+```
+
+Taki push nie podbije wersji po raz drugi: tag wskazuje już na HEAD, więc
+workflow nie znajduje nic nowego i przechodzi prosto do wdrożenia.
+
+Wersję wstawia do bundla Vite, przez `define`, czytając ją z `package.json` —
+więc numer na ekranie zawsze pochodzi z tego samego miejsca co tag.
+
+### Gałęzie
+
+Praca prosto na `main` jest w porządku przy drobiazgach, ale każdy push na `main`
+**natychmiast publikuje się na Pages**, więc wszystko, co może ruszyć rozgrywkę,
+lepiej prowadzić na gałęzi i scalać przez pull request ze **squashem**. Dwa
+powody: CI zdąży przemielić lint i build, zanim cokolwiek pójdzie w świat, a
+wiadomość squasha — jedyna, jaka trafia do `main` — jest tą, która decyduje o
+podbiciu wersji. W trakcie pracy możesz commitować bałaganiarsko, porządek
+wystarczy zrobić przy scalaniu.
+
+Nie włączaj przy tym ostrej ochrony `main`, bo blokowałaby commit wydania.
+
 ## Wdrożenie na GitHub Pages
 
 Workflow `.github/workflows/deploy.yml` buduje i publikuje aplikację przy pushu

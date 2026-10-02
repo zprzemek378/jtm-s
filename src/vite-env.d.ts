@@ -35,3 +35,6 @@ interface ImportMetaEnv {
   readonly VITE_SPOTIFY_CLIENT_NAME_4?: string
   readonly VITE_SPOTIFY_CLIENT_NAME_5?: string
 }
+
+/** The version from `package.json`, substituted in by Vite at build time. */
+declare const __APP_VERSION__: string
