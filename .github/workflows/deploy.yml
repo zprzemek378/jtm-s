@@ -52,8 +52,23 @@ jobs:
       # older tag, and a run started that way must publish that code and nothing
       # else — it must not write a release commit, least of all onto a branch it
       # is not even on.
-      - id: release
+      # A release needs something to release. Rebuilding main by hand — after a
+      # rollback, or simply by mistake — leaves HEAD already sitting on its tag,
+      # and cutting a version for it would mint a number for code that already
+      # has one, with nothing to put in its changelog.
+      - id: pending
         if: github.ref == 'refs/heads/main'
+        run: |
+          last=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          count=$(git rev-list --count ${last:+$last..}HEAD)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+          if [ "$count" -eq 0 ]; then
+            echo "Nothing new since ${last:-the start}; republishing as is."
+          fi
+
+      - id: release
+        if: github.ref == 'refs/heads/main' && steps.pending.outputs.count != '0'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
