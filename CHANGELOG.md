@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.1](https://github.com/zprzemek378/jtm-s/compare/v1.2.0...v1.2.1) (2026-10-02)
+
+### Maintenance
+
+* give every release notes, and a page to read them on ([d16ef3b](https://github.com/zprzemek378/jtm-s/commit/d16ef3b5f136d54b3966ed50708020814cb094e8))
+
 ## [1.2.0](https://github.com/zprzemek378/jtm-s/compare/v1.1.1...v1.2.0) (2026-10-02)
 
 ### Features
