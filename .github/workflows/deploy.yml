@@ -35,25 +35,29 @@ jobs:
           # A project page is served from /<repo>/, so the asset base has to
           # match the repository name whatever it is called.
           VITE_BASE: /${{ github.event.repository.name }}/
-          # Add these under Settings -> Secrets and variables -> Actions. They
-          # keep the Client IDs out of the source and out of the build log; the
-          # values still end up readable in the published bundle, which is
+          # Add these under Settings -> Secrets and variables -> Actions, as
+          # repository secrets, named exactly as below — the same names the
+          # variables have, so there is nothing to translate in your head. A
+          # secret under the environment rather than the repository is invisible
+          # here, because this job declares no environment.
+          #
+          # They keep the Client IDs out of the source and out of the build log;
+          # the values still end up readable in the published bundle, which is
           # expected for a PKCE public client.
           #
-          # Only SPOTIFY_CLIENT_ID_1 is needed to deploy. A secret that is not
-          # set arrives as an empty string and is simply skipped, so unused slots
-          # cost nothing. The names may be plain variables rather than secrets —
-          # they are only labels — but secrets keep them together.
-          VITE_SPOTIFY_CLIENT_ID_1: ${{ secrets.SPOTIFY_CLIENT_ID_1 }}
-          VITE_SPOTIFY_CLIENT_NAME_1: ${{ secrets.SPOTIFY_CLIENT_NAME_1 }}
-          VITE_SPOTIFY_CLIENT_ID_2: ${{ secrets.SPOTIFY_CLIENT_ID_2 }}
-          VITE_SPOTIFY_CLIENT_NAME_2: ${{ secrets.SPOTIFY_CLIENT_NAME_2 }}
-          VITE_SPOTIFY_CLIENT_ID_3: ${{ secrets.SPOTIFY_CLIENT_ID_3 }}
-          VITE_SPOTIFY_CLIENT_NAME_3: ${{ secrets.SPOTIFY_CLIENT_NAME_3 }}
-          VITE_SPOTIFY_CLIENT_ID_4: ${{ secrets.SPOTIFY_CLIENT_ID_4 }}
-          VITE_SPOTIFY_CLIENT_NAME_4: ${{ secrets.SPOTIFY_CLIENT_NAME_4 }}
-          VITE_SPOTIFY_CLIENT_ID_5: ${{ secrets.SPOTIFY_CLIENT_ID_5 }}
-          VITE_SPOTIFY_CLIENT_NAME_5: ${{ secrets.SPOTIFY_CLIENT_NAME_5 }}
+          # Only VITE_SPOTIFY_CLIENT_ID_1 is needed to deploy. A secret that is
+          # not set arrives as an empty string and is simply skipped, so unused
+          # slots cost nothing.
+          VITE_SPOTIFY_CLIENT_ID_1: ${{ secrets.VITE_SPOTIFY_CLIENT_ID_1 }}
+          VITE_SPOTIFY_CLIENT_NAME_1: ${{ secrets.VITE_SPOTIFY_CLIENT_NAME_1 }}
+          VITE_SPOTIFY_CLIENT_ID_2: ${{ secrets.VITE_SPOTIFY_CLIENT_ID_2 }}
+          VITE_SPOTIFY_CLIENT_NAME_2: ${{ secrets.VITE_SPOTIFY_CLIENT_NAME_2 }}
+          VITE_SPOTIFY_CLIENT_ID_3: ${{ secrets.VITE_SPOTIFY_CLIENT_ID_3 }}
+          VITE_SPOTIFY_CLIENT_NAME_3: ${{ secrets.VITE_SPOTIFY_CLIENT_NAME_3 }}
+          VITE_SPOTIFY_CLIENT_ID_4: ${{ secrets.VITE_SPOTIFY_CLIENT_ID_4 }}
+          VITE_SPOTIFY_CLIENT_NAME_4: ${{ secrets.VITE_SPOTIFY_CLIENT_NAME_4 }}
+          VITE_SPOTIFY_CLIENT_ID_5: ${{ secrets.VITE_SPOTIFY_CLIENT_ID_5 }}
+          VITE_SPOTIFY_CLIENT_NAME_5: ${{ secrets.VITE_SPOTIFY_CLIENT_NAME_5 }}
 
       - uses: actions/configure-pages@v5
 

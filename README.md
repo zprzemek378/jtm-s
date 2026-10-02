@@ -89,10 +89,17 @@ logach Actions.
 
 Workflow `.github/workflows/deploy.yml` buduje i publikuje aplikację przy pushu
 na `main`. Przed pierwszym wdrożeniem dodaj w repozytorium sekret
-`SPOTIFY_CLIENT_ID_1` (*Settings → Secrets and variables → Actions*). Jeśli chcesz
-mieć do wyboru więcej aplikacji, dodaj kolejne — `SPOTIFY_CLIENT_ID_2` i tak dalej
-wraz z `SPOTIFY_CLIENT_NAME_2` — do pięciu. Nieustawiony sekret przychodzi jako
-pusty ciąg i jest po prostu pomijany, więc nieużywane slota nic nie kosztują.
+`VITE_SPOTIFY_CLIENT_ID_1` (*Settings → Secrets and variables → Actions*, sekcja
+**Repository secrets** — sekret dodany pod środowiskiem `github-pages` nie będzie
+widoczny dla zadania budującego). Sekrety nazywają się dokładnie tak jak zmienne
+w `.env`. Jeśli chcesz mieć do wyboru więcej aplikacji, dodaj kolejne —
+`VITE_SPOTIFY_CLIENT_ID_2` wraz z `VITE_SPOTIFY_CLIENT_NAME_2` — do pięciu.
+Nieustawiony sekret przychodzi jako pusty ciąg i jest po prostu pomijany, więc
+nieużywane slota nic nie kosztują.
+
+Po nieudanym wdrożeniu uruchamiaj **Run workflow**, a nie *Re-run all jobs* —
+ponowne uruchomienie tego samego przebiegu zostawia w nim dwa artefakty o nazwie
+`github-pages` i `actions/deploy-pages` odmawia publikacji.
 
 `VITE_BASE` ustawia się automatycznie na `/<nazwa-repo>/`, a build kopiuje
 `index.html` do `404.html`, bo GitHub Pages nie przepisuje ścieżek dla SPA.
