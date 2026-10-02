@@ -9,6 +9,10 @@
       "section": "Bug Fixes"
     },
     {
+      "type": "revert",
+      "section": "Reverts"
+    },
+    {
       "type": "perf",
       "section": "Performance"
     },
@@ -19,6 +23,10 @@
     {
       "type": "docs",
       "section": "Documentation"
+    },
+    {
+      "type": "build",
+      "section": "Maintenance"
     },
     {
       "type": "ci",

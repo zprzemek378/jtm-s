@@ -25,15 +25,3 @@
 .total {
   opacity: 0.8;
 }
-
-.guessRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: $space-2;
-}
-
-.guessHint {
-  font-size: $text-xs;
-  color: $c-text-muted;
-}
