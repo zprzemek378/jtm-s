@@ -18,23 +18,23 @@
     },
     {
       "type": "docs",
-      "hidden": true
-    },
-    {
-      "type": "chore",
-      "hidden": true
+      "section": "Documentation"
     },
     {
       "type": "ci",
-      "hidden": true
+      "section": "Maintenance"
+    },
+    {
+      "type": "chore",
+      "section": "Maintenance"
     },
     {
       "type": "test",
-      "hidden": true
+      "section": "Internal"
     },
     {
       "type": "style",
-      "hidden": true
+      "section": "Internal"
     }
   ],
   "commitAll": false,

@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [1.1.1](https://github.com/zprzemek378/jtm-s/compare/v1.1.0...v1.1.1) (2026-10-02)
 
+### Maintenance
+
+* give every published state a version of its own ([b3476f4](https://github.com/zprzemek378/jtm-s/commit/b3476f452346ff835ded3158db0f0ed2f46c8d7d))
+
 ## [1.1.0](https://github.com/zprzemek378/jtm-s/compare/v1.0.1...v1.1.0) (2026-10-02)
 
 ### Features

@@ -52,12 +52,38 @@ jobs:
       # older tag, and a run started that way must publish that code and nothing
       # else — it must not write a release commit, least of all onto a branch it
       # is not even on.
-      - if: github.ref == 'refs/heads/main'
+      - id: release
+        if: github.ref == 'refs/heads/main'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           npm run release -- --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'
           git push --follow-tags origin HEAD:main
+          echo "tag=v$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+
+      # A tag on its own tells you nothing about what is in it. Publishing the
+      # release notes alongside it puts the number, the date and the changes in
+      # one place — which is the page you want open when you are deciding which
+      # version to go back to, and it sits a click away from the Actions tab you
+      # roll back from.
+      #
+      # The notes are the section the release just wrote at the top of the
+      # changelog, taken as far as the next heading.
+      - if: steps.release.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          node -e '
+            const lines = require("node:fs").readFileSync("CHANGELOG.md", "utf8").split("\n");
+            const start = lines.findIndex((line) => line.startsWith("## "));
+            const rest = lines.slice(start + 1);
+            const end = rest.findIndex((line) => line.startsWith("## "));
+            const body = (end === -1 ? rest : rest.slice(0, end)).join("\n").trim();
+            require("node:fs").writeFileSync("release-notes.md", body + "\n");
+          '
+          gh release create "$TAG" --title "$TAG" --notes-file release-notes.md
+          rm release-notes.md
 
       # The application reads VITE_SPOTIFY_CLIENT_ID_1, _2 and so on until a
       # number is missing, with no ceiling — so the workflow cannot name them
