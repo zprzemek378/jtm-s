@@ -1,0 +1,46 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  min-height: $row-height;
+  padding: 0 $space-2;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $c-surface-alt;
+  }
+}
+
+.input {
+  flex-shrink: 0;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+  accent-color: $c-accent;
+  cursor: pointer;
+}
+
+.label {
+  font-size: $text-sm;
+  line-height: 1.3;
+  color: $c-text;
+}
+
+.strong .label {
+  font-weight: 600;
+}
+
+.disabled {
+  cursor: default;
+  opacity: 0.45;
+
+  &:hover {
+    background-color: transparent;
+  }
+
+  .input {
+    cursor: default;
+  }
+}

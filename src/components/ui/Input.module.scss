@@ -1,0 +1,56 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  min-width: 0;
+}
+
+.label {
+  font-size: $text-sm;
+  font-weight: 500;
+  color: $c-text;
+}
+
+.labelHidden {
+  @include visually-hidden;
+}
+
+.input {
+  width: 100%;
+  min-height: $touch-target;
+  padding: 0 $space-3;
+  border: 1px solid $c-border;
+  border-radius: $radius-sm;
+  background-color: $c-surface;
+  color: $c-text;
+  font-size: $text-sm;
+  transition: border-color $transition-fast;
+
+  &::placeholder {
+    color: $c-text-subtle;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: $c-border-strong;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background-color: $c-surface-alt;
+    opacity: 0.7;
+  }
+}
+
+.invalid {
+  border-color: $c-negative;
+}
+
+.hint {
+  font-size: $text-xs;
+  color: $c-text-muted;
+}
+
+.error {
+  font-size: $text-xs;
+  color: $c-negative;
+}

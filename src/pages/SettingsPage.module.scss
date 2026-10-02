@@ -1,0 +1,60 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+  max-width: 44rem;
+}
+
+.title {
+  font-size: clamp(1.75rem, 1.3rem + 2vw, 2.5rem);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+}
+
+.rowLabel {
+  min-width: 6rem;
+  font-size: $text-sm;
+  font-weight: 500;
+}
+
+.text {
+  font-size: $text-base;
+}
+
+.hint {
+  font-size: $text-xs;
+  color: $c-text-muted;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.saved {
+  font-size: $text-sm;
+  color: $c-positive;
+}
+
+.error {
+  font-size: $text-sm;
+  color: $c-negative;
+}
+
+// Shown when safe mode is off: the consequences are real, so the block is not
+// a footnote.
+.warning {
+  padding: $space-3;
+  border: 1px solid $c-negative;
+  border-radius: $radius-sm;
+  background-color: $c-negative-surface;
+  font-size: $text-sm;
+  color: $c-text;
+}

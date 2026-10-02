@@ -1,0 +1,251 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid $c-border;
+  background-color: $c-surface;
+}
+
+// Separate scroll container, so the edge handle is never clipped.
+.sidebarInner {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  min-height: 0;
+  padding: $space-3 $content-gutter;
+  padding-top: calc(#{$space-3} + env(safe-area-inset-top));
+  padding-right: calc(#{$content-gutter} + #{$touch-target} + #{$space-2});
+}
+
+.collapseHandle {
+  position: absolute;
+  z-index: 5;
+  top: calc(#{$space-3} + env(safe-area-inset-top));
+  right: $content-gutter;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $touch-target;
+  height: $touch-target;
+  padding: 0;
+  border: 1px solid $c-border;
+  border-radius: $radius-sm;
+  background-color: $c-bg;
+  color: $c-text-muted;
+  font-size: $text-lg;
+  line-height: 1;
+  transition: background-color $transition-fast, color $transition-fast,
+    border-color $transition-fast;
+
+  &:hover {
+    background-color: $c-surface-alt;
+    border-color: $c-border-strong;
+    color: $c-text;
+  }
+}
+
+.brandRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2;
+}
+
+.brand {
+  margin-right: auto;
+  font-size: $text-xl;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: $c-text;
+  text-decoration: none;
+}
+
+.tagline {
+  display: none;
+  font-size: $text-xs;
+  color: $c-text-muted;
+}
+
+.nav {
+  display: flex;
+  flex-direction: row;
+  gap: $space-1;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  min-height: $row-height;
+  padding: 0 $space-3;
+  border-radius: $radius-sm;
+  font-size: $text-sm;
+  font-weight: 500;
+  color: $c-text-muted;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background-color: $c-surface-alt;
+    color: $c-text;
+  }
+}
+
+.navLinkActive {
+  color: $c-accent-contrast;
+  background-color: $c-accent;
+
+  &:hover {
+    color: $c-accent-contrast;
+    background-color: $c-accent-hover;
+  }
+}
+
+.navIcon {
+  display: inline-flex;
+  justify-content: center;
+  width: 1.25rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: $space-5 $content-gutter;
+  padding-bottom: calc(#{$space-6} + env(safe-area-inset-bottom));
+}
+
+.content {
+  width: 100%;
+  max-width: $content-max;
+  margin-inline: auto;
+}
+
+// On phones the sidebar is a top bar, so collapsing hides everything except
+// the brand and the handle.
+.collapsed {
+  .nav,
+  .controls {
+    display: none;
+  }
+}
+
+// From tablet up the navigation is a permanent left column that can shrink to
+// a narrow rail. The handle sits astride the column's outer border.
+@include up($bp-md) {
+  .shell {
+    flex-direction: row;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    flex-shrink: 0;
+    width: $sidebar-width;
+    height: 100dvh;
+    border-right: 1px solid $c-border;
+    border-bottom: none;
+    transition: width $transition-fast;
+  }
+
+  .sidebarInner {
+    flex: 1;
+    padding: $space-5 $space-4;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .collapseHandle {
+    top: 50%;
+    right: 0;
+    width: 1.5rem;
+    height: 3rem;
+    border-radius: 999px;
+    background-color: $c-surface;
+    transform: translate(50%, -50%);
+  }
+
+  .tagline {
+    display: block;
+    flex-basis: 100%;
+  }
+
+  .nav {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .controls {
+    margin-top: auto;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .main {
+    padding: $space-6 $content-gutter;
+  }
+
+  .collapsed {
+    width: calc(#{$touch-target} + #{$space-4});
+
+    .sidebarInner {
+      align-items: center;
+      padding-inline: $space-2;
+    }
+
+    .brandRow {
+      flex-direction: column;
+      gap: $space-2;
+    }
+
+    .brand {
+      margin-right: 0;
+      font-size: $text-base;
+    }
+
+    .tagline {
+      display: none;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+    }
+
+    .navLink {
+      justify-content: center;
+      width: $touch-target;
+      padding: 0;
+    }
+
+    .navLabel {
+      display: none;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+    }
+  }
+}

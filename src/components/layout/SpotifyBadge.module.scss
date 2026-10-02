@@ -1,0 +1,51 @@
+.badge {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  min-width: 0;
+  min-height: $row-height;
+  padding: 0 $space-2;
+  border: 1px solid $c-border;
+  border-radius: $radius-sm;
+  background-color: $c-bg;
+  font-size: $text-xs;
+  color: $c-text-muted;
+}
+
+.compact {
+  justify-content: center;
+  padding: 0;
+
+  .label {
+    display: none;
+  }
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.online {
+  background-color: $c-positive;
+}
+
+.pending {
+  background-color: $c-text-subtle;
+}
+
+.offline {
+  background-color: $c-negative;
+}
+
+.label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.srOnly {
+  @include visually-hidden;
+}

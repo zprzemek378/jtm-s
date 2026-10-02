@@ -1,0 +1,92 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $space-7;
+  max-width: 48rem;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $space-4;
+  padding-block: $space-5;
+}
+
+.title {
+  font-size: clamp(2.25rem, 1.5rem + 5vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.lead {
+  font-size: $text-lg;
+  color: $c-text-muted;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3.25rem;
+  padding: 0 $space-6;
+  border-radius: $radius-sm;
+  background-color: $c-accent;
+  color: $c-accent-contrast;
+  font-size: $text-lg;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $c-accent-hover;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.sectionTitle {
+  font-size: $text-xl;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-3;
+  color: $c-text;
+}
+
+.stepNumber {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background-color: $c-surface-accent;
+  border: 1px solid $c-border-accent;
+  font-size: $text-sm;
+  font-weight: 700;
+}
+
+.requirements {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding-left: $space-6;
+  margin: 0;
+  color: $c-text-muted;
+}

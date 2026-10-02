@@ -1,0 +1,29 @@
+.message {
+  font-size: $text-base;
+  color: $c-text;
+}
+
+.hint {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+// A router link that carries the weight of a primary button.
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: $touch-target;
+  padding: 0 $space-4;
+  border-radius: $radius-sm;
+  background-color: $c-accent;
+  color: $c-accent-contrast;
+  font-size: $text-sm;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $c-accent-hover;
+  }
+}

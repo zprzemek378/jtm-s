@@ -1,0 +1,15 @@
+.keycap {
+  @include keycap;
+}
+
+.empty {
+  border-bottom-width: 1px;
+  border-style: dashed;
+  background-color: transparent;
+  color: $c-text-subtle;
+  font-weight: 400;
+}
+
+.muted {
+  opacity: 0.45;
+}

@@ -1,0 +1,55 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-3;
+  width: 100%;
+  padding: $space-3;
+  border: 1px solid $c-border;
+  border-radius: $radius-sm;
+  background-color: $c-surface;
+  text-align: left;
+  transition: background-color $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    border-color: $c-border-strong;
+    background-color: $c-surface-alt;
+  }
+}
+
+.optionActive {
+  border-color: $c-border-accent;
+  background-color: $c-surface-accent;
+
+  &:hover {
+    background-color: $c-surface-accent;
+  }
+}
+
+.mark {
+  flex-shrink: 0;
+  color: $c-accent;
+  font-size: $text-sm;
+  line-height: 1.4;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  min-width: 0;
+}
+
+.name {
+  font-size: $text-sm;
+}
+
+.description {
+  font-size: $text-xs;
+  color: $c-text-muted;
+}

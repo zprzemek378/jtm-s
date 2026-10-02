@@ -1,0 +1,105 @@
+.probe {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.intro {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+}
+
+.live {
+  font-size: $text-sm;
+  font-weight: 600;
+  color: $c-positive;
+}
+
+.idle {
+  font-size: $text-sm;
+  color: $c-text-subtle;
+}
+
+.stats {
+  font-size: $text-sm;
+  font-variant-numeric: tabular-nums;
+  color: $c-text;
+}
+
+.log {
+  display: flex;
+  flex-direction: column;
+  max-height: 20rem;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  border: 1px solid $c-border;
+  border-radius: $radius-sm;
+  list-style: none;
+}
+
+.row,
+.head {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-2 $space-3;
+  border-bottom: 1px solid $c-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.head {
+  position: sticky;
+  top: 0;
+  background-color: $c-surface-alt;
+  font-size: $text-xs;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $c-text-subtle;
+}
+
+.cellKey {
+  flex: 0 0 5rem;
+}
+
+.cellCode {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: $text-xs;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: $c-text-muted;
+}
+
+.cellGap {
+  flex: 0 0 7rem;
+  font-size: $text-sm;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+// A gap the clock could not resolve, marked so it is not read as a real zero.
+.sameTick {
+  color: $c-text-subtle;
+  font-style: italic;
+}
+
+.keycap {
+  @include keycap;
+}
+
+.note {
+  font-size: $text-xs;
+  color: $c-text-muted;
+}

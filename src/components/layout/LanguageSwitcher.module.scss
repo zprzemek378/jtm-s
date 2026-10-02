@@ -1,0 +1,12 @@
+.group {
+  display: inline-flex;
+  gap: $space-1;
+  padding: 2px;
+  border: 1px solid $c-border;
+  border-radius: $radius-sm;
+  background-color: $c-bg;
+}
+
+.compact {
+  flex-direction: column;
+}

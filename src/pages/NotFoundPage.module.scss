@@ -1,0 +1,23 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $space-3;
+  padding: $space-6 $content-gutter;
+}
+
+.code {
+  font-size: $text-sm;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $c-text-muted;
+}
+
+.title {
+  font-size: clamp(1.5rem, 1.1rem + 2vw, 2.25rem);
+}
+
+.message {
+  color: $c-text-muted;
+}

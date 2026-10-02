@@ -1,0 +1,66 @@
+import { copyFileSync } from 'node:fs'
+import { fileURLToPath, URL } from 'node:url'
+
+import react from '@vitejs/plugin-react'
+import { defineConfig, type Plugin } from 'vite'
+
+/**
+ * GitHub Pages serves 404.html for any path it cannot find and performs no SPA
+ * rewrite, so a deep link such as /game would otherwise fail. Shipping the app
+ * as 404.html too makes the router pick the route up from the URL.
+ */
+function githubPagesSpaFallback(): Plugin {
+  let outDir = 'dist'
+
+  return {
+    name: 'github-pages-spa-fallback',
+    apply: 'build',
+    configResolved(config) {
+      outDir = config.build.outDir
+    },
+    closeBundle() {
+      copyFileSync(`${outDir}/index.html`, `${outDir}/404.html`)
+    },
+  }
+}
+
+export default defineConfig({
+  // A project page lives under /<repo>/, so CI passes VITE_BASE.
+  // Local dev and local builds stay at the root.
+  base: process.env.VITE_BASE ?? '/',
+  plugins: [react(), githubPagesSpaFallback()],
+  server: {
+    // Spotify rejects `localhost` in redirect URIs and accepts the loopback
+    // address instead, so dev has to be reachable at http://127.0.0.1:5173.
+    host: '127.0.0.1',
+    port: 5173,
+  },
+  build: {
+    /**
+     * Audio is always emitted as its own file, never inlined into the bundle.
+     *
+     * Vite inlines small assets as base64 by default, and the placeholder
+     * sounds are small enough to qualify — which would put them in the
+     * JavaScript and, worse, take away the content hash that guarantees a
+     * replaced sound is never served from a stale cache.
+     */
+    assetsInlineLimit: (filePath: string) =>
+      /\.(mp3|ogg|wav|m4a)$/i.test(filePath) ? false : undefined,
+  },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // The styles directory is on the load path, so any .scss file
+        // can simply write `@use 'core'`.
+        loadPaths: [fileURLToPath(new URL('./src/styles', import.meta.url))],
+        // Variables, mixins and functions available in every .scss file.
+        additionalData: "@use 'core' as *;\n",
+      },
+    },
+  },
+})

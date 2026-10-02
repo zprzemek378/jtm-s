@@ -1,0 +1,42 @@
+.panel {
+  @include card;
+
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2 $space-3;
+  padding: $space-3 $space-4;
+  border-bottom: 1px solid $c-border;
+}
+
+.title {
+  margin-right: auto;
+  font-size: $text-lg;
+  font-weight: 600;
+}
+
+.meta {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  padding: $space-4;
+}
+
+.bodyFlush {
+  padding: 0;
+}

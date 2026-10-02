@@ -1,0 +1,144 @@
+@import url("https://fonts.googleapis.com/css2?family=Happy+Monkey&family=Maven+Pro:wght@400..900&display=swap");
+
+// Reset plus theme values. The active theme is set by ThemeProvider
+// through the `data-theme` attribute on <html>.
+
+:root {
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --row-height: 2.75rem;
+}
+
+// A mouse or trackpad hits a much smaller target than a finger, so dense lists
+// can be tightened without hurting usability.
+@media (pointer: fine) {
+  :root {
+    --row-height: 1.875rem;
+  }
+}
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --c-bg: #f7f8fa;
+  --c-surface: #ffffff;
+  --c-surface-alt: #eef1f5;
+  --c-border: #e2e5ea;
+  --c-border-strong: #c6ccd6;
+  --c-text: #14181f;
+  --c-text-muted: #5c6675;
+  --c-text-subtle: #8a94a3;
+  --c-accent: #11833c;
+  --c-accent-hover: #0c6a30;
+  --c-accent-contrast: #ffffff;
+  --c-shadow: rgb(15 23 42 / 8%);
+  // Tinted surface that marks a block as behaving differently from its siblings.
+  --c-surface-accent: #e8f5ec;
+  --c-border-accent: #b2ddc2;
+
+  --c-positive: #11833c;
+  --c-positive-surface: #e8f5ec;
+  --c-negative: #c0392f;
+  --c-negative-surface: #fceceb;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --c-bg: #0f1216;
+  --c-surface: #171b22;
+  --c-surface-alt: #212733;
+  --c-border: #2b323d;
+  --c-border-strong: #3d4654;
+  --c-text: #e8ebef;
+  --c-text-muted: #9aa4b2;
+  --c-text-subtle: #6f7a89;
+  --c-accent: #1db954;
+  --c-accent-hover: #35d268;
+  --c-accent-contrast: #08140c;
+  --c-shadow: rgb(0 0 0 / 45%);
+  --c-surface-accent: #14241a;
+  --c-border-accent: #2c5138;
+
+  --c-positive: #1db954;
+  --c-positive-surface: #14241a;
+  --c-negative: #f0776c;
+  --c-negative-surface: #2b1a19;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  font-family: $font-sans;
+  font-size: $text-base;
+  line-height: 1.5;
+  color: $c-text;
+  background-color: $c-bg;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: $c-accent;
+}
+
+:focus-visible {
+  @include focus-ring;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

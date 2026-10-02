@@ -1,0 +1,50 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-4;
+  background-color: rgb(0 0 0 / 45%);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  width: min(36rem, 100%);
+  max-height: min(85dvh, 44rem);
+  padding: $space-4;
+  border: 1px solid $c-border-strong;
+  border-radius: $radius-md;
+  background-color: $c-surface;
+  box-shadow: 0 16px 48px $c-shadow;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+}
+
+.title {
+  margin-right: auto;
+  font-size: $text-lg;
+  font-weight: 600;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: $space-2;
+}

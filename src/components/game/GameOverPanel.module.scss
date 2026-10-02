@@ -1,0 +1,72 @@
+.panel {
+  @include card;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-5;
+  padding: $space-7 $content-gutter;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: $text-sm;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $c-text-muted;
+}
+
+.headline {
+  font-size: clamp(2rem, 1.4rem + 3vw, 3rem);
+  color: $c-accent;
+}
+
+.results {
+  width: min(28rem, 100%);
+  padding: $space-4;
+  border: 1px solid $c-border;
+  border-radius: $radius-md;
+  background-color: $c-bg;
+}
+
+.resultsLabel {
+  display: block;
+  margin-bottom: $space-3;
+  font-size: $text-xs;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $c-text-subtle;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  text-align: left;
+}
+
+.place {
+  width: 1.5rem;
+  color: $c-text-muted;
+  font-variant-numeric: tabular-nums;
+}
+
+.name {
+  margin-right: auto;
+  font-weight: 600;
+}
+
+.score {
+  font-variant-numeric: tabular-nums;
+  color: $c-text-muted;
+}

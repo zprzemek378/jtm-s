@@ -1,0 +1,44 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.track {
+  width: 100%;
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background-color: $c-surface-alt;
+}
+
+.trackTall {
+  height: 0.875rem;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 200ms ease, background-color $transition-fast;
+}
+
+.instant {
+  transition: background-color $transition-fast;
+}
+
+.accent {
+  background-color: $c-accent;
+}
+
+.warning {
+  background-color: $c-negative;
+}
+
+.label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2 $space-4;
+  font-size: $text-sm;
+  color: $c-text-muted;
+  font-variant-numeric: tabular-nums;
+}

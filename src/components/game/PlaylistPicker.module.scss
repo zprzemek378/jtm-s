@@ -1,0 +1,183 @@
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  max-height: 22rem;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  width: 100%;
+  padding: $space-2;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  background-color: transparent;
+  text-align: left;
+  transition: background-color $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    background-color: $c-surface-alt;
+  }
+}
+
+.itemActive {
+  border-color: $c-border-accent;
+  background-color: $c-surface-accent;
+
+  &:hover {
+    background-color: $c-surface-accent;
+  }
+}
+
+// Spotify will not hand over the contents of someone else's playlist, so the
+// row stays visible for orientation but cannot be chosen.
+.itemBlocked {
+  cursor: not-allowed;
+  opacity: 0.45;
+
+  &:hover {
+    background-color: transparent;
+  }
+}
+
+// The tick that marks a playlist as part of the selection. It keeps its width
+// when empty, so the rows do not shift as playlists are picked.
+.check {
+  flex-shrink: 0;
+  width: 1rem;
+  color: $c-accent;
+  font-weight: 700;
+  text-align: center;
+}
+
+.chosenList {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.chosenRow {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-2 $space-3;
+  border: 1px solid $c-border;
+  border-radius: $radius-sm;
+  background-color: $c-bg;
+
+  .itemText {
+    margin-right: auto;
+  }
+}
+
+.cover {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: $radius-sm;
+  object-fit: cover;
+}
+
+.coverFallback {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: $radius-sm;
+  background-color: $c-surface-alt;
+  color: $c-text-subtle;
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.itemName {
+  overflow: hidden;
+  font-size: $text-sm;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.itemMeta {
+  font-size: $text-xs;
+  color: $c-text-muted;
+}
+
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: $space-3;
+}
+
+.linkInput {
+  flex: 1 1 18rem;
+}
+
+.selected {
+  display: flex;
+  flex-direction: column;
+}
+
+.selectedName {
+  font-size: $text-lg;
+}
+
+.summary {
+  font-size: $text-lg;
+  font-weight: 600;
+  color: $c-text;
+}
+
+.note {
+  font-size: $text-xs;
+  color: $c-text-muted;
+}
+
+.empty {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.error {
+  font-size: $text-sm;
+  color: $c-negative;
+}
+
+// Offered after the selection is cleared, and stays until the host picks
+// something else — a timer would race whoever is still reading it.
+.undoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-2 $space-3;
+  border: 1px solid $c-border-accent;
+  border-radius: $radius-sm;
+  background-color: $c-surface-accent;
+  font-size: $text-sm;
+
+  span {
+    margin-right: auto;
+  }
+}

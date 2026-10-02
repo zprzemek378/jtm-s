@@ -1,0 +1,104 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-2;
+  min-height: $touch-target;
+  padding: 0 $space-4;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  font-size: $text-sm;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color $transition-fast, border-color $transition-fast,
+    color $transition-fast;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.primary {
+  color: $c-accent-contrast;
+  background-color: $c-accent;
+
+  &:hover:not(:disabled) {
+    background-color: $c-accent-hover;
+  }
+}
+
+.secondary {
+  color: $c-text;
+  background-color: $c-surface;
+  border-color: $c-border;
+
+  &:hover:not(:disabled) {
+    background-color: $c-surface-alt;
+    border-color: $c-border-strong;
+  }
+}
+
+.ghost {
+  color: $c-text-muted;
+  background-color: transparent;
+
+  &:hover:not(:disabled) {
+    color: $c-text;
+    background-color: $c-surface-alt;
+  }
+}
+
+.positive {
+  color: $c-positive;
+  background-color: $c-positive-surface;
+  border-color: $c-positive;
+
+  &:hover:not(:disabled) {
+    color: $c-accent-contrast;
+    background-color: $c-positive;
+  }
+}
+
+.negative {
+  color: $c-negative;
+  background-color: $c-negative-surface;
+  border-color: $c-negative;
+
+  &:hover:not(:disabled) {
+    color: $c-accent-contrast;
+    background-color: $c-negative;
+  }
+}
+
+.active {
+  color: $c-accent-contrast;
+  background-color: $c-accent;
+  border-color: $c-accent;
+
+  &:hover:not(:disabled) {
+    color: $c-accent-contrast;
+    background-color: $c-accent-hover;
+  }
+}
+
+.small {
+  min-height: 2rem;
+  padding: 0 $space-3;
+  font-size: $text-xs;
+}
+
+.large {
+  min-height: 3.25rem;
+  padding: 0 $space-6;
+  font-size: $text-lg;
+}
+
+.block {
+  width: 100%;
+}
+
+.iconOnly {
+  min-width: $touch-target;
+  padding: 0;
+}

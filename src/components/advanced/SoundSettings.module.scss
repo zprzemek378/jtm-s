@@ -1,0 +1,10 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.hint {
+  font-size: $text-xs;
+  color: $c-text-muted;
+}

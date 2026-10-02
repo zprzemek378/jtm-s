@@ -1,0 +1,29 @@
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-3;
+}
+
+.spinner {
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 2px solid $c-border-strong;
+  border-top-color: $c-accent;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+.label {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.labelHidden {
+  @include visually-hidden;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}

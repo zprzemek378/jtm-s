@@ -1,0 +1,42 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+}
+
+.title {
+  font-size: clamp(1.75rem, 1.3rem + 2vw, 2.5rem);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.summaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+}
+
+.summary {
+  margin-right: auto;
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.problem {
+  font-size: $text-sm;
+  color: $c-negative;
+}
+
+.error {
+  padding: $space-3 $space-4;
+  border: 1px solid $c-negative;
+  border-radius: $radius-sm;
+  background-color: $c-negative-surface;
+  font-size: $text-sm;
+  color: $c-negative;
+}

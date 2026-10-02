@@ -1,0 +1,80 @@
+.board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: $space-3;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding: $space-3;
+  border: 1px solid color-mix(in oklab, hsl(var(--player-hue) 70% 45%) 45%, $c-border);
+  border-radius: $radius-md;
+  background-color: color-mix(in oklab, hsl(var(--player-hue) 70% 45%) 10%, $c-surface);
+  transition: opacity $transition-fast, border-color $transition-fast,
+    box-shadow $transition-fast;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
+.name {
+  margin-right: auto;
+  overflow: hidden;
+  font-size: $text-sm;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.score {
+  display: flex;
+  align-items: baseline;
+  gap: $space-2;
+}
+
+// Money is longer than a point was, so the figure gets its own line when the
+// card is narrow.
+.score {
+  flex-wrap: wrap;
+}
+
+.scoreValue {
+  font-size: $text-xl;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.scoreTotal {
+  font-size: $text-xs;
+  color: $c-text-muted;
+}
+
+.badge {
+  font-size: $text-xs;
+  font-weight: 500;
+  color: $c-negative;
+}
+
+// Dimmed for the round the player is sitting out, which is also the signal that
+// their key will not respond.
+.suspended {
+  opacity: 0.45;
+}
+
+.buzzed {
+  border-color: $c-accent;
+  box-shadow: 0 0 0 2px $c-accent;
+}
+
+.winner {
+  border-color: $c-positive;
+  box-shadow: 0 0 0 2px $c-positive;
+}

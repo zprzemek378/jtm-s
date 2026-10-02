@@ -1,0 +1,33 @@
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+}
+
+.target {
+  margin-right: auto;
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.suspended {
+  font-size: $text-sm;
+  color: $c-negative;
+  text-align: center;
+}
+
+.scoresTitle {
+  margin-bottom: $space-3;
+  font-size: $text-xs;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $c-text-subtle;
+}
