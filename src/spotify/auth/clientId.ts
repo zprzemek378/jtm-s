@@ -10,17 +10,6 @@ import { STORAGE_KEYS, readStoredString, removeStored, writeStoredString } from 
  */
 const CLIENT_ID_PATTERN = /^[0-9a-f]{32}$/i
 
-/**
- * How many Spotify applications a build can carry.
- *
- * Fixed rather than open-ended because Vite replaces `import.meta.env.VITE_*`
- * textually while building: a computed name such as
- * ``import.meta.env[`VITE_SPOTIFY_CLIENT_ID_${n}`]`` is left untouched and reads
- * as undefined at runtime. Every variable therefore has to be spelled out, and
- * five covers what anyone is likely to juggle.
- */
-export const CLIENT_SLOT_COUNT = 5
-
 /** One Spotify application built into this bundle. */
 export type BundledClient = {
   /** 1-based, matching the suffix in the variable names. */
@@ -30,29 +19,33 @@ export type BundledClient = {
   name: string | null
 }
 
-// Spelled out one by one, for the reason given on CLIENT_SLOT_COUNT.
-const RAW_SLOTS: readonly { id?: string; name?: string }[] = [
-  {
-    id: import.meta.env.VITE_SPOTIFY_CLIENT_ID_1,
-    name: import.meta.env.VITE_SPOTIFY_CLIENT_NAME_1,
-  },
-  {
-    id: import.meta.env.VITE_SPOTIFY_CLIENT_ID_2,
-    name: import.meta.env.VITE_SPOTIFY_CLIENT_NAME_2,
-  },
-  {
-    id: import.meta.env.VITE_SPOTIFY_CLIENT_ID_3,
-    name: import.meta.env.VITE_SPOTIFY_CLIENT_NAME_3,
-  },
-  {
-    id: import.meta.env.VITE_SPOTIFY_CLIENT_ID_4,
-    name: import.meta.env.VITE_SPOTIFY_CLIENT_NAME_4,
-  },
-  {
-    id: import.meta.env.VITE_SPOTIFY_CLIENT_ID_5,
-    name: import.meta.env.VITE_SPOTIFY_CLIENT_NAME_5,
-  },
-]
+/**
+ * Every Spotify application this build carries, read from the environment.
+ *
+ * Numbered from 1 upwards with no ceiling: the search stops at the first number
+ * that is not set at all, so the variables have to run without a gap. An entry
+ * left empty still counts as set and simply does not survive the check below —
+ * that is what lets `.env.example` ship blank slots.
+ *
+ * Read from the environment object rather than by name, because a name written
+ * out in full is the only kind Vite substitutes while building — so a loop is
+ * the one way to avoid fixing the count in the code.
+ */
+const ENV = import.meta.env as unknown as Record<string, string | undefined>
+
+function readSlots(): { slot: number; id?: string; name?: string }[] {
+  const slots: { slot: number; id?: string; name?: string }[] = []
+
+  for (let slot = 1; ; slot += 1) {
+    const id = ENV[`VITE_SPOTIFY_CLIENT_ID_${slot}`]
+
+    if (id === undefined) {
+      return slots
+    }
+
+    slots.push({ slot, id, name: ENV[`VITE_SPOTIFY_CLIENT_NAME_${slot}`] })
+  }
+}
 
 /**
  * Works out the usable applications: the slots in order, skipping gaps,
@@ -62,7 +55,7 @@ const RAW_SLOTS: readonly { id?: string; name?: string }[] = [
  * themselves are substituted while building and cannot be varied at runtime.
  */
 export function buildBundledClients(
-  slots: readonly { id?: string; name?: string }[],
+  slots: readonly { slot?: number; id?: string; name?: string }[],
 ): readonly BundledClient[] {
   const clients: BundledClient[] = []
   const seen = new Set<string>()
@@ -84,14 +77,14 @@ export function buildBundledClients(
   }
 
   slots.forEach((raw, index) => {
-    add(index + 1, raw.id, raw.name)
+    add(raw.slot ?? index + 1, raw.id, raw.name)
   })
 
   return clients
 }
 
 /** The applications this build carries. */
-export const BUNDLED_CLIENTS: readonly BundledClient[] = buildBundledClients(RAW_SLOTS)
+export const BUNDLED_CLIENTS: readonly BundledClient[] = buildBundledClients(readSlots())
 
 export function isValidClientId(value: string): boolean {
   return CLIENT_ID_PATTERN.test(value.trim())

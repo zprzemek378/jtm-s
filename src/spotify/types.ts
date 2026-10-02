@@ -108,3 +108,10 @@ export class SpotifyError extends Error {
     this.status = status
   }
 }
+
+/** A snapshot of where playback stands, as the SDK reports it. */
+export type PlaybackPosition = {
+  positionMs: number
+  durationMs: number
+  paused: boolean
+}

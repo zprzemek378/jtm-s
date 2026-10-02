@@ -23,15 +23,14 @@ import {
   writeStoredJson,
 } from '@/storage/localStorage'
 
+import { toPlayableFromTrack, type AccessTokenProvider } from './catalogue'
 import {
   fetchQueue,
   RepeatState,
   setRepeat,
   setShuffle,
   startContextPlayback,
-  toPlayableFromTrack,
-  type AccessTokenProvider,
-} from './api'
+} from './playback/viaRest'
 import {
   emptySkipCounts,
   SkipReason,

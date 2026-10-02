@@ -17,23 +17,10 @@ interface ViteTypeOptions {
  * `MODE`, `DEV`, `PROD` and `SSR`.
  */
 interface ImportMetaEnv {
-  /**
-   * Up to five Spotify applications to choose between in Settings, each a
-   * 32-character Client ID. Gaps are fine, and an entry of the wrong shape is
-   * ignored rather than offered.
-   */
-  readonly VITE_SPOTIFY_CLIENT_ID_1?: string
-  readonly VITE_SPOTIFY_CLIENT_ID_2?: string
-  readonly VITE_SPOTIFY_CLIENT_ID_3?: string
-  readonly VITE_SPOTIFY_CLIENT_ID_4?: string
-  readonly VITE_SPOTIFY_CLIENT_ID_5?: string
-
-  /** What each of those applications is called on screen. Optional. */
-  readonly VITE_SPOTIFY_CLIENT_NAME_1?: string
-  readonly VITE_SPOTIFY_CLIENT_NAME_2?: string
-  readonly VITE_SPOTIFY_CLIENT_NAME_3?: string
-  readonly VITE_SPOTIFY_CLIENT_NAME_4?: string
-  readonly VITE_SPOTIFY_CLIENT_NAME_5?: string
+  // The Spotify applications are deliberately absent. They are numbered from
+  // 1 upwards with no ceiling, which no interface can enumerate, so
+  // `auth/clientId.ts` reads them from the environment object by name. Nothing
+  // else in the application reaches for them directly.
 }
 
 /** The version from `package.json`, substituted in by Vite at build time. */

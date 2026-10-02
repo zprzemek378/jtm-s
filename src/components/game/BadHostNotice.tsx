@@ -1,5 +1,5 @@
 import { useLanguage } from '@/i18n/useLanguage'
-import { isRedirectHostAcceptable, loopbackAddress } from '@/spotify/config'
+import { isRedirectHostAcceptable, loopbackAddress } from '@/spotify/auth/clientId'
 
 import styles from './BadHostNotice.module.scss'
 

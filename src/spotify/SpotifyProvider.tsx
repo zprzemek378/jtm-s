@@ -8,9 +8,8 @@ import {
   fetchMyPlaylists,
   fetchPlaylist,
   fetchPlaylistTracks,
-  startTrackPlayback,
   type AccessTokenProvider,
-} from './api'
+} from './catalogue'
 import {
   AuthError,
   AuthErrorKind,
@@ -22,9 +21,11 @@ import {
   readTokens,
   refreshTokens,
   type StoredTokens,
-} from './auth'
-import { isRedirectHostAcceptable, resolveClientId } from './config'
-import { loadPlaybackSdk } from './loadPlaybackSdk'
+} from './auth/tokens'
+import { isRedirectHostAcceptable, resolveClientId } from './auth/clientId'
+import { loadPlaybackSdk } from './playback/loadPlaybackSdk'
+import { startTrackPlayback } from './playback/viaRest'
+import * as sdk from './playback/viaSdk'
 import { scanPlaylist as runScan, type ScanProgress } from './playlistScan'
 import {
   PlayerStatus,
@@ -33,7 +34,11 @@ import {
   type SpotifyContextValue,
   type SpotifyMessage,
 } from './SpotifyContext'
-import { SpotifyError, SpotifyErrorKind, type SpotifyUser } from './types'
+import {
+  SpotifyError,
+  SpotifyErrorKind,
+  type SpotifyUser,
+} from './types'
 
 const AUTH_ERROR_KEYS: Record<AuthErrorKind, SpotifyMessage['key']> = {
   [AuthErrorKind.Denied]: 'spotify.error.auth',
@@ -402,7 +407,7 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    await playerRef.current?.pause()
+    await sdk.pause(playerRef.current)
   }, [])
 
   const resume = useCallback(async () => {
@@ -410,8 +415,19 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    await playerRef.current?.resume()
+    await sdk.resume(playerRef.current)
   }, [])
+
+  const seek = useCallback(async (positionMs: number) => {
+    if (!hasPlayedRef.current) {
+      return
+    }
+
+    await sdk.seek(playerRef.current, positionMs)
+  }, [])
+
+  /** Costs no request: the SDK answers from the state it holds in this tab. */
+  const readPlayback = useCallback(() => sdk.readPlayback(playerRef.current), [])
 
   // Both reads need to know who is logged in: since February 2026 only the
   // owner's (or a collaborator's) playlists give up their contents.
@@ -483,6 +499,8 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       playTrackAt,
       pause,
       resume,
+      seek,
+      readPlayback,
       fetchPlaylists,
       fetchPlaylistById,
       fetchTracks,
@@ -500,9 +518,11 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       pause,
       playTrackAt,
       playerStatus,
+      readPlayback,
       refreshClientId,
       resume,
       scanPlaylist,
+      seek,
       status,
       user,
     ],
