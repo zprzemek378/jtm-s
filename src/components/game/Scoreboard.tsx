@@ -40,9 +40,14 @@ export function Scoreboard({
       {players.map((player) => {
         const isSuspended = suspended.includes(player.id)
         const isPending = pendingSuspended.includes(player.id)
+        // Dimmed the moment a ban is earned, not once the next round starts.
+        // The badge appears then too, and a card that still reads as fully in
+        // the game while announcing it is out of the next one is a mixed
+        // message at the exact moment the table is reading the standings.
+        const isOut = isSuspended || isPending
         const classNames = [
           styles.card,
-          isSuspended ? styles.suspended : null,
+          isOut ? styles.suspended : null,
           player.id === buzzedPlayerId ? styles.buzzed : null,
           player.id === winnerId ? styles.winner : null,
         ]
@@ -57,7 +62,7 @@ export function Scoreboard({
           >
             <div className={styles.head}>
               <span className={styles.name}>{player.name}</span>
-              <Keycap keyCode={player.keyCode} emptyLabel="—" muted={isSuspended} />
+              <Keycap keyCode={player.keyCode} emptyLabel="—" muted={isOut} />
             </div>
 
             <div className={styles.score}>

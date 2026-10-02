@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useGameSounds } from '@/audio/useGameSounds'
 import { formatMoney, upcomingDirectionHint } from '@/game/rewards'
 import { useCheatCode } from '@/hooks/useCheatCode'
-import { GamePhase, type GamePlayer, type GameRules } from '@/game/types'
+import { GamePhase, SuspensionReason, type GamePlayer, type GameRules } from '@/game/types'
 import { useGameSession } from '@/game/useGameSession'
 import { useLanguage } from '@/i18n/useLanguage'
 import type { PooledTrack } from '@/helpers/trackUnion'
@@ -65,8 +65,21 @@ export function GameBoard({
     )
   }
 
+  /**
+   * Who sits out, and for which round.
+   *
+   * While a round is being played that is whoever is sitting out of it. Once it
+   * is over and the screen is about the next one, it is whoever will sit out of
+   * that — the round just finished is done with, and saying who missed it reads
+   * as though they were still missing something.
+   */
+  const roundInPlay =
+    state.phase === GamePhase.Listening ||
+    state.phase === GamePhase.Buzzed ||
+    state.phase === GamePhase.Revealed
+  const suspension = roundInPlay ? state.suspension : state.pendingSuspension
   const suspendedNames = players
-    .filter((player) => state.suspension?.playerIds.includes(player.id) ?? false)
+    .filter((player) => suspension?.playerIds.includes(player.id) ?? false)
     .map((player) => player.name)
 
   return (
@@ -95,9 +108,9 @@ export function GameBoard({
           {/* One sentence however many are sitting out — several at once can
               only happen through edit mode, but it reads badly otherwise. */}
           {t(
-            `game.suspended.${state.suspension?.reason ?? 'wrong-answer'}${
-              suspendedNames.length > 1 ? 'Many' : ''
-            }`,
+            `game.suspended.${suspension?.reason ?? SuspensionReason.WrongAnswer}${
+              roundInPlay ? '' : 'Next'
+            }${suspendedNames.length > 1 ? 'Many' : ''}`,
             { names: suspendedNames.join(', ') },
           )}
         </p>
@@ -109,7 +122,11 @@ export function GameBoard({
           players={players}
           accounts={state.accounts}
           targetMoney={rules.targetMoney}
-          suspended={state.suspension?.playerIds ?? []}
+          // Only while the round is being played. Once it is over, the screen
+          // is about getting ready for the next one, and a card still marked
+          // for the round just finished reads as though that player were out of
+          // the coming one too.
+          suspended={roundInPlay ? (state.suspension?.playerIds ?? []) : []}
           pendingSuspended={state.pendingSuspension?.playerIds ?? []}
           buzzedPlayerId={state.buzzedPlayerId}
         />

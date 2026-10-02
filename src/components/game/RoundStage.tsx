@@ -306,11 +306,6 @@ export function RoundStage({
         <TrackScrubber />
         {upcomingLine ? <p className={styles.hint}>{upcomingLine}</p> : null}
 
-        {/* Only a plain wrong answer costs the next round. */}
-        {lastVerdict.verdict === Verdict.Incorrect ? (
-          <p className={styles.hint}>{t('game.verdictPenalty', { name })}</p>
-        ) : null}
-
         <Button large variant={ButtonVariant.Primary} onClick={session.nextRound}>
           {t('game.nextRound')}
         </Button>
