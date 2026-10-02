@@ -93,10 +93,19 @@ paska i jest podbijana na podstawie opisów commitów — zgodnie z **SemVer** i
 
 | typ commita | efekt | przykład |
 |---|---|---|
-| `fix:` | PATCH | `1.4.7` → `1.4.8` |
-| `feat:` | MINOR | `1.4.7` → `1.5.0` |
 | `feat!:` lub stopka `BREAKING CHANGE:` | MAJOR | `1.4.7` → `2.0.0` |
-| `chore:`, `docs:`, `ci:`, `test:`, `style:` | bez zmiany | — |
+| `feat:` | MINOR | `1.4.7` → `1.5.0` |
+| **wszystko inne** | PATCH | `1.4.7` → `1.4.8` |
+
+Trzeci wiersz jest dosłowny: `fix:`, `chore:`, `docs:`, opis bez przedrostka —
+każdy push na `main` dostaje nową wersję. Nie chodzi o schludną numerację, tylko
+o to, żeby **każdy opublikowany stan dało się nazwać**. Numer w rogu aplikacji
+zawsze identyfikuje dokładnie to, co działa, i do każdego z nich można wrócić
+jednym uruchomieniem workflow z jego taga.
+
+Gdyby część pushy publikowała się bez taga, numer na ekranie przestałby cokolwiek
+znaczyć, a powrót cofałby za daleko — do ostatniego wydania, gubiąc po drodze
+wszystko, co wyszło po nim.
 
 **Dzieje się to samo, przy każdym pushu na `main`** — czy to ze scalenia pull
 requesta, czy prosto z Twojego komputera. Workflow czyta commity od ostatniego
@@ -109,10 +118,8 @@ wszystko od ostatniego taga naraz i wybiera najwyższy znaleziony typ. Dwa
 `feat:` i jeden `fix:` w jednym pushu to jedno podbicie MINOR, choć w changelogu
 wylądują wszystkie trzy wpisy.
 
-Jeśli **nic** od ostatniego taga nie zasługuje na wersję — same `chore:`, `docs:`
-albo opisy bez przedrostka — krok wydania jest pomijany, a aplikacja i tak się
-publikuje. Bez tego zabezpieczenia poprawka literówki w README generowałaby nowe
-wydanie, bo narzędzie domyślnie podbija wtedy PATCH.
+Wydanie powstaje **wyłącznie na `main`**. Uruchomienie workflow z taga — czyli
+powrót do starszej wersji — publikuje tamten kod i nic poza tym.
 
 Przy scalaniu pull requesta ze squashem pamiętaj, że GitHub podpowiada tytuł
 PR-a, a nie commit konwencjonalny. To pole jest edytowalne w momencie scalania i
@@ -163,6 +170,32 @@ w logu pojawia się wyłącznie ich liczba, nigdy wartości.
 Po nieudanym wdrożeniu uruchamiaj **Run workflow**, a nie *Re-run all jobs* —
 ponowne uruchomienie tego samego przebiegu zostawia w nim dwa artefakty o nazwie
 `github-pages` i `actions/deploy-pages` odmawia publikacji.
+
+### Powrót do poprzedniej wersji
+
+Każde wydanie ma tag, więc powrót nie wymaga ani komputera z kodem, ani gita —
+wystarczy przeglądarka, choćby w telefonie:
+
+1. **Actions → Deploy to GitHub Pages → Run workflow**
+2. w „Use workflow from" wybierz **tag** zamiast gałęzi, na przykład `v1.0.1`
+3. **Run workflow**
+
+Zbuduje się i opublikuje kod z tego taga. Krok wydania sam się pominie: tag
+wskazuje na HEAD, więc nie ma nic nowego do podbicia, a dodatkowo wydanie jest
+zastrzeżone wyłącznie dla `main`.
+
+**Wymaga to jednorazowego ustawienia.** Środowisko `github-pages` domyślnie
+wpuszcza tylko gałąź domyślną i odrzuci taga komunikatem *„Tag … is not allowed
+to deploy to github-pages due to environment protection rules"*. W *Settings →
+Environments → github-pages → Deployment branches and tags* dodaj regułę: Ref
+type **Tag**, wzorzec **`v*`**. Warto zrobić to zawczasu i raz sprawdzić, że
+działa — ta furtka jest warta tyle, ile jej dostępność w momencie, gdy jest
+potrzebna.
+
+To rozwiązanie **doraźne**: `main` nadal zawiera wadliwy kod, więc najbliższy
+push opublikuje go z powrotem. Na spokojnie użyj przycisku **Revert** przy
+scalonym pull requeście i scal powstałego PR-a z tytułem zaczynającym się od
+`fix:` — bez tego przedrostka wersja nie drgnie, bo GitHub podpowiada „Revert …".
 
 `VITE_BASE` ustawia się automatycznie na `/<nazwa-repo>/`, a build kopiuje
 `index.html` do `404.html`, bo GitHub Pages nie przepisuje ścieżek dla SPA.

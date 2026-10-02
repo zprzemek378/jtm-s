@@ -36,31 +36,23 @@ jobs:
 
       - run: npm run lint
 
-      # Only feat, fix and anything breaking move the version. Without this
-      # check a release would be cut for a typo in the README, because the
-      # release tool falls back to a patch bump when it finds nothing.
-      - id: version
-        run: |
-          last=$(git describe --tags --abbrev=0 2>/dev/null || true)
-          range=${last:+$last..HEAD}
-          subjects=$(git log --format=%s ${range:-HEAD})
-          bodies=$(git log --format=%B ${range:-HEAD})
-
-          if echo "$subjects" | grep -qE '^(feat|fix)(\([^)]*\))?!?:' \
-            || echo "$subjects" | grep -qE '^[a-z]+(\([^)]*\))?!:' \
-            || echo "$bodies" | grep -qE '^BREAKING[ -]CHANGE:'; then
-            echo 'release=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'release=false' >> "$GITHUB_OUTPUT"
-            echo 'Nothing since the last tag earns a version; publishing as is.'
-          fi
-
-      # Runs before the build, so the version shown in the corner of the
-      # published app is the one just tagged rather than the previous one.
+      # Every push that publishes gets its own version, whatever its commits
+      # say: a breaking change moves the first number, a feature the second,
+      # anything else the third. The point is not tidy numbering but that every
+      # published state can be named — the version in the corner of the app
+      # always identifies exactly what is running, and every one of them can be
+      # redeployed from its tag if it turns out to be broken.
       #
-      # `[skip ci]` keeps this push from starting a second run: the deployment
-      # for these commits is the one already in progress here.
-      - if: steps.version.outputs.release == 'true'
+      # Runs before the build, so the version shown is the one just tagged
+      # rather than the previous one. `[skip ci]` keeps this push from starting
+      # a second run: the deployment for these commits is already in progress
+      # here.
+      #
+      # Only ever on main. Rolling back means running this workflow from an
+      # older tag, and a run started that way must publish that code and nothing
+      # else — it must not write a release commit, least of all onto a branch it
+      # is not even on.
+      - if: github.ref == 'refs/heads/main'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
