@@ -6,6 +6,8 @@
 // code verifier below plus the redirect URI allowlist in the Spotify Dashboard.
 
 import { SPOTIFY_ACCOUNTS_URL, SPOTIFY_SCOPES, TOKEN_REFRESH_MARGIN_MS } from '@/constants/spotify'
+
+import { Priority, schedule } from '../transport/queue'
 import {
   SESSION_KEYS,
   STORAGE_KEYS,
@@ -17,7 +19,7 @@ import {
   writeStoredJson,
 } from '@/storage/localStorage'
 
-import { redirectUri } from './config'
+import { redirectUri } from './clientId'
 
 export type StoredTokens = {
   accessToken: string
@@ -136,11 +138,16 @@ type TokenResponse = {
 
 /** Both the code exchange and the refresh post a form to the same endpoint. */
 async function requestTokens(body: URLSearchParams): Promise<StoredTokens> {
-  const response = await fetch(`${SPOTIFY_ACCOUNTS_URL}/api/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
-  })
+  const response = await schedule(
+    () =>
+    fetch(`${SPOTIFY_ACCOUNTS_URL}/api/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+      }),
+    // Nothing plays until this returns, so it goes ahead of catalogue reads.
+    { priority: Priority.Urgent },
+  )
 
   if (!response.ok) {
     throw new AuthError(

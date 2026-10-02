@@ -14,6 +14,7 @@ import { ProgressBar } from '../ui/ProgressBar'
 import { ProgressTone } from '../ui/progressTone'
 import { Spinner } from '../ui/Spinner'
 import { TrackCard } from './TrackCard'
+import { TrackScrubber } from './TrackScrubber'
 import styles from './RoundStage.module.scss'
 
 type RoundStageProps = {
@@ -302,6 +303,7 @@ export function RoundStage({
           })}
         </p>
         <TrackCard track={track} startPositionMs={startPositionMs} />
+        <TrackScrubber trackId={track.id} />
         {upcomingLine ? <p className={styles.hint}>{upcomingLine}</p> : null}
 
         {/* Only a plain wrong answer costs the next round. */}
@@ -322,6 +324,7 @@ export function RoundStage({
     <div className={styles.stage}>
       <p className={styles.eyebrow}>{t('game.timeUp')}</p>
       <TrackCard track={track} startPositionMs={startPositionMs} />
+      <TrackScrubber trackId={track.id} />
       {upcomingLine ? <p className={styles.hint}>{upcomingLine}</p> : null}
 
       <Button large variant={ButtonVariant.Primary} onClick={session.nextRound}>

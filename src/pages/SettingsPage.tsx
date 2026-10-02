@@ -32,7 +32,7 @@ import {
   selectedBundledClient,
   writeClientIdChoice,
   writeClientIdOverride,
-} from '@/spotify/config'
+} from '@/spotify/auth/clientId'
 import { SpotifyStatus } from '@/spotify/SpotifyContext'
 import { useSpotify } from '@/spotify/useSpotify'
 

@@ -67,34 +67,30 @@ jobs:
           npm run release -- --releaseCommitMessageFormat 'chore(release): {{currentTag}} [skip ci]'
           git push --follow-tags origin HEAD:main
 
+      # The application reads VITE_SPOTIFY_CLIENT_ID_1, _2 and so on until a
+      # number is missing, with no ceiling — so the workflow cannot name them
+      # one by one without putting the ceiling back. It copies across every
+      # secret whose name matches that pattern and nothing else: a secret called
+      # anything different, including the token this job runs with, is left
+      # behind. Values are never printed, only how many were found.
+      - name: Collect the Spotify applications
+        env:
+          ALL_SECRETS: ${{ toJSON(secrets) }}
+        run: |
+          node -e '
+            const all = JSON.parse(process.env.ALL_SECRETS);
+            const wanted = /^VITE_SPOTIFY_CLIENT_(ID|NAME)_[0-9]+$/;
+            const names = Object.keys(all).filter((name) => wanted.test(name)).sort();
+            const lines = names.map((name) => `${name}=${all[name]}`);
+            require("node:fs").writeFileSync(".env", lines.join("\n") + "\n");
+            console.log(`Found ${names.length} matching secrets.`);
+          '
+
       - run: npm run build
         env:
           # A project page is served from /<repo>/, so the asset base has to
           # match the repository name whatever it is called.
           VITE_BASE: /${{ github.event.repository.name }}/
-          # Add these under Settings -> Secrets and variables -> Actions, as
-          # repository secrets, named exactly as below — the same names the
-          # variables have, so there is nothing to translate in your head. A
-          # secret under the environment rather than the repository is invisible
-          # here, because this job declares no environment.
-          #
-          # They keep the Client IDs out of the source and out of the build log;
-          # the values still end up readable in the published bundle, which is
-          # expected for a PKCE public client.
-          #
-          # Only VITE_SPOTIFY_CLIENT_ID_1 is needed to deploy. A secret that is
-          # not set arrives as an empty string and is simply skipped, so unused
-          # slots cost nothing.
-          VITE_SPOTIFY_CLIENT_ID_1: ${{ secrets.VITE_SPOTIFY_CLIENT_ID_1 }}
-          VITE_SPOTIFY_CLIENT_NAME_1: ${{ secrets.VITE_SPOTIFY_CLIENT_NAME_1 }}
-          VITE_SPOTIFY_CLIENT_ID_2: ${{ secrets.VITE_SPOTIFY_CLIENT_ID_2 }}
-          VITE_SPOTIFY_CLIENT_NAME_2: ${{ secrets.VITE_SPOTIFY_CLIENT_NAME_2 }}
-          VITE_SPOTIFY_CLIENT_ID_3: ${{ secrets.VITE_SPOTIFY_CLIENT_ID_3 }}
-          VITE_SPOTIFY_CLIENT_NAME_3: ${{ secrets.VITE_SPOTIFY_CLIENT_NAME_3 }}
-          VITE_SPOTIFY_CLIENT_ID_4: ${{ secrets.VITE_SPOTIFY_CLIENT_ID_4 }}
-          VITE_SPOTIFY_CLIENT_NAME_4: ${{ secrets.VITE_SPOTIFY_CLIENT_NAME_4 }}
-          VITE_SPOTIFY_CLIENT_ID_5: ${{ secrets.VITE_SPOTIFY_CLIENT_ID_5 }}
-          VITE_SPOTIFY_CLIENT_NAME_5: ${{ secrets.VITE_SPOTIFY_CLIENT_NAME_5 }}
 
       - uses: actions/configure-pages@v5
 

@@ -3,7 +3,7 @@ import { createContext } from 'react'
 import type { TranslationKey } from '@/i18n/translations'
 
 import type { ScanProgress, ScanResult } from './playlistScan'
-import type { PlaylistSummary, PlaylistTracks, SpotifyUser } from './types'
+import type { PlaybackPosition, PlaylistSummary, PlaylistTracks, SpotifyUser } from './types'
 
 /** How far the connection to Spotify has got. */
 export const SpotifyStatus = {
@@ -59,6 +59,10 @@ export type SpotifyContextValue = {
   playTrackAt: (trackUri: string, positionMs: number) => Promise<void>
   pause: () => Promise<void>
   resume: () => Promise<void>
+  /** Jumps to a position in the track playing on our device. */
+  seek: (positionMs: number) => Promise<void>
+  /** Where playback stands right now, or null when nothing is loaded. */
+  readPlayback: () => Promise<PlaybackPosition | null>
 
   fetchPlaylists: () => Promise<readonly PlaylistSummary[]>
   fetchPlaylistById: (playlistId: string) => Promise<PlaylistSummary>

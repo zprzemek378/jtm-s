@@ -1,0 +1,39 @@
+.scrubber {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  width: 100%;
+  max-width: 32rem;
+}
+
+.range {
+  width: 100%;
+  height: $touch-target;
+  accent-color: $c-accent;
+  cursor: pointer;
+  background: none;
+}
+
+.readout {
+  display: flex;
+  justify-content: space-between;
+  font-size: $text-sm;
+  color: $c-text-muted;
+  font-variant-numeric: tabular-nums;
+}
+
+.total {
+  opacity: 0.8;
+}
+
+.guessRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2;
+}
+
+.guessHint {
+  font-size: $text-xs;
+  color: $c-text-muted;
+}
