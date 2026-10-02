@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.1](https://github.com/zprzemek378/jtm-s/compare/v1.0.0...v1.0.1) (2026-10-02)
+
+### Bug Fixes
+
+* stop the version competing with the controls for the sidebar's space ([9e7a124](https://github.com/zprzemek378/jtm-s/commit/9e7a1241698b92d39749ae163943772c4e0cd701))
+
 ## 1.0.0 (2026-10-02)
 
 ### Features
