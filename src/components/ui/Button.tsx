@@ -1,19 +1,19 @@
-import type { ButtonHTMLAttributes } from 'react'
+import type { ButtonHTMLAttributes } from "react";
 
-import { ButtonVariant } from './buttonVariant'
-import styles from './Button.module.scss'
+import { ButtonVariant } from "./buttonVariant";
+import styles from "./Button.module.scss";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: ButtonVariant
-  small?: boolean
+  variant?: ButtonVariant;
+  small?: boolean;
   /** Fills the width of its container — used for stacked choices. */
-  block?: boolean
-  iconOnly?: boolean
+  block?: boolean;
+  iconOnly?: boolean;
   /** Bigger hit area for the controls used mid-round. */
-  large?: boolean
+  large?: boolean;
   /** Highlights the button as the current choice (e.g. in the language switcher). */
-  active?: boolean
-}
+  active?: boolean;
+};
 
 export function Button({
   variant = ButtonVariant.Secondary,
@@ -23,7 +23,7 @@ export function Button({
   large = false,
   active = false,
   className,
-  type = 'button',
+  type = "button",
   ...rest
 }: ButtonProps) {
   const classNames = [
@@ -37,7 +37,7 @@ export function Button({
     className,
   ]
     .filter(Boolean)
-    .join(' ')
+    .join(" ");
 
-  return <button type={type} className={classNames} {...rest} />
+  return <button type={type} className={classNames} {...rest} />;
 }

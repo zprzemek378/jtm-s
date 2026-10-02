@@ -12,25 +12,17 @@
 // capped, cached, and gives up at the first sign of a rate limit rather than
 // retrying into one.
 
-import {
-  QUEUE_LOOKAHEAD,
-  SCAN_JUMP_DELAY_MS,
-  SCAN_MAX_JUMPS,
-} from '@/constants/spotify'
-import {
-  STORAGE_KEYS,
-  readStoredJson,
-  writeStoredJson,
-} from '@/storage/localStorage'
+import { QUEUE_LOOKAHEAD, SCAN_JUMP_DELAY_MS, SCAN_MAX_JUMPS } from "@/constants/spotify";
+import { STORAGE_KEYS, readStoredJson, writeStoredJson } from "@/storage/localStorage";
 
-import { toPlayableFromTrack, type AccessTokenProvider } from './catalogue'
+import { toPlayableFromTrack, type AccessTokenProvider } from "./catalogue";
 import {
   fetchQueue,
   RepeatState,
   setRepeat,
   setShuffle,
   startContextPlayback,
-} from './playback/viaRest'
+} from "./playback/viaRest";
 import {
   emptySkipCounts,
   SkipReason,
@@ -38,52 +30,52 @@ import {
   SpotifyErrorKind,
   type PlayableTrack,
   type PlaylistTracks,
-} from './types'
+} from "./types";
 
 export type ScanProgress = {
   /** Distinct playable tracks collected so far. */
-  collected: number
-  jump: number
-  maxJumps: number
-}
+  collected: number;
+  jump: number;
+  maxJumps: number;
+};
 
 export type ScanResult = PlaylistTracks & {
   /** True when the cap was reached before the playlist ran out. */
-  truncated: boolean
+  truncated: boolean;
   /** True when this came from a previous scan rather than the network. */
-  fromCache: boolean
-}
+  fromCache: boolean;
+};
 
 type CachedScan = {
-  scannedAt: number
-  truncated: boolean
-  tracks: readonly PlayableTrack[]
-}
+  scannedAt: number;
+  truncated: boolean;
+  tracks: readonly PlayableTrack[];
+};
 
-type ScanCache = Record<string, CachedScan>
+type ScanCache = Record<string, CachedScan>;
 
 export function readScanCache(playlistId: string): CachedScan | null {
-  return readStoredJson<ScanCache>(STORAGE_KEYS.scanCache)?.[playlistId] ?? null
+  return readStoredJson<ScanCache>(STORAGE_KEYS.scanCache)?.[playlistId] ?? null;
 }
 
 function writeScanCache(playlistId: string, entry: CachedScan): void {
-  const cache = readStoredJson<ScanCache>(STORAGE_KEYS.scanCache) ?? {}
+  const cache = readStoredJson<ScanCache>(STORAGE_KEYS.scanCache) ?? {};
 
-  writeStoredJson(STORAGE_KEYS.scanCache, { ...cache, [playlistId]: entry })
+  writeStoredJson(STORAGE_KEYS.scanCache, { ...cache, [playlistId]: entry });
 }
 
 export type ScanDependencies = {
-  getAccessToken: AccessTokenProvider
-  deviceId: string
+  getAccessToken: AccessTokenProvider;
+  deviceId: string;
   /** Silences our own device for the duration of the walk. */
-  mute: () => Promise<void>
+  mute: () => Promise<void>;
   /** Puts the host's own volume back — not full volume. */
-  restoreVolume: () => Promise<void>
-  pause: () => Promise<void>
-}
+  restoreVolume: () => Promise<void>;
+  pause: () => Promise<void>;
+};
 
 function sleep(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds))
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 /**
@@ -92,7 +84,7 @@ function sleep(milliseconds: number): Promise<void> {
  */
 function rethrowIfRateLimited(failure: unknown): void {
   if (failure instanceof SpotifyError && failure.kind === SpotifyErrorKind.RateLimited) {
-    throw failure
+    throw failure;
   }
 }
 
@@ -107,7 +99,7 @@ export async function scanPlaylist(
   playlistId: string,
   onProgress?: (progress: ScanProgress) => void,
 ): Promise<ScanResult> {
-  const cached = readScanCache(playlistId)
+  const cached = readScanCache(playlistId);
 
   if (cached) {
     return {
@@ -115,84 +107,88 @@ export async function scanPlaylist(
       skipped: emptySkipCounts(),
       truncated: cached.truncated,
       fromCache: true,
-    }
+    };
   }
 
-  const { getAccessToken, deviceId } = deps
-  const found = new Map<string, PlayableTrack>()
+  const { getAccessToken, deviceId } = deps;
+  const found = new Map<string, PlayableTrack>();
   // Consecutive queue reads overlap, so an unusable entry would otherwise be
   // counted once per read it appears in. Keyed by uri, each is counted once.
-  const skippedByUri = new Map<string, SkipReason>()
-  const contextUri = `spotify:playlist:${playlistId}`
-  let position = 0
-  let truncated = true
+  const skippedByUri = new Map<string, SkipReason>();
+  const contextUri = `spotify:playlist:${playlistId}`;
+  let position = 0;
+  let truncated = true;
 
-  await deps.mute()
+  await deps.mute();
 
   try {
     // Shuffle off keeps the positions meaningful; repeat on the context stops
     // autoplay from padding the queue with tracks that are not on the playlist.
-    await setShuffle(getAccessToken, deviceId, false)
-    await setRepeat(getAccessToken, deviceId, RepeatState.Context)
+    await setShuffle(getAccessToken, deviceId, false);
+    await setRepeat(getAccessToken, deviceId, RepeatState.Context);
 
     for (let jump = 0; jump < SCAN_MAX_JUMPS; jump += 1) {
-      await startContextPlayback(getAccessToken, deviceId, contextUri, position)
-      await sleep(SCAN_JUMP_DELAY_MS)
+      await startContextPlayback(getAccessToken, deviceId, contextUri, position);
+      await sleep(SCAN_JUMP_DELAY_MS);
 
-      const snapshot = await fetchQueue(getAccessToken)
-      const before = found.size
+      const snapshot = await fetchQueue(getAccessToken);
+      const before = found.size;
 
       for (const entry of snapshot.entries) {
-        const playable = toPlayableFromTrack(entry)
+        const playable = toPlayableFromTrack(entry);
 
-        if (typeof playable === 'string') {
-          const uri = (entry as { uri?: string })?.uri ?? `unknown-${skippedByUri.size}`
+        if (typeof playable === "string") {
+          const uri = (entry as { uri?: string })?.uri ?? `unknown-${skippedByUri.size}`;
 
           if (!skippedByUri.has(uri)) {
-            skippedByUri.set(uri, playable)
+            skippedByUri.set(uri, playable);
           }
 
-          continue
+          continue;
         }
 
         if (found.has(playable.id)) {
-          continue
+          continue;
         }
 
-        found.set(playable.id, playable)
+        found.set(playable.id, playable);
       }
 
-      onProgress?.({ collected: found.size, jump: jump + 1, maxJumps: SCAN_MAX_JUMPS })
+      onProgress?.({
+        collected: found.size,
+        jump: jump + 1,
+        maxJumps: SCAN_MAX_JUMPS,
+      });
 
       // Nothing new means the queue wrapped around to the start, so the whole
       // playlist has been seen.
       if (found.size === before) {
-        truncated = false
-        break
+        truncated = false;
+        break;
       }
 
-      position += snapshot.entries.length || QUEUE_LOOKAHEAD + 1
+      position += snapshot.entries.length || QUEUE_LOOKAHEAD + 1;
     }
   } catch (failure) {
-    rethrowIfRateLimited(failure)
+    rethrowIfRateLimited(failure);
 
-    throw failure
+    throw failure;
   } finally {
-    await deps.pause().catch(() => undefined)
-    await deps.restoreVolume().catch(() => undefined)
-    await setRepeat(getAccessToken, deviceId, RepeatState.Off).catch(() => undefined)
+    await deps.pause().catch(() => undefined);
+    await deps.restoreVolume().catch(() => undefined);
+    await setRepeat(getAccessToken, deviceId, RepeatState.Off).catch(() => undefined);
   }
 
-  const tracks = [...found.values()]
-  const skipped = emptySkipCounts()
+  const tracks = [...found.values()];
+  const skipped = emptySkipCounts();
 
   for (const reason of skippedByUri.values()) {
-    skipped[reason] += 1
+    skipped[reason] += 1;
   }
 
   // A truncated walk is still cached: rescanning costs the same requests and
   // would hit the same cap. The screen says it is incomplete.
-  writeScanCache(playlistId, { scannedAt: Date.now(), truncated, tracks })
+  writeScanCache(playlistId, { scannedAt: Date.now(), truncated, tracks });
 
-  return { tracks, skipped, truncated, fromCache: false }
+  return { tracks, skipped, truncated, fromCache: false };
 }

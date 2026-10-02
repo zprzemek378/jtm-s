@@ -1,11 +1,11 @@
 export const ButtonVariant = {
-  Primary: 'primary',
-  Secondary: 'secondary',
-  Ghost: 'ghost',
+  Primary: "primary",
+  Secondary: "secondary",
+  Ghost: "ghost",
   /** The "correct answer" verdict. */
-  Positive: 'positive',
+  Positive: "positive",
   /** The "wrong answer" verdict. */
-  Negative: 'negative',
-} as const
+  Negative: "negative",
+} as const;
 
-export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant]
+export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];

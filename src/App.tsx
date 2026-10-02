@@ -1,8 +1,8 @@
-import { RouterProvider } from 'react-router-dom'
+import { RouterProvider } from "react-router-dom";
 
-import { LanguageProvider } from './i18n/LanguageProvider'
-import { router } from './routes/router'
-import { ThemeProvider } from './theme/ThemeProvider'
+import { LanguageProvider } from "./i18n/LanguageProvider";
+import { router } from "./routes/router";
+import { ThemeProvider } from "./theme/ThemeProvider";
 
 export default function App() {
   return (
@@ -11,5 +11,5 @@ export default function App() {
         <RouterProvider router={router} />
       </LanguageProvider>
     </ThemeProvider>
-  )
+  );
 }

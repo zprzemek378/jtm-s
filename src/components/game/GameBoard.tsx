@@ -1,31 +1,31 @@
-import { useState } from 'react'
+import { useState } from "react";
 
-import { useGameSounds } from '@/audio/useGameSounds'
-import { formatMoney, upcomingDirectionHint } from '@/game/rewards'
-import { useCheatCode } from '@/hooks/useCheatCode'
-import { GamePhase, SuspensionReason, type GamePlayer, type GameRules } from '@/game/types'
-import { useGameSession } from '@/game/useGameSession'
-import { useLanguage } from '@/i18n/useLanguage'
-import type { PooledTrack } from '@/helpers/trackUnion'
+import { useGameSounds } from "@/audio/useGameSounds";
+import { formatMoney, upcomingDirectionHint } from "@/game/rewards";
+import { useCheatCode } from "@/hooks/useCheatCode";
+import { GamePhase, SuspensionReason, type GamePlayer, type GameRules } from "@/game/types";
+import { useGameSession } from "@/game/useGameSession";
+import { useLanguage } from "@/i18n/useLanguage";
+import type { PooledTrack } from "@/helpers/trackUnion";
 
-import { ConfirmDialog } from '../advanced/ConfirmDialog'
-import { Button } from '../ui/Button'
-import { ButtonVariant } from '../ui/buttonVariant'
-import { EditModeDialog } from './EditModeDialog'
-import { GameOverPanel } from './GameOverPanel'
-import { RoundStage } from './RoundStage'
-import { Scoreboard } from './Scoreboard'
-import styles from './GameBoard.module.scss'
+import { ConfirmDialog } from "../advanced/ConfirmDialog";
+import { Button } from "../ui/Button";
+import { ButtonVariant } from "../ui/buttonVariant";
+import { EditModeDialog } from "./EditModeDialog";
+import { GameOverPanel } from "./GameOverPanel";
+import { RoundStage } from "./RoundStage";
+import { Scoreboard } from "./Scoreboard";
+import styles from "./GameBoard.module.scss";
 
 type GameBoardProps = {
-  players: readonly GamePlayer[]
-  rules: GameRules
-  tracks: readonly PooledTrack[]
+  players: readonly GamePlayer[];
+  rules: GameRules;
+  tracks: readonly PooledTrack[];
   /** Identifies the playlist selection, for the no-repeats history. */
-  historyKey: string
+  historyKey: string;
   /** Leaves the game and returns to the setup screen. */
-  onChangeSettings: () => void
-}
+  onChangeSettings: () => void;
+};
 
 /** A running game: the round on stage, the scoreboard under it. */
 export function GameBoard({
@@ -35,23 +35,23 @@ export function GameBoard({
   historyKey,
   onChangeSettings,
 }: GameBoardProps) {
-  const { t } = useLanguage()
-  const session = useGameSession(players, rules, tracks, historyKey)
+  const { t } = useLanguage();
+  const session = useGameSession(players, rules, tracks, historyKey);
 
-  useGameSounds(session)
-  const [confirmingAbandon, setConfirmingAbandon] = useState(false)
-  const [editing, setEditing] = useState(false)
+  useGameSounds(session);
+  const [confirmingAbandon, setConfirmingAbandon] = useState(false);
+  const [editing, setEditing] = useState(false);
 
-  const { state } = session
+  const { state } = session;
 
   // The hidden way in. Listened for only while the game waits on the host, and
   // never while a dialog is already open.
   const betweenRounds =
     state.phase === GamePhase.TimedOut ||
     state.phase === GamePhase.Judged ||
-    state.phase === GamePhase.Tied
+    state.phase === GamePhase.Tied;
 
-  useCheatCode(betweenRounds && !editing && !confirmingAbandon, () => setEditing(true))
+  useCheatCode(betweenRounds && !editing && !confirmingAbandon, () => setEditing(true));
 
   if (state.phase === GamePhase.Finished) {
     return (
@@ -62,7 +62,7 @@ export function GameBoard({
         onPlayAgain={session.restart}
         onChangeSettings={onChangeSettings}
       />
-    )
+    );
   }
 
   /**
@@ -76,22 +76,22 @@ export function GameBoard({
   const roundInPlay =
     state.phase === GamePhase.Listening ||
     state.phase === GamePhase.Buzzed ||
-    state.phase === GamePhase.Revealed
-  const suspension = roundInPlay ? state.suspension : state.pendingSuspension
+    state.phase === GamePhase.Revealed;
+  const suspension = roundInPlay ? state.suspension : state.pendingSuspension;
   const suspendedNames = players
     .filter((player) => suspension?.playerIds.includes(player.id) ?? false)
-    .map((player) => player.name)
+    .map((player) => player.name);
 
   return (
     <div className={styles.board}>
       <header className={styles.header}>
         <span className={styles.target}>
-          {t('game.target', { target: formatMoney(rules.targetMoney) })}
-          {' · '}
+          {t("game.target", { target: formatMoney(rules.targetMoney) })}
+          {" · "}
           {t(`mode.${rules.mode}.name`)}
         </span>
         <Button small variant={ButtonVariant.Ghost} onClick={() => setConfirmingAbandon(true)}>
-          {t('game.abandon')}
+          {t("game.abandon")}
         </Button>
       </header>
 
@@ -109,15 +109,15 @@ export function GameBoard({
               only happen through edit mode, but it reads badly otherwise. */}
           {t(
             `game.suspended.${suspension?.reason ?? SuspensionReason.WrongAnswer}${
-              roundInPlay ? '' : 'Next'
-            }${suspendedNames.length > 1 ? 'Many' : ''}`,
-            { names: suspendedNames.join(', ') },
+              roundInPlay ? "" : "Next"
+            }${suspendedNames.length > 1 ? "Many" : ""}`,
+            { names: suspendedNames.join(", ") },
           )}
         </p>
       ) : null}
 
-      <section aria-label={t('game.scores')}>
-        <h2 className={styles.scoresTitle}>{t('game.scores')}</h2>
+      <section aria-label={t("game.scores")}>
+        <h2 className={styles.scoresTitle}>{t("game.scores")}</h2>
         <Scoreboard
           players={players}
           accounts={state.accounts}
@@ -139,8 +139,8 @@ export function GameBoard({
           suspendedNext={state.pendingSuspension?.playerIds ?? []}
           targetMoney={rules.targetMoney}
           onApply={(accounts, suspendedNext) => {
-            session.applyEdit(accounts, suspendedNext)
-            setEditing(false)
+            session.applyEdit(accounts, suspendedNext);
+            setEditing(false);
           }}
           onCancel={() => setEditing(false)}
         />
@@ -149,15 +149,15 @@ export function GameBoard({
       {confirmingAbandon ? (
         <ConfirmDialog
           destructive
-          title={t('game.abandon')}
-          message={t('game.abandonConfirm')}
-          confirmLabel={t('game.abandonConfirmYes')}
-          cancelLabel={t('common.cancel')}
-          closeLabel={t('common.close')}
+          title={t("game.abandon")}
+          message={t("game.abandonConfirm")}
+          confirmLabel={t("game.abandonConfirmYes")}
+          cancelLabel={t("common.cancel")}
+          closeLabel={t("common.close")}
           onConfirm={onChangeSettings}
           onCancel={() => setConfirmingAbandon(false)}
         />
       ) : null}
     </div>
-  )
+  );
 }

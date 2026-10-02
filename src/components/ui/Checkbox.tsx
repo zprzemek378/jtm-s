@@ -1,18 +1,18 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from "react";
 
-import styles from './Checkbox.module.scss'
+import styles from "./Checkbox.module.scss";
 
 type CheckboxProps = {
-  checked: boolean
+  checked: boolean;
   /** Indeterminate state — only some of the child items are selected. */
-  indeterminate?: boolean
-  onChange: (checked: boolean) => void
-  label: ReactNode
+  indeterminate?: boolean;
+  onChange: (checked: boolean) => void;
+  label: ReactNode;
   /** Renders the label in bold (e.g. for parent nodes in a tree). */
-  strong?: boolean
-  disabled?: boolean
-  className?: string
-}
+  strong?: boolean;
+  disabled?: boolean;
+  className?: string;
+};
 
 export function Checkbox({
   checked,
@@ -23,15 +23,15 @@ export function Checkbox({
   disabled = false,
   className,
 }: CheckboxProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const id = useId()
+  const inputRef = useRef<HTMLInputElement>(null);
+  const id = useId();
 
   useEffect(() => {
     if (inputRef.current) {
       // The indeterminate state cannot be set from JSX — only on the DOM element.
-      inputRef.current.indeterminate = indeterminate && !checked
+      inputRef.current.indeterminate = indeterminate && !checked;
     }
-  }, [checked, indeterminate])
+  }, [checked, indeterminate]);
 
   const classNames = [
     styles.wrapper,
@@ -40,7 +40,7 @@ export function Checkbox({
     className,
   ]
     .filter(Boolean)
-    .join(' ')
+    .join(" ");
 
   return (
     <label className={classNames} htmlFor={id}>
@@ -55,5 +55,5 @@ export function Checkbox({
       />
       <span className={styles.label}>{label}</span>
     </label>
-  )
+  );
 }

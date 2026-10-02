@@ -5,19 +5,19 @@ import {
   MONEY_STEP,
   REWARD_MODES,
   RewardMode,
-} from '@/game/rewards'
-import { useLanguage } from '@/i18n/useLanguage'
+} from "@/game/rewards";
+import { useLanguage } from "@/i18n/useLanguage";
 
-import styles from './ModePicker.module.scss'
+import styles from "./ModePicker.module.scss";
 
 type ModePickerProps = {
-  value: RewardMode
-  onChange: (mode: RewardMode) => void
-}
+  value: RewardMode;
+  onChange: (mode: RewardMode) => void;
+};
 
 /** How the stake behaves — chosen once, before the game starts. */
 export function ModePicker({ value, onChange }: ModePickerProps) {
-  const { t } = useLanguage()
+  const { t } = useLanguage();
 
   const describe = (mode: RewardMode) =>
     t(`mode.${mode}.description`, {
@@ -25,10 +25,10 @@ export function ModePicker({ value, onChange }: ModePickerProps) {
       min: formatMoney(MONEY_MIN),
       max: formatMoney(MONEY_MAX),
       step: formatMoney(MONEY_STEP),
-    })
+    });
 
   return (
-    <div className={styles.list} role="radiogroup" aria-label={t('setup.mode')}>
+    <div className={styles.list} role="radiogroup" aria-label={t("setup.mode")}>
       {REWARD_MODES.map((mode) => (
         <button
           key={mode}
@@ -39,7 +39,7 @@ export function ModePicker({ value, onChange }: ModePickerProps) {
           onClick={() => onChange(mode)}
         >
           <span className={styles.mark} aria-hidden="true">
-            {mode === value ? '●' : '○'}
+            {mode === value ? "●" : "○"}
           </span>
           <span className={styles.text}>
             <strong className={styles.name}>{t(`mode.${mode}.name`)}</strong>
@@ -48,5 +48,5 @@ export function ModePicker({ value, onChange }: ModePickerProps) {
         </button>
       ))}
     </div>
-  )
+  );
 }

@@ -116,7 +116,5 @@ export const SOUND_CHOICES: Record<SoundEvent, readonly SoundChoice[]> = {
   [SoundEvent.TimeUp]: [{ chance: 1, file: "dj-airhorn.mp3" }],
 
   // Ten seconds long, so it is cut when the table leaves the results.
-  [SoundEvent.GameOver]: [
-    { chance: 1, file: "directed-by.mp3", cutShort: true },
-  ],
+  [SoundEvent.GameOver]: [{ chance: 1, file: "directed-by.mp3", cutShort: true }],
 };

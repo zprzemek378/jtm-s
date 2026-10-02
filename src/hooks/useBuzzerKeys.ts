@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from "react";
 
-import type { GamePlayer, PlayerId } from '@/game/types'
-import { isTextEntryTarget } from '@/helpers/keys'
-import { pressTime } from '@/helpers/keyboardLog'
+import type { GamePlayer, PlayerId } from "@/game/types";
+import { isTextEntryTarget } from "@/helpers/keys";
+import { pressTime } from "@/helpers/keyboardLog";
 
 /**
  * Listens on the whole document for the players' keys.
@@ -20,42 +20,42 @@ export function useBuzzerKeys(
    */
   onBuzz: (playerId: PlayerId, at: number) => void,
 ): void {
-  const onBuzzRef = useRef(onBuzz)
+  const onBuzzRef = useRef(onBuzz);
 
   useEffect(() => {
-    onBuzzRef.current = onBuzz
-  }, [onBuzz])
+    onBuzzRef.current = onBuzz;
+  }, [onBuzz]);
 
   useEffect(() => {
     if (!active) {
-      return
+      return;
     }
 
-    const byKeyCode = new Map(players.map((player) => [player.keyCode, player.id]))
+    const byKeyCode = new Map(players.map((player) => [player.keyCode, player.id]));
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.repeat) {
-        return
+        return;
       }
 
       // Never hijack a key while somebody is typing into a field. A slider or a
       // checkbox is not typing, so those must not silence the game.
       if (isTextEntryTarget(event.target)) {
-        return
+        return;
       }
 
-      const playerId = byKeyCode.get(event.code)
+      const playerId = byKeyCode.get(event.code);
 
       if (playerId === undefined) {
-        return
+        return;
       }
 
-      event.preventDefault()
-      onBuzzRef.current(playerId, pressTime(event.timeStamp, performance.now()).at)
-    }
+      event.preventDefault();
+      onBuzzRef.current(playerId, pressTime(event.timeStamp, performance.now()).at);
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener("keydown", handleKeyDown);
 
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [active, players])
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [active, players]);
 }

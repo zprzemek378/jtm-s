@@ -16,14 +16,14 @@ import {
   MIN_PLAYERS,
   MIN_ROUND_SECONDS,
   MIN_TARGET_MONEY,
-} from '@/constants/gameRules'
-import { STORAGE_KEYS, readStoredJson } from '@/storage/localStorage'
+} from "@/constants/gameRules";
+import { STORAGE_KEYS, readStoredJson } from "@/storage/localStorage";
 
-import { DEFAULT_REWARD_MODE, isRewardMode } from './rewards'
-import type { GameRules, GameSetup, PlayerDraft } from './types'
+import { DEFAULT_REWARD_MODE, isRewardMode } from "./rewards";
+import type { GameRules, GameSetup, PlayerDraft } from "./types";
 
 export function createPlayerDraft(): PlayerDraft {
-  return { id: crypto.randomUUID(), name: '', keyCode: null }
+  return { id: crypto.randomUUID(), name: "", keyCode: null };
 }
 
 export function createDefaultSetup(): GameSetup {
@@ -33,38 +33,33 @@ export function createDefaultSetup(): GameSetup {
     roundSeconds: DEFAULT_ROUND_SECONDS,
     answerSeconds: DEFAULT_ANSWER_SECONDS,
     mode: DEFAULT_REWARD_MODE,
-  }
+  };
 }
 
 function isPlayerDraft(value: unknown): value is PlayerDraft {
-  if (typeof value !== 'object' || value === null) {
-    return false
+  if (typeof value !== "object" || value === null) {
+    return false;
   }
 
-  const draft = value as Partial<PlayerDraft>
+  const draft = value as Partial<PlayerDraft>;
 
   return (
-    typeof draft.id === 'string' &&
-    typeof draft.name === 'string' &&
-    (draft.keyCode === null || typeof draft.keyCode === 'string')
-  )
+    typeof draft.id === "string" &&
+    typeof draft.name === "string" &&
+    (draft.keyCode === null || typeof draft.keyCode === "string")
+  );
 }
 
 /** Keeps a stored number usable, whatever an older version wrote there. */
-export function clampSetting(
-  value: unknown,
-  min: number,
-  max: number,
-  fallback: number,
-): number {
-  return typeof value === 'number' && Number.isFinite(value)
+export function clampSetting(value: unknown, min: number, max: number, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value)
     ? Math.min(max, Math.max(min, Math.round(value)))
-    : fallback
+    : fallback;
 }
 
 /** Every field of a stored setup is checked; anything odd falls back. */
 export function normaliseSetup(stored: unknown): GameSetup {
-  const setup = stored as Partial<GameSetup> | null
+  const setup = stored as Partial<GameSetup> | null;
 
   if (
     !setup ||
@@ -72,7 +67,7 @@ export function normaliseSetup(stored: unknown): GameSetup {
     setup.players.length < MIN_PLAYERS ||
     !setup.players.every(isPlayerDraft)
   ) {
-    return createDefaultSetup()
+    return createDefaultSetup();
   }
 
   return {
@@ -96,11 +91,11 @@ export function normaliseSetup(stored: unknown): GameSetup {
       DEFAULT_ANSWER_SECONDS,
     ),
     mode: isRewardMode(setup.mode) ? setup.mode : DEFAULT_REWARD_MODE,
-  }
+  };
 }
 
 export function readStoredSetup(): GameSetup {
-  return normaliseSetup(readStoredJson<unknown>(STORAGE_KEYS.gameSetup))
+  return normaliseSetup(readStoredJson<unknown>(STORAGE_KEYS.gameSetup));
 }
 
 /**
@@ -117,5 +112,5 @@ export function toGameRules(setup: GameSetup, tieThresholdMs: number | null): Ga
     targetMoney: setup.targetMoney,
     mode: setup.mode,
     tieThresholdMs,
-  }
+  };
 }

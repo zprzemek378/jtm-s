@@ -11,71 +11,71 @@
  * would fire the host's controls instead of buzzing.
  */
 export const RESERVED_KEY_CODES: readonly string[] = [
-  'Escape',
-  'Tab',
-  'Enter',
-  'NumpadEnter',
-  'Space',
-  'Backspace',
-]
+  "Escape",
+  "Tab",
+  "Enter",
+  "NumpadEnter",
+  "Space",
+  "Backspace",
+];
 
 /** Codes whose label cannot be derived by stripping a prefix. */
 const KEY_LABELS: Record<string, string> = {
-  Minus: '-',
-  Equal: '=',
-  BracketLeft: '[',
-  BracketRight: ']',
-  Backslash: '\\',
-  Semicolon: ';',
+  Minus: "-",
+  Equal: "=",
+  BracketLeft: "[",
+  BracketRight: "]",
+  Backslash: "\\",
+  Semicolon: ";",
   Quote: "'",
-  Backquote: '`',
-  Comma: ',',
-  Period: '.',
-  Slash: '/',
-  ArrowUp: '↑',
-  ArrowDown: '↓',
-  ArrowLeft: '←',
-  ArrowRight: '→',
-  ShiftLeft: 'Shift L',
-  ShiftRight: 'Shift R',
-  ControlLeft: 'Ctrl L',
-  ControlRight: 'Ctrl R',
-  AltLeft: 'Alt L',
-  AltRight: 'Alt R',
-  Backspace: 'Backspace',
-  Delete: 'Del',
-  NumpadAdd: 'Num +',
-  NumpadSubtract: 'Num -',
-  NumpadMultiply: 'Num *',
-  NumpadDivide: 'Num /',
-  NumpadDecimal: 'Num .',
-}
+  Backquote: "`",
+  Comma: ",",
+  Period: ".",
+  Slash: "/",
+  ArrowUp: "↑",
+  ArrowDown: "↓",
+  ArrowLeft: "←",
+  ArrowRight: "→",
+  ShiftLeft: "Shift L",
+  ShiftRight: "Shift R",
+  ControlLeft: "Ctrl L",
+  ControlRight: "Ctrl R",
+  AltLeft: "Alt L",
+  AltRight: "Alt R",
+  Backspace: "Backspace",
+  Delete: "Del",
+  NumpadAdd: "Num +",
+  NumpadSubtract: "Num -",
+  NumpadMultiply: "Num *",
+  NumpadDivide: "Num /",
+  NumpadDecimal: "Num .",
+};
 
 export function isReservedKeyCode(code: string): boolean {
-  return RESERVED_KEY_CODES.includes(code)
+  return RESERVED_KEY_CODES.includes(code);
 }
 
 /** A short, printable name for a physical key, e.g. `KeyQ` becomes `Q`. */
 export function keyCodeLabel(code: string): string {
-  const mapped = KEY_LABELS[code]
+  const mapped = KEY_LABELS[code];
 
   if (mapped) {
-    return mapped
+    return mapped;
   }
 
-  if (code.startsWith('Key')) {
-    return code.slice(3)
+  if (code.startsWith("Key")) {
+    return code.slice(3);
   }
 
-  if (code.startsWith('Digit')) {
-    return code.slice(5)
+  if (code.startsWith("Digit")) {
+    return code.slice(5);
   }
 
-  if (code.startsWith('Numpad')) {
-    return `Num ${code.slice(6)}`
+  if (code.startsWith("Numpad")) {
+    return `Num ${code.slice(6)}`;
   }
 
-  return code
+  return code;
 }
 
 /**
@@ -87,26 +87,26 @@ export function keyCodeLabel(code: string): string {
  * the host happened to leave focus on it.
  */
 const NON_TEXT_INPUT_TYPES = [
-  'range',
-  'checkbox',
-  'radio',
-  'button',
-  'submit',
-  'reset',
-  'color',
-  'file',
-  'image',
-]
+  "range",
+  "checkbox",
+  "radio",
+  "button",
+  "submit",
+  "reset",
+  "color",
+  "file",
+  "image",
+];
 
 /** Whether a key press belongs to whatever is being typed into. */
 export function isTextEntryTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) {
-    return false
+    return false;
   }
 
   if (target.isContentEditable || target instanceof HTMLTextAreaElement) {
-    return true
+    return true;
   }
 
-  return target instanceof HTMLInputElement && !NON_TEXT_INPUT_TYPES.includes(target.type)
+  return target instanceof HTMLInputElement && !NON_TEXT_INPUT_TYPES.includes(target.type);
 }

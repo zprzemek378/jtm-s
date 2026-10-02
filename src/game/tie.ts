@@ -6,35 +6,35 @@
 // the browser put on the events themselves, which is the only record precise
 // enough to answer the question.
 
-import { roundInterval } from '@/helpers/keyboardLog'
+import { roundInterval } from "@/helpers/keyboardLog";
 
-import type { PlayerId } from './types'
+import type { PlayerId } from "./types";
 
 export type BuzzEntry = {
-  playerId: PlayerId
+  playerId: PlayerId;
   /** The event's own timestamp, in milliseconds since the page's time origin. */
-  at: number
-}
+  at: number;
+};
 
 export type BuzzOutcome =
   /** One player was first by a clear margin. */
-  | { kind: 'single'; playerId: PlayerId }
+  | { kind: "single"; playerId: PlayerId }
   /** Two or more were indistinguishable; nobody may answer. */
-  | { kind: 'tie'; playerIds: readonly PlayerId[] }
+  | { kind: "tie"; playerIds: readonly PlayerId[] };
 
 /** The earliest press per player, in the order they arrived. */
 function earliestPerPlayer(entries: readonly BuzzEntry[]): [PlayerId, number][] {
-  const earliest = new Map<PlayerId, number>()
+  const earliest = new Map<PlayerId, number>();
 
   for (const entry of entries) {
-    const known = earliest.get(entry.playerId)
+    const known = earliest.get(entry.playerId);
 
     if (known === undefined || entry.at < known) {
-      earliest.set(entry.playerId, entry.at)
+      earliest.set(entry.playerId, entry.at);
     }
   }
 
-  return [...earliest.entries()].sort(([, left], [, right]) => left - right)
+  return [...earliest.entries()].sort(([, left], [, right]) => left - right);
 }
 
 /**
@@ -64,28 +64,29 @@ export function resolveBuzz(
   thresholdMs: number | null,
 ): BuzzOutcome | null {
   if (entries.length === 0) {
-    return null
+    return null;
   }
 
-  const ordered = earliestPerPlayer(entries)
-  const [firstId] = ordered[0] as [PlayerId, number]
+  const ordered = earliestPerPlayer(entries);
+  const [firstId] = ordered[0] as [PlayerId, number];
 
   if (thresholdMs === null) {
-    return { kind: 'single', playerId: firstId }
+    return { kind: "single", playerId: firstId };
   }
 
-  const limit = roundInterval(thresholdMs)
-  const tied: PlayerId[] = [firstId]
+  const limit = roundInterval(thresholdMs);
+  const tied: PlayerId[] = [firstId];
 
   for (let index = 1; index < ordered.length; index += 1) {
-    const gap = (ordered[index] as [PlayerId, number])[1] - (ordered[index - 1] as [PlayerId, number])[1]
+    const gap =
+      (ordered[index] as [PlayerId, number])[1] - (ordered[index - 1] as [PlayerId, number])[1];
 
     if (roundInterval(gap) > limit) {
-      break
+      break;
     }
 
-    tied.push((ordered[index] as [PlayerId, number])[0])
+    tied.push((ordered[index] as [PlayerId, number])[0]);
   }
 
-  return tied.length > 1 ? { kind: 'tie', playerIds: tied } : { kind: 'single', playerId: firstId }
+  return tied.length > 1 ? { kind: "tie", playerIds: tied } : { kind: "single", playerId: firstId };
 }

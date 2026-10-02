@@ -7,11 +7,11 @@
 // that do travel as ordinary requests. Above this folder the difference should
 // not matter.
 
-import { Priority, schedule } from '../transport/queue'
-import type { PlaybackPosition } from '../types'
+import { Priority, schedule } from "../transport/queue";
+import type { PlaybackPosition } from "../types";
 
 /** The player, or null before it has been created. */
-export type Player = Spotify.Player | null
+export type Player = Spotify.Player | null;
 
 /**
  * Stops the music.
@@ -20,16 +20,22 @@ export type Player = Spotify.Player | null
  * expects silence at once, so this goes to the front of the queue.
  */
 export async function pause(player: Player): Promise<void> {
-  await schedule(async () => {
-    await player?.pause()
-  }, { priority: Priority.Urgent })
+  await schedule(
+    async () => {
+      await player?.pause();
+    },
+    { priority: Priority.Urgent },
+  );
 }
 
 /** Picks the snippet up where it was paused. */
 export async function resume(player: Player): Promise<void> {
-  await schedule(async () => {
-    await player?.resume()
-  }, { priority: Priority.Urgent })
+  await schedule(
+    async () => {
+      await player?.resume();
+    },
+    { priority: Priority.Urgent },
+  );
 }
 
 /**
@@ -42,20 +48,20 @@ export async function resume(player: Player): Promise<void> {
 export async function seek(player: Player, positionMs: number): Promise<void> {
   await schedule(
     async () => {
-      await player?.seek(Math.max(0, Math.round(positionMs)))
+      await player?.seek(Math.max(0, Math.round(positionMs)));
     },
-    { priority: Priority.Playback, coalesceKey: 'seek' },
-  )
+    { priority: Priority.Playback, coalesceKey: "seek" },
+  );
 }
 
 /** Sets the player's volume, from 0 to 1. */
 export async function setVolume(player: Player, volume: number): Promise<void> {
   await schedule(
     async () => {
-      await player?.setVolume(volume)
+      await player?.setVolume(volume);
     },
-    { priority: Priority.Playback, coalesceKey: 'volume' },
-  )
+    { priority: Priority.Playback, coalesceKey: "volume" },
+  );
 }
 
 /**
@@ -66,11 +72,15 @@ export async function setVolume(player: Player, volume: number): Promise<void> {
  * the scrubber to ask once a second.
  */
 export async function readPlayback(player: Player): Promise<PlaybackPosition | null> {
-  const state = await player?.getCurrentState()
+  const state = await player?.getCurrentState();
 
   if (!state) {
-    return null
+    return null;
   }
 
-  return { positionMs: state.position, durationMs: state.duration, paused: state.paused }
+  return {
+    positionMs: state.position,
+    durationMs: state.duration,
+    paused: state.paused,
+  };
 }

@@ -3,9 +3,9 @@
 // The weighting lives in `SOUND_CHOICES`, which is meant to be edited by hand;
 // everything here is the machinery that reads it.
 
-import { SOUND_CHOICES, type SoundChoice, type SoundEvent } from '@/constants/soundChoices'
+import { SOUND_CHOICES, type SoundChoice, type SoundEvent } from "@/constants/soundChoices";
 
-import { fileUrl } from './soundFiles'
+import { fileUrl } from "./soundFiles";
 
 /**
  * Draws one outcome from a weighted list.
@@ -21,24 +21,24 @@ export function pickChoice(
   choices: readonly SoundChoice[],
   random: () => number = Math.random,
 ): SoundChoice | null {
-  const total = choices.reduce((sum, choice) => sum + Math.max(0, choice.chance), 0)
+  const total = choices.reduce((sum, choice) => sum + Math.max(0, choice.chance), 0);
 
   if (total <= 0) {
-    return null
+    return null;
   }
 
-  let roll = random() * total
+  let roll = random() * total;
 
   for (const choice of choices) {
-    roll -= Math.max(0, choice.chance)
+    roll -= Math.max(0, choice.chance);
 
     if (roll < 0) {
-      return choice
+      return choice;
     }
   }
 
   // Only reachable through floating-point drift at the very top of the range.
-  return choices[choices.length - 1] ?? null
+  return choices[choices.length - 1] ?? null;
 }
 
 /**
@@ -49,11 +49,8 @@ export function pickChoice(
  * matches no file. The last of those is a typo, and the Settings screen lists
  * it as missing rather than letting it pass unnoticed.
  */
-export function pickSoundUrl(
-  event: SoundEvent,
-  random: () => number = Math.random,
-): string | null {
-  const choice = pickChoice(SOUND_CHOICES[event] ?? [], random)
+export function pickSoundUrl(event: SoundEvent, random: () => number = Math.random): string | null {
+  const choice = pickChoice(SOUND_CHOICES[event] ?? [], random);
 
-  return choice?.file ? fileUrl(choice.file) : null
+  return choice?.file ? fileUrl(choice.file) : null;
 }

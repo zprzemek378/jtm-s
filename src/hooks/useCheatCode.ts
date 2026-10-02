@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from "react";
 
-import { advanceCheat } from '@/game/cheatCode'
-import { isTextEntryTarget } from '@/helpers/keys'
+import { advanceCheat } from "@/game/cheatCode";
+import { isTextEntryTarget } from "@/helpers/keys";
 
 /**
  * Watches for a typed code and calls back when it completes.
@@ -10,38 +10,38 @@ import { isTextEntryTarget } from '@/helpers/keys'
  * listener that ate keystrokes would be noticeable, which rather defeats it.
  */
 export function useCheatCode(active: boolean, onUnlock: () => void): void {
-  const onUnlockRef = useRef(onUnlock)
+  const onUnlockRef = useRef(onUnlock);
 
   useEffect(() => {
-    onUnlockRef.current = onUnlock
-  }, [onUnlock])
+    onUnlockRef.current = onUnlock;
+  }, [onUnlock]);
 
   useEffect(() => {
     if (!active) {
-      return
+      return;
     }
 
-    let matched = 0
+    let matched = 0;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) {
-        return
+        return;
       }
 
       if (isTextEntryTarget(event.target)) {
-        return
+        return;
       }
 
-      const progress = advanceCheat(matched, event.key)
-      matched = progress.matched
+      const progress = advanceCheat(matched, event.key);
+      matched = progress.matched;
 
       if (progress.unlocked) {
-        onUnlockRef.current()
+        onUnlockRef.current();
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener("keydown", handleKeyDown);
 
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [active])
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [active]);
 }

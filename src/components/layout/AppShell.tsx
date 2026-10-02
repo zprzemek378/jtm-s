@@ -1,6 +1,6 @@
-import { SpotifyProvider } from '@/spotify/SpotifyProvider'
+import { SpotifyProvider } from "@/spotify/SpotifyProvider";
 
-import { AppLayout } from './AppLayout'
+import { AppLayout } from "./AppLayout";
 
 /**
  * The route element for everything inside the app. The Spotify provider sits
@@ -13,5 +13,5 @@ export function AppShell() {
     <SpotifyProvider>
       <AppLayout />
     </SpotifyProvider>
-  )
+  );
 }

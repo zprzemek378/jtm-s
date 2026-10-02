@@ -5,10 +5,10 @@
 // `transport/request.ts`; the shapes Spotify answers with and their conversion
 // live in `transport/responses.ts`. Playback commands are in `playback/`.
 
-import { PLAYLIST_PAGE_SIZE } from '@/constants/spotify'
+import { PLAYLIST_PAGE_SIZE } from "@/constants/spotify";
 
-import { Priority } from './transport/queue'
-import { request, type AccessTokenProvider } from './transport/request'
+import { Priority } from "./transport/queue";
+import { request, type AccessTokenProvider } from "./transport/request";
 import {
   toPlayableTrack,
   toPlaylistSummary,
@@ -17,7 +17,7 @@ import {
   type ApiTrack,
   type ApiTrackPage,
   type ApiUserResponse,
-} from './transport/responses'
+} from "./transport/responses";
 import {
   emptySkipCounts,
   SkipReason,
@@ -25,29 +25,29 @@ import {
   type PlaylistSummary,
   type PlaylistTracks,
   type SpotifyUser,
-} from './types'
+} from "./types";
 
-export type { AccessTokenProvider }
+export type { AccessTokenProvider };
 
 /**
  * Maps a bare track object — the shape the queue returns — with the same rules
  * the playlist reader applies, so a scanned playlist is filtered identically.
  */
 export function toPlayableFromTrack(track: unknown): PlayableTrack | SkipReason {
-  return toPlayableTrack({ item: track as ApiTrack })
+  return toPlayableTrack({ item: track as ApiTrack });
 }
 
 export async function fetchCurrentUser(getAccessToken: AccessTokenProvider): Promise<SpotifyUser> {
-  const payload = (await request(getAccessToken, '/me', undefined, {
+  const payload = (await request(getAccessToken, "/me", undefined, {
     priority: Priority.Catalogue,
-  })) as ApiUserResponse
+  })) as ApiUserResponse;
 
   return {
     id: payload.id,
     displayName: payload.display_name?.trim() || payload.id,
     product: payload.product ?? null,
     country: payload.country ?? null,
-  }
+  };
 }
 
 /** Every playlist the account owns or follows, following the API's paging. */
@@ -55,11 +55,11 @@ export async function fetchMyPlaylists(
   getAccessToken: AccessTokenProvider,
   currentUserId: string,
 ): Promise<readonly PlaylistSummary[]> {
-  const summaries: PlaylistSummary[] = []
+  const summaries: PlaylistSummary[] = [];
   // Paging over a collection that can change under us hands the same playlist
   // out twice; duplicate ids would then collide as React keys.
-  const seenIds = new Set<string>()
-  let offset = 0
+  const seenIds = new Set<string>();
+  let offset = 0;
 
   for (;;) {
     const page = (await request(
@@ -67,22 +67,22 @@ export async function fetchMyPlaylists(
       `/me/playlists?limit=50&offset=${offset}`,
       undefined,
       { priority: Priority.Catalogue },
-    )) as { items?: (ApiPlaylist | null)[]; next?: string | null }
+    )) as { items?: (ApiPlaylist | null)[]; next?: string | null };
 
-    const items = page.items ?? []
+    const items = page.items ?? [];
 
     for (const item of items) {
       if (item && !seenIds.has(item.id)) {
-        seenIds.add(item.id)
-        summaries.push(toPlaylistSummary(item, currentUserId))
+        seenIds.add(item.id);
+        summaries.push(toPlaylistSummary(item, currentUserId));
       }
     }
 
     if (!page.next || items.length === 0) {
-      return summaries
+      return summaries;
     }
 
-    offset += items.length
+    offset += items.length;
   }
 }
 
@@ -94,12 +94,12 @@ export async function fetchPlaylist(
   const payload = (await request(
     getAccessToken,
     `/playlists/${playlistId}` +
-      '?fields=id,name,collaborative,owner(id,display_name),items(total),images',
+      "?fields=id,name,collaborative,owner(id,display_name),items(total),images",
     undefined,
     { priority: Priority.Catalogue },
-  )) as ApiPlaylist
+  )) as ApiPlaylist;
 
-  return toPlaylistSummary(payload, currentUserId)
+  return toPlaylistSummary(payload, currentUserId);
 }
 
 async function fetchTrackPage(
@@ -113,10 +113,10 @@ async function fetchTrackPage(
     offset: String(offset),
     // Trims the response to what the game needs; measured against the live API.
     fields: TRACK_FIELDS,
-  })
+  });
 
   if (market) {
-    params.set('market', market)
+    params.set("market", market);
   }
 
   // `/tracks` was replaced by `/items` in February 2026 and now answers 403.
@@ -125,7 +125,7 @@ async function fetchTrackPage(
     `/playlists/${playlistId}/items?${params.toString()}`,
     undefined,
     { priority: Priority.Catalogue },
-  )) as ApiTrackPage
+  )) as ApiTrackPage;
 }
 
 /**
@@ -141,37 +141,37 @@ export async function fetchPlaylistTracks(
   playlistId: string,
   market: string | null,
 ): Promise<PlaylistTracks> {
-  const tracks: PlayableTrack[] = []
-  const seenIds = new Set<string>()
-  const skipped = emptySkipCounts()
-  let offset = 0
+  const tracks: PlayableTrack[] = [];
+  const seenIds = new Set<string>();
+  const skipped = emptySkipCounts();
+  let offset = 0;
 
   for (;;) {
-    const page = await fetchTrackPage(getAccessToken, playlistId, offset, market)
-    const items = page.items ?? []
+    const page = await fetchTrackPage(getAccessToken, playlistId, offset, market);
+    const items = page.items ?? [];
 
     for (const entry of items) {
-      const playable = entry ? toPlayableTrack(entry) : SkipReason.Removed
+      const playable = entry ? toPlayableTrack(entry) : SkipReason.Removed;
 
-      if (typeof playable === 'string') {
-        skipped[playable] += 1
-        continue
+      if (typeof playable === "string") {
+        skipped[playable] += 1;
+        continue;
       }
 
       // A playlist may list the same track twice; it should not be drawn twice.
       if (seenIds.has(playable.id)) {
-        skipped[SkipReason.Duplicate] += 1
-        continue
+        skipped[SkipReason.Duplicate] += 1;
+        continue;
       }
 
-      seenIds.add(playable.id)
-      tracks.push(playable)
+      seenIds.add(playable.id);
+      tracks.push(playable);
     }
 
     if (!page.next || items.length === 0) {
-      return { tracks, skipped }
+      return { tracks, skipped };
     }
 
-    offset += items.length
+    offset += items.length;
   }
 }

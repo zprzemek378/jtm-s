@@ -1,23 +1,28 @@
 // Where the Client ID comes from, and the redirect URI that has to match the
 // Spotify Dashboard entry exactly.
 
-import { STORAGE_KEYS, readStoredString, removeStored, writeStoredString } from '@/storage/localStorage'
+import {
+  STORAGE_KEYS,
+  readStoredString,
+  removeStored,
+  writeStoredString,
+} from "@/storage/localStorage";
 
 /**
  * The shape every Client ID Spotify issues: 32 hexadecimal characters. Checking
  * it here catches copying the wrong field — the app name, the dashboard URL —
  * before the host is sent to Spotify only to be met with `INVALID_CLIENT`.
  */
-const CLIENT_ID_PATTERN = /^[0-9a-f]{32}$/i
+const CLIENT_ID_PATTERN = /^[0-9a-f]{32}$/i;
 
 /** One Spotify application built into this bundle. */
 export type BundledClient = {
   /** 1-based, matching the suffix in the variable names. */
-  slot: number
-  id: string
+  slot: number;
+  id: string;
   /** The label from the environment, or null when none was given. */
-  name: string | null
-}
+  name: string | null;
+};
 
 /**
  * Every Spotify application this build carries, read from the environment.
@@ -31,19 +36,19 @@ export type BundledClient = {
  * out in full is the only kind Vite substitutes while building — so a loop is
  * the one way to avoid fixing the count in the code.
  */
-const ENV = import.meta.env as unknown as Record<string, string | undefined>
+const ENV = import.meta.env as unknown as Record<string, string | undefined>;
 
 function readSlots(): { slot: number; id?: string; name?: string }[] {
-  const slots: { slot: number; id?: string; name?: string }[] = []
+  const slots: { slot: number; id?: string; name?: string }[] = [];
 
   for (let slot = 1; ; slot += 1) {
-    const id = ENV[`VITE_SPOTIFY_CLIENT_ID_${slot}`]
+    const id = ENV[`VITE_SPOTIFY_CLIENT_ID_${slot}`];
 
     if (id === undefined) {
-      return slots
+      return slots;
     }
 
-    slots.push({ slot, id, name: ENV[`VITE_SPOTIFY_CLIENT_NAME_${slot}`] })
+    slots.push({ slot, id, name: ENV[`VITE_SPOTIFY_CLIENT_NAME_${slot}`] });
   }
 }
 
@@ -57,58 +62,58 @@ function readSlots(): { slot: number; id?: string; name?: string }[] {
 export function buildBundledClients(
   slots: readonly { slot?: number; id?: string; name?: string }[],
 ): readonly BundledClient[] {
-  const clients: BundledClient[] = []
-  const seen = new Set<string>()
+  const clients: BundledClient[] = [];
+  const seen = new Set<string>();
 
   const add = (slot: number, rawId: string | undefined, rawName: string | undefined) => {
-    const id = (rawId ?? '').trim()
-    const key = id.toLowerCase()
+    const id = (rawId ?? "").trim();
+    const key = id.toLowerCase();
 
     // An entry filled in wrongly is skipped rather than offered: choosing it
     // could only ever end in `INVALID_CLIENT` at Spotify. A repeat is dropped so
     // the same application cannot appear twice under two names.
     if (!isValidClientId(id) || seen.has(key)) {
-      return
+      return;
     }
 
-    seen.add(key)
-    const name = (rawName ?? '').trim()
-    clients.push({ slot, id, name: name.length > 0 ? name : null })
-  }
+    seen.add(key);
+    const name = (rawName ?? "").trim();
+    clients.push({ slot, id, name: name.length > 0 ? name : null });
+  };
 
   slots.forEach((raw, index) => {
-    add(raw.slot ?? index + 1, raw.id, raw.name)
-  })
+    add(raw.slot ?? index + 1, raw.id, raw.name);
+  });
 
-  return clients
+  return clients;
 }
 
 /** The applications this build carries. */
-export const BUNDLED_CLIENTS: readonly BundledClient[] = buildBundledClients(readSlots())
+export const BUNDLED_CLIENTS: readonly BundledClient[] = buildBundledClients(readSlots());
 
 export function isValidClientId(value: string): boolean {
-  return CLIENT_ID_PATTERN.test(value.trim())
+  return CLIENT_ID_PATTERN.test(value.trim());
 }
 
 export function readClientIdOverride(): string | null {
-  const stored = readStoredString(STORAGE_KEYS.clientIdOverride)?.trim()
+  const stored = readStoredString(STORAGE_KEYS.clientIdOverride)?.trim();
 
-  return stored && stored.length > 0 ? stored : null
+  return stored && stored.length > 0 ? stored : null;
 }
 
 export function writeClientIdOverride(value: string): void {
-  writeStoredString(STORAGE_KEYS.clientIdOverride, value.trim())
+  writeStoredString(STORAGE_KEYS.clientIdOverride, value.trim());
 }
 
 export function clearClientIdOverride(): void {
-  removeStored(STORAGE_KEYS.clientIdOverride)
+  removeStored(STORAGE_KEYS.clientIdOverride);
 }
 
 /** Which built-in application was chosen, by its id. */
 export function readClientIdChoice(): string | null {
-  const stored = readStoredString(STORAGE_KEYS.clientIdChoice)?.trim()
+  const stored = readStoredString(STORAGE_KEYS.clientIdChoice)?.trim();
 
-  return stored && stored.length > 0 ? stored : null
+  return stored && stored.length > 0 ? stored : null;
 }
 
 /**
@@ -116,7 +121,7 @@ export function readClientIdChoice(): string | null {
  * reordering the variables in `.env` cannot silently switch which one is in use.
  */
 export function writeClientIdChoice(id: string): void {
-  writeStoredString(STORAGE_KEYS.clientIdChoice, id.trim())
+  writeStoredString(STORAGE_KEYS.clientIdChoice, id.trim());
 }
 
 /**
@@ -128,17 +133,15 @@ export function pickBundled(
   clients: readonly BundledClient[],
   chosenId: string | null,
 ): BundledClient | null {
-  const chosen = chosenId?.trim().toLowerCase()
-  const match = chosen
-    ? clients.find((client) => client.id.toLowerCase() === chosen)
-    : undefined
+  const chosen = chosenId?.trim().toLowerCase();
+  const match = chosen ? clients.find((client) => client.id.toLowerCase() === chosen) : undefined;
 
-  return match ?? clients[0] ?? null
+  return match ?? clients[0] ?? null;
 }
 
 /** The built-in application in use. */
 export function selectedBundledClient(): BundledClient | null {
-  return pickBundled(BUNDLED_CLIENTS, readClientIdChoice())
+  return pickBundled(BUNDLED_CLIENTS, readClientIdChoice());
 }
 
 /**
@@ -148,13 +151,13 @@ export function selectedBundledClient(): BundledClient | null {
  * precisely why several built-in applications are worth having.
  */
 export function resolveClientId(): string | null {
-  const override = readClientIdOverride()
+  const override = readClientIdOverride();
 
   if (override && isValidClientId(override)) {
-    return override
+    return override;
   }
 
-  return selectedBundledClient()?.id ?? null
+  return selectedBundledClient()?.id ?? null;
 }
 
 /**
@@ -163,11 +166,11 @@ export function resolveClientId(): string | null {
  * `https://<user>.github.io/<repo>/`; locally `http://127.0.0.1:5173/`.
  */
 export function redirectUri(): string {
-  return new URL(import.meta.env.BASE_URL, window.location.origin).toString()
+  return new URL(import.meta.env.BASE_URL, window.location.origin).toString();
 }
 
 function isLoopbackHost(hostname: string): boolean {
-  return hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1'
+  return hostname === "127.0.0.1" || hostname === "[::1]" || hostname === "::1";
 }
 
 /**
@@ -180,15 +183,15 @@ function isLoopbackHost(hostname: string): boolean {
  */
 export function isRedirectHostAcceptable(location: Location = window.location): boolean {
   return (
-    location.protocol === 'https:' ||
-    (location.protocol === 'http:' && isLoopbackHost(location.hostname))
-  )
+    location.protocol === "https:" ||
+    (location.protocol === "http:" && isLoopbackHost(location.hostname))
+  );
 }
 
 /** This very page, at an address Spotify will accept. */
 export function loopbackAddress(location: Location = window.location): string {
-  const url = new URL(location.href)
-  url.hostname = '127.0.0.1'
+  const url = new URL(location.href);
+  url.hostname = "127.0.0.1";
 
-  return url.toString()
+  return url.toString();
 }
