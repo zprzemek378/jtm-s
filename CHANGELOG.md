@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.0](https://github.com/zprzemek378/jtm-s/compare/v1.0.1...v1.1.0) (2026-10-02)
+
+### Features
+
+* **game:** add a scrubber, and put every Spotify request behind one queue ([#2](https://github.com/zprzemek378/jtm-s/issues/2)) ([8d04427](https://github.com/zprzemek378/jtm-s/commit/8d044276c880dcc34711f7cedabc1a90b1123043))
+
 ## [1.0.1](https://github.com/zprzemek378/jtm-s/compare/v1.0.0...v1.0.1) (2026-10-02)
 
 ### Bug Fixes
