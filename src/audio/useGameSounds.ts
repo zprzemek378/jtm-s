@@ -11,13 +11,17 @@ import type { GameSession } from '@/game/useGameSession'
 
 import { playSound, stopCutShortSounds, stopSound } from './player'
 
-/** The cue a phase announces itself with, where it has one. */
+/**
+ * The cue a phase announces itself with, where it has one.
+ *
+ * Buzzing is missing on purpose: `Buzzed` only arrives once the window for
+ * simultaneous presses has closed, so a cue hung on it would land after the
+ * press rather than on it. The session sounds that one from the press itself.
+ */
 function cueForPhase(phase: GamePhase, verdict: Verdict | null): SoundEvent | null {
   switch (phase) {
     case GamePhase.Listening:
       return SoundEvent.RoundStart
-    case GamePhase.Buzzed:
-      return SoundEvent.Buzz
     case GamePhase.Tied:
       return SoundEvent.Tie
     case GamePhase.TimedOut:

@@ -3,6 +3,8 @@
 
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 
+import { playSound } from '@/audio/player'
+import { SoundEvent } from '@/constants/soundChoices'
 import { BUZZ_COLLECTION_MAX_MS, BUZZ_COLLECTION_MS, PRE_ROLL_MS } from '@/constants/gameRules'
 import { useBuzzerKeys } from '@/hooks/useBuzzerKeys'
 import { useCountdown } from '@/hooks/useCountdown'
@@ -206,6 +208,7 @@ export function useGameSession(
     (playerId: PlayerId, at: number) => {
       // Ties switched off: the first press wins outright, as it always did.
       if (rules.tieThresholdMs === null) {
+        playSound(SoundEvent.Buzz)
         dispatch({ type: 'buzz', playerId, amount: currentMoney })
 
         return
@@ -233,6 +236,12 @@ export function useGameSession(
 
         return
       }
+
+      // Sounded from the press itself rather than from the phase it eventually
+      // produces. The phase waits for the collection window to close — which is
+      // the point of that window — and the room should hear the buzz the moment
+      // somebody hits their key, not once the tie has been worked out.
+      playSound(SoundEvent.Buzz)
 
       // The threshold is a fraction of a millisecond, so it cannot be waited
       // out. Instead the presses are gathered for one keyboard poll and then

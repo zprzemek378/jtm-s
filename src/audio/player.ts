@@ -14,6 +14,9 @@ import { pickChoice } from './sounds'
 import { SOUND_CHOICES } from '@/constants/soundChoices'
 import { availableFiles, fileUrl } from './soundFiles'
 
+/** `HTMLMediaElement.HAVE_METADATA` — enough loaded to know the duration. */
+const HAVE_METADATA = 1
+
 const elements = new Map<string, HTMLAudioElement>()
 
 /** What is sounding for each moment, and whether it may be cut off. */
@@ -33,9 +36,29 @@ function elementFor(url: string): HTMLAudioElement {
   return element
 }
 
-function start(element: HTMLAudioElement): void {
+function start(element: HTMLAudioElement, startAtMs = 0): void {
+  const from = Math.max(0, startAtMs) / 1000
+
   try {
-    element.currentTime = 0
+    // Seeking needs the duration, which is known once the metadata has loaded —
+    // normally long before, since every file is fetched when the game starts.
+    // When it has not, the position is set the moment it becomes possible.
+    if (element.readyState >= HAVE_METADATA) {
+      element.currentTime = from
+    } else {
+      element.addEventListener(
+        'loadedmetadata',
+        () => {
+          try {
+            element.currentTime = from
+          } catch {
+            // Nothing to do; it plays from the beginning.
+          }
+        },
+        { once: true },
+      )
+    }
+
     void element.play().catch(() => undefined)
   } catch {
     // An element that cannot be rewound or played is not worth a broken round.
@@ -62,7 +85,7 @@ export function playSound(event: SoundEvent): void {
 
   const element = elementFor(url)
   sounding.set(event, { element, cutShort: choice?.cutShort === true })
-  start(element)
+  start(element, choice?.startAtMs)
 }
 
 /**
