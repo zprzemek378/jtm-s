@@ -130,9 +130,11 @@
 }
 
 // Small and quiet: useful when someone reports a problem, invisible otherwise.
+//
+// No auto margin here. The controls above already carry one, and a second would
+// split the free space between the two of them rather than push both down,
+// leaving a gap above the controls as well as below them.
 .version {
-  margin-top: auto;
-  padding-top: $space-3;
   font-size: $text-xs;
   color: $c-text-muted;
   opacity: 0.7;
