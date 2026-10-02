@@ -28,6 +28,35 @@ export function AppLayout() {
     { to: ROUTES.settings, label: t('nav.settings'), icon: '⚙' },
   ]
 
+  /**
+   * When this version was released, written the way the changelog writes it.
+   *
+   * ISO 8601, which is what Keep a Changelog asks for and what this project's
+   * own CHANGELOG.md already uses — so an entry there and the figure in the
+   * corner can be matched at a glance. It also reads the same in every
+   * language, which a month name does not, and cannot be mistaken the way
+   * 02/10 and 10/02 can.
+   *
+   * Shown in the reader's own time zone: it is a label for people in one room,
+   * not a key anything is compared against.
+   */
+  const releasedOn = (() => {
+    if (!__APP_VERSION_DATE__) {
+      return null
+    }
+
+    const released = new Date(__APP_VERSION_DATE__)
+
+    if (Number.isNaN(released.getTime())) {
+      return null
+    }
+
+    const pad = (value: number) => String(value).padStart(2, '0')
+    const day = `${released.getFullYear()}-${pad(released.getMonth() + 1)}-${pad(released.getDate())}`
+
+    return `${day} ${pad(released.getHours())}:${pad(released.getMinutes())}`
+  })()
+
   const toggleLabel = collapsed ? t('nav.open') : t('nav.close')
 
   return (
@@ -78,7 +107,10 @@ export function AppLayout() {
             <ThemeToggle compact={collapsed} />
           </div>
 
-          <p className={styles.version}>v{__APP_VERSION__}</p>
+          <p className={styles.version}>
+            <span>v{__APP_VERSION__}</span>
+            {releasedOn ? <span className={styles.released}>{releasedOn}</span> : null}
+          </p>
         </div>
       </aside>
 

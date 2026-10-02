@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { copyFileSync, readFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 
@@ -34,11 +35,42 @@ const { version } = JSON.parse(
   readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf8'),
 ) as { version: string }
 
+/**
+ * When this version came into being, as an ISO timestamp.
+ *
+ * Taken from the commit its tag points at, not from the clock: republishing an
+ * older version to recover from a bad one must still show when that version was
+ * made, otherwise the date would say "today" for code that is a week old.
+ *
+ * Falls back to the current commit, which during a deployment is the release
+ * commit itself, and then to nothing at all — a working tree with no git
+ * history still has to build.
+ */
+function versionDate(): string {
+  for (const ref of [`v${version}`, 'HEAD']) {
+    try {
+      const stamp = execFileSync('git', ['log', '-1', '--format=%cI', ref], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim()
+
+      if (stamp) {
+        return stamp
+      }
+    } catch {
+      // No such tag, or not a git checkout. Try the next one.
+    }
+  }
+
+  return ''
+}
+
 export default defineConfig({
   // Substituted into the bundle at build time, so the running app can show the
   // version it was actually built from.
   define: {
     __APP_VERSION__: JSON.stringify(version),
+    __APP_VERSION_DATE__: JSON.stringify(versionDate()),
   },
   // A project page lives under /<repo>/, so CI passes VITE_BASE.
   // Local dev and local builds stay at the root.

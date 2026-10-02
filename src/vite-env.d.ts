@@ -25,3 +25,10 @@ interface ImportMetaEnv {
 
 /** The version from `package.json`, substituted in by Vite at build time. */
 declare const __APP_VERSION__: string
+
+/**
+ * When that version was made, as an ISO timestamp, or empty when it could not
+ * be worked out. Read from git while building, so republishing an older version
+ * still shows the day it was released rather than the day it was republished.
+ */
+declare const __APP_VERSION_DATE__: string
