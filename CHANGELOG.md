@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.0](https://github.com/zprzemek378/jtm-s/compare/v1.2.4...v1.3.0) (2026-10-03)
+
+### Features
+
+* **sound:** sound the buzzer on the press, and let a sound start late ([e576d22](https://github.com/zprzemek378/jtm-s/commit/e576d22417afe2b00ae0a3acc829266d5b90628f))
+
+### Bug Fixes
+
+* **game:** show only the bans that apply to the round ahead ([b8cf889](https://github.com/zprzemek378/jtm-s/commit/b8cf8895981b77d01ea7e2c5d3c01c1a962ec238))
+
+### Reverts
+
+* drop the chorus guess button ([3534eff](https://github.com/zprzemek378/jtm-s/commit/3534effa4d9ca6c50a2cd8105fa84c59ece346ce))
+
+### Internal
+
+* adopt Prettier and format the whole project ([5f17bf7](https://github.com/zprzemek378/jtm-s/commit/5f17bf7400b70e56c32855e697045c94eaafb835))
+
 ## [1.2.4](https://github.com/zprzemek378/jtm-s/compare/v1.2.3...v1.2.4) (2026-10-02)
 
 ### Bug Fixes
