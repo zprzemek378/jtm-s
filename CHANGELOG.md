@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.1](https://github.com/zprzemek378/jtm-s/compare/v1.3.0...v1.3.1) (2026-10-03)
+
+### Bug Fixes
+
+* **game:** ignore host keys for a moment after each screen change ([c563d84](https://github.com/zprzemek378/jtm-s/commit/c563d8408e98f2a5899ffd6909a04294d2e171f4))
+
 ## [1.3.0](https://github.com/zprzemek378/jtm-s/compare/v1.2.4...v1.3.0) (2026-10-03)
 
 ### Features
