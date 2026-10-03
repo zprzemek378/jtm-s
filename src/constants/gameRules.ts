@@ -51,6 +51,25 @@ export const MIN_TRACK_DURATION_MS =
  * Every further press restarts the window, because a tie chains from one press
  * to the next — so the window has to stay open as long as the chain might grow.
  */
+/**
+ * How long the host's keys stay deaf after arriving at a new screen.
+ *
+ * Enter carries the game from one screen to the next, and the screens follow
+ * each other closely — reveal, verdict, next round. Pressing it twice in quick
+ * succession, or leaning on it, would otherwise run through two or three of
+ * them before anyone had read the first.
+ */
+export const ACTION_KEY_COOLDOWN_MS = 1500;
+
+/**
+ * How long "too soon" stays on screen after a press that was ignored.
+ *
+ * Long enough to be read, short enough to be gone before the host presses
+ * again in earnest — a notice still sitting there would read as though the
+ * second press had been refused as well.
+ */
+export const TOO_SOON_FLASH_MS = 500;
+
 export const BUZZ_COLLECTION_MS = 12;
 
 /**

@@ -108,6 +108,13 @@
   color: $c-text-subtle;
 }
 
+// Takes the place of the hint rather than appearing beside it, so nothing on
+// screen moves when it comes and goes.
+.tooSoon {
+  color: $c-negative;
+  font-weight: 600;
+}
+
 .failure {
   max-width: 34rem;
   font-size: $text-base;

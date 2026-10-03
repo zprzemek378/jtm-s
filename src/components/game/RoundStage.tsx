@@ -67,7 +67,7 @@ export function RoundStage({
 
   // Bound before the phase branches below, because hooks cannot live behind a
   // return. Each phase offers whichever of the two actions it actually has.
-  useActionKeys(
+  const { tooSoon } = useActionKeys(
     preRollActive
       ? {}
       : startFailed
@@ -83,6 +83,23 @@ export function RoundStage({
               ? { onConfirm: session.nextRound }
               : {},
     shortcutsEnabled,
+    // Names the screen on show. The round number is part of it so that two
+    // rounds reaching the same phase are still two separate arrivals.
+    preRollActive
+      ? `pre-roll-${round}`
+      : startFailed
+        ? `start-failed-${round}`
+        : `${phase}-${round}`,
+  );
+
+  /**
+   * The line under the buttons: which keys do what, or a word about a press
+   * that was ignored. The same line either way, so nothing shifts on screen.
+   */
+  const shortcutHint = (key: "game.shortcutConfirm" | "game.shortcutJudge") => (
+    <p className={tooSoon ? `${styles.shortcut} ${styles.tooSoon}` : styles.shortcut}>
+      {tooSoon ? t("game.tooSoon") : t(key)}
+    </p>
   );
 
   // Comes before every phase branch: the count-in runs while the round is still
@@ -114,7 +131,7 @@ export function RoundStage({
         <Button large variant={ButtonVariant.Primary} onClick={session.nextRound}>
           {t("common.retry")}
         </Button>
-        <p className={styles.shortcut}>{t("game.shortcutConfirm")}</p>
+        {shortcutHint("game.shortcutConfirm")}
       </div>
     );
   }
@@ -214,7 +231,7 @@ export function RoundStage({
         <Button large variant={ButtonVariant.Primary} onClick={session.reveal}>
           {t("game.reveal")}
         </Button>
-        <p className={styles.shortcut}>{t("game.shortcutConfirm")}</p>
+        {shortcutHint("game.shortcutConfirm")}
       </div>
     );
   }
@@ -243,7 +260,7 @@ export function RoundStage({
             {t("game.incorrect")}
           </Button>
         </ButtonGroup>
-        <p className={styles.shortcut}>{t("game.shortcutJudge")}</p>
+        {shortcutHint("game.shortcutJudge")}
 
         {/* The rare third option: wrong, but the table waives the ban. Kept
             small, kept out of the button group the arrows walk, and given no
@@ -275,7 +292,7 @@ export function RoundStage({
         <Button large variant={ButtonVariant.Primary} onClick={session.nextRound}>
           {t("game.nextRound")}
         </Button>
-        <p className={styles.shortcut}>{t("game.shortcutConfirm")}</p>
+        {shortcutHint("game.shortcutConfirm")}
       </div>
     );
   }
@@ -309,7 +326,7 @@ export function RoundStage({
         <Button large variant={ButtonVariant.Primary} onClick={session.nextRound}>
           {t("game.nextRound")}
         </Button>
-        <p className={styles.shortcut}>{t("game.shortcutConfirm")}</p>
+        {shortcutHint("game.shortcutConfirm")}
       </div>
     );
   }
@@ -325,7 +342,7 @@ export function RoundStage({
       <Button large variant={ButtonVariant.Primary} onClick={session.nextRound}>
         {t("game.nextRound")}
       </Button>
-      <p className={styles.shortcut}>{t("game.shortcutConfirm")}</p>
+      {shortcutHint("game.shortcutConfirm")}
     </div>
   );
 }
