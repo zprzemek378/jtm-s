@@ -81,6 +81,14 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
    * that situation.
    */
   const hasPlayedRef = useRef(false);
+  /**
+   * What the music is currently meant to be doing.
+   *
+   * A pause verifies itself for a moment afterwards, and in that moment the
+   * host can already have asked for the track back — revealing the answer, or
+   * starting the next round. This is what tells a late retry to stand down.
+   */
+  const wantsPausedRef = useRef(false);
 
   const forgetSession = useCallback(() => {
     clearTokens();
@@ -402,8 +410,14 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
         throw new Error("The browser player is not ready yet");
       }
 
+      wantsPausedRef.current = false;
       await startTrackPlayback(getAccessToken, targetDeviceId, trackUri, positionMs);
       hasPlayedRef.current = true;
+
+      // Spotify accepting the command is not the device playing it. Holding the
+      // round here until there is actually sound is what keeps a very fast buzz
+      // from being answered by a pause that arrives before the music does.
+      await sdk.waitUntilPlaying(playerRef.current, trackUri);
     },
     [getAccessToken],
   );
@@ -413,7 +427,8 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    await sdk.pause(playerRef.current);
+    wantsPausedRef.current = true;
+    await sdk.pause(playerRef.current, () => wantsPausedRef.current);
   }, []);
 
   const resume = useCallback(async () => {
@@ -421,6 +436,7 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    wantsPausedRef.current = false;
     await sdk.resume(playerRef.current);
   }, []);
 
