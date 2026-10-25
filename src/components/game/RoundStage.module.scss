@@ -1,6 +1,10 @@
 .stage {
   @include card;
 
+  // Named so the answer and the karaoke panel can lay themselves out against
+  // the stage's own width: the sidebar collapses, so the window's width says
+  // little about how much room they actually have.
+  container: round-stage / inline-size;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -159,7 +163,9 @@
 }
 
 // The progress bar and the buttons should span the stage, not hug their text.
-.stage > * {
+// The answer block is left out rather than overridden: it is a layout of its
+// own and uses every inch the stage has.
+.stage > *:not(.answerSlot) {
   max-width: 50rem;
 }
 

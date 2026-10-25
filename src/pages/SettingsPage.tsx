@@ -14,6 +14,7 @@ import { ButtonVariant } from "@/components/ui/buttonVariant";
 import { Input } from "@/components/ui/Input";
 import { Panel } from "@/components/ui/Panel";
 import { useLanguage } from "@/i18n/useLanguage";
+import { isKaraokeEnabled, setKaraokeEnabled } from "@/settings/karaoke";
 import { isSafeModeEnabled, setSafeModeEnabled } from "@/settings/safeMode";
 import {
   areTiesEnabled,
@@ -45,6 +46,7 @@ export function SettingsPage() {
 
   const [safeMode, setSafeMode] = useState(isSafeModeEnabled);
   const [ties, setTies] = useState(areTiesEnabled);
+  const [karaoke, setKaraoke] = useState(isKaraokeEnabled);
   const [tieThreshold, setTieThreshold] = useState(() => String(readTieThreshold()));
   const [tieError, setTieError] = useState<string | null>(null);
   const [clientId, setClientId] = useState(() => readClientIdOverride() ?? "");
@@ -118,6 +120,18 @@ export function SettingsPage() {
 
       <Panel title={t("settings.sound")}>
         <SoundSettings />
+      </Panel>
+
+      <Panel title={t("settings.karaoke")}>
+        <Checkbox
+          checked={karaoke}
+          label={t("settings.karaokeEnabled")}
+          onChange={(checked) => {
+            setKaraoke(checked);
+            setKaraokeEnabled(checked);
+          }}
+        />
+        <p className={styles.hint}>{t("settings.karaokeHint")}</p>
       </Panel>
 
       <Panel title={t("settings.keyboard")}>

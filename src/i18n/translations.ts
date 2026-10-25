@@ -93,6 +93,11 @@ const pl = {
   "settings.soundHint":
     "Krótkie sygnały zgłoszenia, odliczania i werdyktów. To nie jest głośność muzyki — ta idzie ze Spotify.",
 
+  "settings.karaoke": "Karaoke",
+  "settings.karaokeEnabled": "Pokazuj tekst utworu po odkryciu odpowiedzi",
+  "settings.karaokeHint":
+    "Tekst pojawia się dopiero wtedy, gdy tytuł jest już znany, i przewija się w rytm utworu. Pochodzi z otwartej bazy LRCLIB, nie ze Spotify — nie każdy utwór tam jest, a teksty pisali użytkownicy, więc mogą być w nich błędy.",
+
   "settings.ties": "Remisy",
   "settings.tiesEnabled": "Uznawaj jednoczesne naciśnięcia za remis",
   "settings.tiesHint":
@@ -285,6 +290,12 @@ const pl = {
   "game.fromPlaylist": "Z playlisty: {names}",
   "game.fromPlaylists": "Z playlist: {names}",
   "game.seek": "Pozycja w utworze",
+  "game.karaoke": "Tekst utworu",
+  "game.karaokeLoading": "Szukam tekstu…",
+  "game.karaokeMissing": "Nie ma tekstu tego utworu w bazie.",
+  "game.karaokeFailed": "Nie udało się pobrać tekstu.",
+  "game.karaokeResync": "Synchronizuj",
+  "game.karaokeJump": "Odtwórz od tej linijki",
   "game.pause": "Zatrzymaj",
   "game.resume": "Wznów",
   "game.nextRound": "Następna tura",
@@ -422,6 +433,11 @@ const en: Record<TranslationKey, string> = {
   "settings.soundEnabled": "Play the game sounds",
   "settings.soundHint":
     "The short cues for buzzing in, the countdown and the verdicts. This is not the music volume — that comes from Spotify.",
+
+  "settings.karaoke": "Karaoke",
+  "settings.karaokeEnabled": "Show the lyrics once the answer is revealed",
+  "settings.karaokeHint":
+    "The words appear only once the title is known, and follow the music line by line. They come from LRCLIB, an open database, rather than from Spotify — not every track is in it, and the lyrics were typed in by its users, so they can be wrong.",
 
   "settings.ties": "Ties",
   "settings.tiesEnabled": "Treat simultaneous presses as a tie",
@@ -614,6 +630,12 @@ const en: Record<TranslationKey, string> = {
   "game.fromPlaylist": "From playlist: {names}",
   "game.fromPlaylists": "From playlists: {names}",
   "game.seek": "Position in the track",
+  "game.karaoke": "Lyrics",
+  "game.karaokeLoading": "Looking for the lyrics…",
+  "game.karaokeMissing": "The database has no lyrics for this track.",
+  "game.karaokeFailed": "Could not fetch the lyrics.",
+  "game.karaokeResync": "Resync",
+  "game.karaokeJump": "Play from this line",
   "game.pause": "Pause",
   "game.resume": "Resume",
   "game.nextRound": "Next round",

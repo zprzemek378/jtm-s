@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { formatMoney, RewardDirection } from "@/game/rewards";
 import type { GameSession } from "@/game/useGameSession";
 import { GamePhase, Verdict, type GamePlayer, type GameRules } from "@/game/types";
@@ -5,6 +7,8 @@ import { msToWholeSeconds } from "@/helpers/format";
 import { useActionKeys } from "@/hooks/useActionKeys";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useLanguage } from "@/i18n/useLanguage";
+import { useLyrics } from "@/lyrics/useLyrics";
+import { isKaraokeEnabled } from "@/settings/karaoke";
 
 import { Button } from "../ui/Button";
 import { ButtonGroup } from "../ui/ButtonGroup";
@@ -13,8 +17,7 @@ import { Keycap } from "../ui/Keycap";
 import { ProgressBar } from "../ui/ProgressBar";
 import { ProgressTone } from "../ui/progressTone";
 import { Spinner } from "../ui/Spinner";
-import { TrackCard } from "./TrackCard";
-import { TrackScrubber } from "./TrackScrubber";
+import { AnswerBlock } from "./AnswerBlock";
 import styles from "./RoundStage.module.scss";
 
 type RoundStageProps = {
@@ -62,6 +65,14 @@ export function RoundStage({
     active: phase === GamePhase.Buzzed,
     runKey: `${round}-answer`,
   });
+
+  // Read once, when the game screen appears: a switch flipped in Settings
+  // applies to the next game, not to a round in progress.
+  const [karaokeEnabled] = useState(isKaraokeEnabled);
+  // Asked for as soon as the track is in play, so the words are in hand by the
+  // time the title is revealed and the panel appears. Looking them up is not
+  // part of starting a round and can never hold one up.
+  const lyrics = useLyrics(track, karaokeEnabled);
 
   const buzzedPlayer = players.find((player) => player.id === buzzedPlayerId) ?? null;
 
@@ -240,7 +251,12 @@ export function RoundStage({
     return (
       <div className={styles.stage}>
         <p className={styles.eyebrow}>{t("game.answerWas")}</p>
-        <TrackCard track={track} startPositionMs={startPositionMs} />
+        <AnswerBlock
+          track={track}
+          startPositionMs={startPositionMs}
+          lyrics={lyrics}
+          className={styles.answerSlot}
+        />
 
         <p className={styles.hint}>{t("game.judgeHint", { name: buzzedPlayer?.name ?? "" })}</p>
 
@@ -319,8 +335,13 @@ export function RoundStage({
             amount: formatMoney(lastVerdict.amount),
           })}
         </p>
-        <TrackCard track={track} startPositionMs={startPositionMs} />
-        <TrackScrubber />
+        <AnswerBlock
+          track={track}
+          startPositionMs={startPositionMs}
+          lyrics={lyrics}
+          scrubber
+          className={styles.answerSlot}
+        />
         {upcomingLine ? <p className={styles.hint}>{upcomingLine}</p> : null}
 
         <Button large variant={ButtonVariant.Primary} onClick={session.nextRound}>
@@ -335,8 +356,13 @@ export function RoundStage({
   return (
     <div className={styles.stage}>
       <p className={styles.eyebrow}>{t("game.timeUp")}</p>
-      <TrackCard track={track} startPositionMs={startPositionMs} />
-      <TrackScrubber />
+      <AnswerBlock
+        track={track}
+        startPositionMs={startPositionMs}
+        lyrics={lyrics}
+        scrubber
+        className={styles.answerSlot}
+      />
       {upcomingLine ? <p className={styles.hint}>{upcomingLine}</p> : null}
 
       <Button large variant={ButtonVariant.Primary} onClick={session.nextRound}>
