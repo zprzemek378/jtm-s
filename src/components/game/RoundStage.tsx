@@ -13,7 +13,6 @@ import { isKaraokeEnabled } from "@/settings/karaoke";
 import { Button } from "../ui/Button";
 import { ButtonGroup } from "../ui/ButtonGroup";
 import { ButtonVariant } from "../ui/buttonVariant";
-import { Keycap } from "../ui/Keycap";
 import { ProgressBar } from "../ui/ProgressBar";
 import { ProgressTone } from "../ui/progressTone";
 import { Spinner } from "../ui/Spinner";
@@ -182,26 +181,6 @@ export function RoundStage({
         />
 
         <p className={styles.hint}>{t("game.listeningHint")}</p>
-
-        <div className={styles.legend}>
-          <span className={styles.legendLabel}>{t("game.keyLegend")}</span>
-          {players.map((player) => {
-            const muted = state.suspension?.playerIds.includes(player.id) ?? false;
-
-            return (
-              <span
-                key={player.id}
-                className={
-                  muted ? `${styles.legendItem} ${styles.legendItemMuted}` : styles.legendItem
-                }
-                style={{ "--player-colour": player.colour } as CSSProperties}
-              >
-                <Keycap keyCode={player.keyCode} emptyLabel="—" muted={muted} />
-                <span>{player.name}</span>
-              </span>
-            );
-          })}
-        </div>
       </div>
     );
   }
