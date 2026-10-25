@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.0](https://github.com/zprzemek378/jtm-s/compare/v1.3.1...v1.4.0) (2026-10-25)
+
+### Features
+
+* **game:** add pause and resume to the track scrubber ([07b4939](https://github.com/zprzemek378/jtm-s/commit/07b49393503b288dc4552bdbc07b96250949fc0d))
+* **game:** carry each player's colour across the game screens ([7fe172c](https://github.com/zprzemek378/jtm-s/commit/7fe172c6c62e535720a5538334601dac89b29f16))
+* **game:** keep the track and its title on screen after a tie ([86a1a0c](https://github.com/zprzemek378/jtm-s/commit/86a1a0c1175c6fab79be3c752407e4f88e3109a9))
+* **game:** rewrite names, colours, order and keys from edit mode ([87587e3](https://github.com/zprzemek378/jtm-s/commit/87587e3950cb2aeec9bcd1ebac24240aed6b141a))
+* **game:** show the lyrics once the answer is revealed ([d7244a1](https://github.com/zprzemek378/jtm-s/commit/d7244a188975adfcd1acd067970805e10796eef4))
+* **setup:** let players pick a colour and a seat, and seat up to twelve ([25e829e](https://github.com/zprzemek378/jtm-s/commit/25e829eebae3e58477114583a951717d2a138518))
+* **setup:** seat up to fifty, and say so only once the table is full ([8d5bed3](https://github.com/zprzemek378/jtm-s/commit/8d5bed3fb67613c17211ecc05e6dd6ba7423fd18))
+
+### Bug Fixes
+
+* **game:** keep Ctrl, the Windows key and the menu key off the buzzers ([7bc3985](https://github.com/zprzemek378/jtm-s/commit/7bc3985e8774a34f71bd168167f77804d21d21dc))
+* **spotify:** make a pause stick when it beats the music to the device ([587d0ce](https://github.com/zprzemek378/jtm-s/commit/587d0ce61d1f566354a3f276faa43027e4ec911d))
+
+### Refactoring
+
+* **game:** clear the listening screen of labels it does not need ([f34162e](https://github.com/zprzemek378/jtm-s/commit/f34162e597d4e4f91843d0a1f503f0da571f739e))
+* **game:** drop the key legend from the round ([4fbf2c4](https://github.com/zprzemek378/jtm-s/commit/4fbf2c4d65d82785d432d4750081c1a7cd79d932))
+
 ## [1.3.1](https://github.com/zprzemek378/jtm-s/compare/v1.3.0...v1.3.1) (2026-10-03)
 
 ### Bug Fixes
