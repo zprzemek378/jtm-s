@@ -6,6 +6,7 @@ import { useLanguage } from "@/i18n/useLanguage";
 import { usePlaybackPosition } from "@/spotify/playback/usePlaybackPosition";
 import { useSpotify } from "@/spotify/useSpotify";
 
+import { Button } from "../ui/Button";
 import styles from "./TrackScrubber.module.scss";
 
 /**
@@ -17,8 +18,16 @@ import styles from "./TrackScrubber.module.scss";
  */
 export function TrackScrubber() {
   const { t } = useLanguage();
-  const { seek } = useSpotify();
+  const { seek, pause, resume } = useSpotify();
   const { position, settle } = usePlaybackPosition(true);
+  /**
+   * What the host asked for, until the player reports it.
+   *
+   * The position is re-read about once a second, so a button that waited for
+   * that would feel broken; this flips the icon on the click and steps aside
+   * as soon as the player agrees.
+   */
+  const [wantedPaused, setWantedPaused] = useState<boolean | null>(null);
   /** Where the handle is being held, while it is being held. */
   const [dragMs, setDragMs] = useState<number | null>(null);
   const dragRef = useRef<number | null>(null);
@@ -34,6 +43,14 @@ export function TrackScrubber() {
     },
     [],
   );
+
+  useEffect(() => {
+    if (position && wantedPaused !== null && position.paused === wantedPaused) {
+      // The player has caught up with the button, so the button lets go.
+      // oxlint-disable-next-line react/set-state-in-effect
+      setWantedPaused(null);
+    }
+  }, [position, wantedPaused]);
   // Nothing is loaded yet, or the duration has not arrived: a slider with no
   // scale would only be something to fidget with.
   if (!position || position.durationMs <= 0) {
@@ -41,6 +58,12 @@ export function TrackScrubber() {
   }
 
   const shownMs = dragMs ?? position.positionMs;
+  const paused = wantedPaused ?? position.paused;
+
+  const togglePlayback = () => {
+    setWantedPaused(!paused);
+    void (paused ? resume() : pause());
+  };
 
   const cancelPendingCommit = () => {
     if (commitTimerRef.current !== null) {
@@ -82,6 +105,15 @@ export function TrackScrubber() {
 
   return (
     <div className={styles.scrubber}>
+      <Button
+        iconOnly
+        onClick={togglePlayback}
+        aria-label={t(paused ? "game.resume" : "game.pause")}
+        title={t(paused ? "game.resume" : "game.pause")}
+      >
+        <span aria-hidden="true">{paused ? "▶" : "❚❚"}</span>
+      </Button>
+      <span className={styles.time}>{formatDuration(shownMs)}</span>
       <input
         className={styles.range}
         type="range"
@@ -114,10 +146,9 @@ export function TrackScrubber() {
         onPointerUp={commit}
         onBlur={commit}
       />
-      <p className={styles.readout}>
-        <span>{formatDuration(shownMs)}</span>
-        <span className={styles.total}>{formatDuration(position.durationMs)}</span>
-      </p>
+      <span className={`${styles.time} ${styles.total}`}>
+        {formatDuration(position.durationMs)}
+      </span>
     </div>
   );
 }

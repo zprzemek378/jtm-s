@@ -1,22 +1,21 @@
 .scrubber {
   display: flex;
-  flex-direction: column;
-  gap: $space-1;
+  align-items: center;
+  gap: $space-3;
   width: 100%;
-  max-width: 32rem;
 }
 
 .range {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   height: $touch-target;
   accent-color: $c-accent;
   cursor: pointer;
   background: none;
 }
 
-.readout {
-  display: flex;
-  justify-content: space-between;
+.time {
+  flex-shrink: 0;
   font-size: $text-sm;
   color: $c-text-muted;
   font-variant-numeric: tabular-nums;
