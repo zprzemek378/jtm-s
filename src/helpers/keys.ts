@@ -5,10 +5,17 @@
 // The label shown on screen is derived from that code.
 
 /**
- * Keys the interface itself needs, so they cannot become buzzers: Escape
- * cancels key capture, Tab moves focus, Enter and Space confirm the host's
- * controls, and Backspace rejects an answer. A player holding one of these
- * would fire the host's controls instead of buzzing.
+ * Keys that cannot become buzzers.
+ *
+ * Some belong to the interface: Escape cancels key capture, Tab moves focus,
+ * Enter and Space confirm the host's controls, and Backspace rejects an answer,
+ * so a player holding one would fire the host's controls instead of buzzing.
+ *
+ * The rest belong to the machine. Ctrl and the Windows key are modifiers the
+ * browser and the system read first — Ctrl turns every other buzzer into a
+ * shortcut, and the Windows key opens the Start menu over the game — and the
+ * menu key opens a context menu on top of it. None of them can be taken back by
+ * `preventDefault`, so they are kept out of players' hands instead.
  */
 export const RESERVED_KEY_CODES: readonly string[] = [
   "Escape",
@@ -17,6 +24,11 @@ export const RESERVED_KEY_CODES: readonly string[] = [
   "NumpadEnter",
   "Space",
   "Backspace",
+  "ControlLeft",
+  "ControlRight",
+  "MetaLeft",
+  "MetaRight",
+  "ContextMenu",
 ];
 
 /** Codes whose label cannot be derived by stripping a prefix. */
@@ -42,6 +54,9 @@ const KEY_LABELS: Record<string, string> = {
   ControlRight: "Ctrl R",
   AltLeft: "Alt L",
   AltRight: "Alt R",
+  MetaLeft: "Win L",
+  MetaRight: "Win R",
+  ContextMenu: "Menu",
   Backspace: "Backspace",
   Delete: "Del",
   NumpadAdd: "Num +",
