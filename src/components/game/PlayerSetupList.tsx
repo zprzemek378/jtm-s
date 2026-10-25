@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from "react";
 
-import { MAX_PLAYERS, MIN_PLAYERS } from "@/constants/gameRules";
+import { MAX_PLAYERS } from "@/constants/gameRules";
 import type { PlayerDraft } from "@/game/types";
 import { keyCodeLabel } from "@/helpers/keys";
 import {
@@ -95,10 +95,6 @@ export function PlayerSetupList({
 
   return (
     <div className={styles.list} {...reorder.listProps}>
-      <p className={styles.hint}>
-        {t("setup.playersHint", { min: MIN_PLAYERS, max: MAX_PLAYERS })}
-      </p>
-
       {players.map((player, index) => {
         const isCapturing = capturingId === player.id;
         const name = player.name.trim() || defaultName(index);
@@ -204,10 +200,15 @@ export function PlayerSetupList({
         </p>
       ) : null}
 
-      <div>
+      <div className={styles.add}>
         <Button variant={ButtonVariant.Secondary} disabled={!canAddPlayer(players)} onClick={onAdd}>
           {t("setup.addPlayer")}
         </Button>
+        {/* The ceiling is high enough that saying it up front would only be
+            noise; it is worth a word at the one moment it matters. */}
+        {canAddPlayer(players) ? null : (
+          <p className={styles.hint}>{t("setup.playersFull", { max: MAX_PLAYERS })}</p>
+        )}
       </div>
     </div>
   );

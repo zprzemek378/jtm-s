@@ -10,6 +10,12 @@
   color: $c-text-muted;
 }
 
+.add {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+}
+
 .row {
   position: relative;
   display: flex;

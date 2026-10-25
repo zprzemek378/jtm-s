@@ -81,14 +81,33 @@ function hueToColour(degrees: number): string {
   return `#${channel(red)}${channel(green)}${channel(blue)}`;
 }
 
+/**
+ * How far each colour past the suggestions is spun around the wheel.
+ *
+ * The golden angle: turning by it repeatedly never lands twice in the same
+ * place and never settles into a pattern, so any number of colours comes out
+ * spread rather than clustered.
+ */
+const GOLDEN_ANGLE = 137.508;
+
 export function playerColour(index: number): string {
-  return PLAYER_COLOURS[index % PLAYER_COLOURS.length] ?? PLAYER_COLOURS[0];
+  return PLAYER_COLOURS[index] ?? hueToColour(index * GOLDEN_ANGLE);
 }
 
 /**
- * A colour for a new player: the first suggestion nobody has taken, so a full
- * table ends up with distinct colours without anyone choosing them.
+ * A colour for a new player: the first one nobody has taken, so a table of any
+ * size ends up with distinct colours without anyone choosing them.
  */
 export function nextFreeColour(taken: readonly string[]): string {
-  return PLAYER_COLOURS.find((colour) => !taken.includes(colour)) ?? playerColour(taken.length);
+  // Bounded by how many have been handed out, plus the suggestions, plus one:
+  // past that there is certainly one free, since each index gives its own.
+  for (let index = 0; index <= taken.length + PLAYER_COLOURS.length; index += 1) {
+    const colour = playerColour(index);
+
+    if (!taken.includes(colour)) {
+      return colour;
+    }
+  }
+
+  return playerColour(taken.length);
 }
