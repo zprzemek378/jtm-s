@@ -291,8 +291,9 @@ export function RoundStage({
     );
   }
 
-  // Nobody may answer a tie: the track plays on, and the round that follows is
-  // a run-off between whoever pressed together.
+  // Nobody may answer a tie, so the round is over: the title goes up and the
+  // track plays on under it, exactly as when the clock runs out. The round that
+  // follows is a run-off between whoever pressed together.
   if (phase === GamePhase.Tied) {
     const tiedNames = players
       .filter((player) => state.tiedPlayerIds.includes(player.id))
@@ -303,6 +304,14 @@ export function RoundStage({
         <h2 className={styles.tie}>{t("game.tie")}</h2>
         <p className={styles.headline}>{t("game.tieWho", { names: tiedNames.join(", ") })}</p>
         <p className={styles.hint}>{t("game.tieExplain")}</p>
+
+        <AnswerBlock
+          track={track}
+          startPositionMs={startPositionMs}
+          lyrics={lyrics}
+          scrubber
+          className={styles.answerSlot}
+        />
         {upcomingLine ? <p className={styles.hint}>{upcomingLine}</p> : null}
 
         <Button large variant={ButtonVariant.Primary} onClick={session.nextRound}>
