@@ -260,6 +260,7 @@ export function GamePage() {
               setGame(null);
               setStage(Stage.Setup);
             }}
+            onPlayersEdited={setup.applyLineUp}
           />
         ) : null}
       </SpotifyGate>

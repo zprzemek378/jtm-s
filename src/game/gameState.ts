@@ -68,11 +68,13 @@ export type GameAction =
   | { type: "guess-window-elapsed" }
   | { type: "reveal" }
   | { type: "judge"; verdict: Verdict }
-  /** Edit mode: the host rewrites the standings directly. */
+  /** Edit mode: the host rewrites the standings and the line-up directly. */
   | {
       type: "apply-edit";
       accounts: Accounts;
       suspendedNext: readonly PlayerId[];
+      /** The same players, with whatever names, colours and seating the host gave them. */
+      players: readonly GamePlayer[];
     }
   | {
       type: "reset";
@@ -263,12 +265,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Reaching the target ends the game however the money got there, so the
       // scoreboard can never show somebody past a target they have not won at.
       const winner =
-        state.players.find(
+        action.players.find(
           (player) => balanceOf(action.accounts, player.id) >= state.rules.targetMoney,
         ) ?? null;
 
       return {
         ...state,
+        players: [...action.players],
         accounts: { ...action.accounts },
         pendingSuspension:
           action.suspendedNext.length > 0

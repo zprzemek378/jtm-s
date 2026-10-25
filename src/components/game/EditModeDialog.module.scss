@@ -1,8 +1,3 @@
-.intro {
-  font-size: $text-sm;
-  color: $c-text-muted;
-}
-
 .list {
   display: flex;
   flex-direction: column;
@@ -12,13 +7,16 @@
   list-style: none;
 }
 
+// Everything about one player on one line: the dialog is wide enough for it,
+// and a line per player is what makes the standings readable down the column.
 .row {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-start;
   gap: $space-3;
   padding-bottom: $space-3;
   border-bottom: 1px solid $c-border;
+  transition: opacity $transition-fast;
 
   &:last-child {
     padding-bottom: 0;
@@ -26,11 +24,131 @@
   }
 }
 
+// The row that is in the air: what is left behind is the gap it came from.
+.lifted {
+  opacity: 0.35;
+}
+
+// Where it would land — a line between two rows rather than a box around one.
+.dropAbove::before,
+.dropBelow::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 2px;
+  background-color: $c-accent;
+}
+
+.dropAbove::before {
+  top: -2px;
+}
+
+.dropBelow::after {
+  bottom: -2px;
+}
+
+// Who the player is: the grip, the seat and the name.
+.identity {
+  display: flex;
+  flex: 1 1 14rem;
+  min-width: 0;
+  align-items: center;
+  gap: $space-2;
+}
+
+.grip {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: $touch-target;
+  border: none;
+  background: none;
+  color: $c-text-subtle;
+  font-size: $text-lg;
+  line-height: 1;
+  cursor: grab;
+}
+
+.grip:hover {
+  color: $c-text;
+}
+
+.grip:active {
+  cursor: grabbing;
+}
+
+// Which seat this is, and nothing more — as on the setup screen.
+.index {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background-color: $c-surface-alt;
+  color: $c-text-muted;
+  font-size: $text-xs;
+  font-weight: 700;
+}
+
+.name {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+// As on the setup screen: the name is typed into the player's own colour.
+.name input {
+  border-color: color-mix(in oklab, var(--player-colour) 60%, $c-border);
+  background-color: color-mix(in oklab, var(--player-colour) 12%, $c-surface);
+}
+
+.name input:hover:not(:disabled),
+.name input:focus {
+  border-color: var(--player-colour);
+}
+
+// The row hangs from the top, because the money field grows a warning under it
+// — the colour belongs beside the fields, not above them.
+.colour {
+  align-self: center;
+}
+
 .money {
-  flex: 1 1 12rem;
+  flex: 0 0 6rem;
+}
+
+// Only where there is genuinely no room — a phone held upright — do the parts
+// of a player come apart.
+@include below($bp-md) {
+  .row {
+    flex-wrap: wrap;
+  }
+}
+
+.keyCell {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: $space-2;
 }
 
 .ban {
   flex: 0 0 auto;
   align-self: center;
+}
+
+.capturing {
+  font-size: $text-sm;
+  font-weight: 500;
+  color: $c-accent;
+}
+
+.problem {
+  font-size: $text-sm;
+  color: $c-negative;
 }

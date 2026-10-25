@@ -22,6 +22,14 @@
   box-shadow: 0 16px 48px $c-shadow;
 }
 
+// A dialog whose rows are a table rather than a paragraph. It takes the width
+// its rows actually need instead of the reading width — a short line-up stays
+// short — and stops short of filling the window.
+.wide {
+  width: auto;
+  max-width: min(95vw, 100%);
+}
+
 .header {
   display: flex;
   align-items: center;

@@ -42,8 +42,12 @@ export type GameSession = {
   nextRound: () => void;
   /** Starts over with the same players, target and playlist. */
   restart: () => void;
-  /** Edit mode: rewrites the standings between rounds. */
-  applyEdit: (accounts: Accounts, suspendedNext: readonly PlayerId[]) => void;
+  /** Edit mode: rewrites the standings and the line-up between rounds. */
+  applyEdit: (
+    accounts: Accounts,
+    suspendedNext: readonly PlayerId[],
+    players: readonly GamePlayer[],
+  ) => void;
 };
 
 export function useGameSession(
@@ -303,14 +307,19 @@ export function useGameSession(
   }, []);
 
   const restart = useCallback(() => {
-    dispatch({ type: "reset", players, rules, tracks });
-  }, [players, rules, tracks]);
+    // A rematch keeps whatever edit mode made of the line-up — the names,
+    // colours and seating are the table's, not the game's.
+    dispatch({ type: "reset", players: state.players, rules, tracks });
+  }, [rules, state.players, tracks]);
 
-  const applyEdit = useCallback((accounts: Accounts, suspendedNext: readonly PlayerId[]) => {
-    dispatch({ type: "apply-edit", accounts, suspendedNext });
-  }, []);
+  const applyEdit = useCallback(
+    (accounts: Accounts, suspendedNext: readonly PlayerId[], players: readonly GamePlayer[]) => {
+      dispatch({ type: "apply-edit", accounts, suspendedNext, players });
+    },
+    [],
+  );
 
-  useBuzzerKeys(players, state.phase === GamePhase.Listening, buzz);
+  useBuzzerKeys(state.players, state.phase === GamePhase.Listening, buzz);
 
   return {
     state,

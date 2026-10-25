@@ -8,7 +8,7 @@ import { STORAGE_KEYS, writeStoredJson } from "@/storage/localStorage";
 
 import { createPlayerDraft, readStoredSetup } from "./rules";
 import type { RewardMode } from "./rewards";
-import type { GameSetup, PlayerDraft } from "./types";
+import type { GamePlayer, GameSetup, PlayerDraft } from "./types";
 
 export type GameSetupControls = {
   players: readonly PlayerDraft[];
@@ -25,6 +25,8 @@ export type GameSetupControls = {
   setColour: (id: string, colour: string) => void;
   /** Moves a player to another place in the line-up, which is the seating. */
   movePlayer: (from: number, to: number) => void;
+  /** Takes the names, colours and order a running game's edit mode settled on. */
+  applyLineUp: (players: readonly GamePlayer[]) => void;
   addPlayer: () => void;
   removePlayer: (id: string) => void;
   /** The whole stored setup, for turning into the rules a game runs with. */
@@ -66,6 +68,24 @@ export function useGameSetup(): GameSetupControls {
       ...current,
       players: [...moveItem(current.players, from, to)],
     }));
+  }, []);
+
+  const applyLineUp = useCallback((players: readonly GamePlayer[]) => {
+    setSetup((current) => {
+      const drafts = players.map((player) => {
+        const draft = current.players.find((candidate) => candidate.id === player.id);
+
+        // The key stays with the draft: edit mode never touches it, and a
+        // line-up that does not line up with this one is not this one's.
+        return draft ? { ...draft, name: player.name, colour: player.colour } : null;
+      });
+
+      if (drafts.length !== current.players.length || drafts.some((draft) => draft === null)) {
+        return current;
+      }
+
+      return { ...current, players: drafts as PlayerDraft[] };
+    });
   }, []);
 
   const addPlayer = useCallback(() => {
@@ -115,6 +135,7 @@ export function useGameSetup(): GameSetupControls {
     assignKey,
     setColour,
     movePlayer,
+    applyLineUp,
     addPlayer,
     removePlayer,
     setup,
