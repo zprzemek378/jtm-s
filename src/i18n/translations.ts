@@ -204,7 +204,6 @@ const pl = {
   "game.direction.rising": "runda rosnąca",
   "game.direction.falling": "runda malejąca",
   "game.nextRoundDirection": "Następna: {direction}",
-  "game.atStake": "Na stole",
   "game.captured": "Zatrzymano na {amount}",
   "game.won": "Zdobywa {amount}",
   "game.lost": "Traci {amount}",
@@ -274,7 +273,6 @@ const pl = {
 
   "game.round": "Tura {number}",
   "game.listening": "Słuchajcie!",
-  "game.listeningHint": "Naciśnij swój klawisz, gdy znasz odpowiedź.",
   "game.buzzedIn": "się zgłasza!",
   "game.answerWindow": "Czas na odpowiedź",
   "game.answerWindowOver": "Umowny czas minął — możecie kończyć odpowiedź.",
@@ -544,7 +542,6 @@ const en: Record<TranslationKey, string> = {
   "game.direction.rising": "rising round",
   "game.direction.falling": "falling round",
   "game.nextRoundDirection": "Next: {direction}",
-  "game.atStake": "At stake",
   "game.captured": "Stopped at {amount}",
   "game.won": "Wins {amount}",
   "game.lost": "Loses {amount}",
@@ -614,7 +611,6 @@ const en: Record<TranslationKey, string> = {
 
   "game.round": "Round {number}",
   "game.listening": "Listen!",
-  "game.listeningHint": "Press your key as soon as you know the answer.",
   "game.buzzedIn": "buzzed in!",
   "game.answerWindow": "Time to answer",
   "game.answerWindowOver": "The agreed time is up — wrap up the answer.",
