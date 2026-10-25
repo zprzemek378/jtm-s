@@ -25,6 +25,12 @@ type GameBoardProps = {
   historyKey: string;
   /** Leaves the game and returns to the setup screen. */
   onChangeSettings: () => void;
+  /**
+   * Edit mode has rewritten the line-up. Passed on so the names, colours and
+   * seating the host settled on mid-game are the ones waiting next time, rather
+   * than being lost with the game they were typed into.
+   */
+  onPlayersEdited?: (players: readonly GamePlayer[]) => void;
 };
 
 /** A running game: the round on stage, the scoreboard under it. */
@@ -34,6 +40,7 @@ export function GameBoard({
   tracks,
   historyKey,
   onChangeSettings,
+  onPlayersEdited,
 }: GameBoardProps) {
   const { t } = useLanguage();
   const session = useGameSession(players, rules, tracks, historyKey);
@@ -43,6 +50,8 @@ export function GameBoard({
   const [editing, setEditing] = useState(false);
 
   const { state } = session;
+  /** The line-up as it stands — edit mode can rename, recolour and reseat it. */
+  const lineUp = state.players;
 
   // The hidden way in. Listened for only while the game waits on the host, and
   // never while a dialog is already open.
@@ -56,7 +65,7 @@ export function GameBoard({
   if (state.phase === GamePhase.Finished) {
     return (
       <GameOverPanel
-        players={players}
+        players={lineUp}
         accounts={state.accounts}
         winnerId={state.winnerId}
         onPlayAgain={session.restart}
@@ -78,7 +87,7 @@ export function GameBoard({
     state.phase === GamePhase.Buzzed ||
     state.phase === GamePhase.Revealed;
   const suspension = roundInPlay ? state.suspension : state.pendingSuspension;
-  const suspendedNames = players
+  const suspendedNames = lineUp
     .filter((player) => suspension?.playerIds.includes(player.id) ?? false)
     .map((player) => player.name);
 
@@ -97,7 +106,7 @@ export function GameBoard({
 
       <RoundStage
         session={session}
-        players={players}
+        players={lineUp}
         rules={rules}
         upcomingDirection={upcomingDirectionHint(rules.mode, state.round + 1)}
         shortcutsEnabled={!confirmingAbandon && !editing}
@@ -119,7 +128,7 @@ export function GameBoard({
       <section aria-label={t("game.scores")}>
         <h2 className={styles.scoresTitle}>{t("game.scores")}</h2>
         <Scoreboard
-          players={players}
+          players={lineUp}
           accounts={state.accounts}
           targetMoney={rules.targetMoney}
           // Only while the round is being played. Once it is over, the screen
@@ -134,12 +143,13 @@ export function GameBoard({
 
       {editing ? (
         <EditModeDialog
-          players={players}
+          players={lineUp}
           accounts={state.accounts}
           suspendedNext={state.pendingSuspension?.playerIds ?? []}
           targetMoney={rules.targetMoney}
-          onApply={(accounts, suspendedNext) => {
-            session.applyEdit(accounts, suspendedNext);
+          onApply={(accounts, suspendedNext, edited) => {
+            session.applyEdit(accounts, suspendedNext, edited);
+            onPlayersEdited?.(edited);
             setEditing(false);
           }}
           onCancel={() => setEditing(false)}

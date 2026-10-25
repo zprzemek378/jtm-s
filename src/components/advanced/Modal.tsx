@@ -12,10 +12,12 @@ type ModalProps = {
   children: ReactNode;
   /** Buttons pinned to the bottom of the dialog. */
   footer?: ReactNode;
+  /** Takes most of the window — for a dialog whose rows are a table. */
+  wide?: boolean;
 };
 
 /** Dialog rendered into <body>, so no scroll container can clip it. */
-export function Modal({ title, onClose, closeLabel, children, footer }: ModalProps) {
+export function Modal({ title, onClose, closeLabel, children, footer, wide = false }: ModalProps) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -38,7 +40,12 @@ export function Modal({ title, onClose, closeLabel, children, footer }: ModalPro
         }
       }}
     >
-      <div className={styles.dialog} role="dialog" aria-modal="true" aria-label={title}>
+      <div
+        className={wide ? `${styles.dialog} ${styles.wide}` : styles.dialog}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
         <div className={styles.header}>
           <h2 className={styles.title}>{title}</h2>
           <Button

@@ -47,8 +47,7 @@ const pl = {
   "modal.close": "Zamknij",
 
   "edit.title": "Tryb edycji",
-  "edit.intro":
-    "Ręczna korekta stanu gry. Ustaw stan konta każdego gracza i zdecyduj, kto pauzuje w następnej turze.",
+  "edit.name": "Nazwa gracza",
   "edit.money": "Konto gracza {name}",
   "edit.ban": "Pauza w następnej turze",
   "edit.apply": "Zastosuj",
@@ -390,8 +389,7 @@ const en: Record<TranslationKey, string> = {
   "modal.close": "Close",
 
   "edit.title": "Edit mode",
-  "edit.intro":
-    "Manual correction of the standings. Set each player's balance and decide who sits out the next round.",
+  "edit.name": "Player name",
   "edit.money": "{name}'s balance",
   "edit.ban": "Sits out the next round",
   "edit.apply": "Apply",
