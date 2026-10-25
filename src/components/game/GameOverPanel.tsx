@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 import { formatMoney } from "@/game/rewards";
 import type { GamePlayer, PlayerId } from "@/game/types";
 import { balanceOf, rankPlayers, type Accounts } from "@/helpers/money";
@@ -37,7 +39,11 @@ export function GameOverPanel({
         <span className={styles.resultsLabel}>{t("game.finalScores")}</span>
         <ol className={styles.list}>
           {ranked.map((player, index) => (
-            <li key={player.id} className={styles.row}>
+            <li
+              key={player.id}
+              className={styles.row}
+              style={{ "--player-colour": player.colour } as CSSProperties}
+            >
               <span className={styles.place}>{index + 1}.</span>
               <span className={styles.name}>{player.name}</span>
               <span className={styles.score}>{formatMoney(balanceOf(accounts, player.id))}</span>

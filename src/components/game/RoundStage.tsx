@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 
 import { formatMoney, RewardDirection } from "@/game/rewards";
 import type { GameSession } from "@/game/useGameSession";
@@ -194,6 +194,7 @@ export function RoundStage({
                 className={
                   muted ? `${styles.legendItem} ${styles.legendItemMuted}` : styles.legendItem
                 }
+                style={{ "--player-colour": player.colour } as CSSProperties}
               >
                 <Keycap keyCode={player.keyCode} emptyLabel="—" muted={muted} />
                 <span>{player.name}</span>
@@ -212,7 +213,15 @@ export function RoundStage({
       <div className={styles.stage}>
         <p className={styles.eyebrow}>{t("game.round", { number: round })}</p>
         <h2 className={styles.headline}>
-          {t("game.buzzedBy", { name: buzzedPlayer?.name ?? "" })}
+          {buzzedPlayer ? (
+            <span
+              className={styles.buzzedName}
+              style={{ "--player-colour": buzzedPlayer.colour } as CSSProperties}
+            >
+              {buzzedPlayer.name}
+            </span>
+          ) : null}{" "}
+          {t("game.buzzedIn")}
         </h2>
         <p className={styles.captured}>
           {t("game.captured", {
