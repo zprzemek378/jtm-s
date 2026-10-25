@@ -2,7 +2,7 @@
 // the app would otherwise fetch from a backend it does not have.
 
 export const MIN_PLAYERS = 2;
-export const MAX_PLAYERS = 8;
+export const MAX_PLAYERS = 12;
 
 /** The sum a game is played to. Stepped in hundreds, like the stakes. */
 export const MIN_TARGET_MONEY = 100;

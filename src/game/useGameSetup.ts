@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { moveItem } from "@/helpers/list";
 import { STORAGE_KEYS, writeStoredJson } from "@/storage/localStorage";
 
 import { createPlayerDraft, readStoredSetup } from "./rules";
@@ -21,6 +22,9 @@ export type GameSetupControls = {
   setMode: (mode: RewardMode) => void;
   rename: (id: string, name: string) => void;
   assignKey: (id: string, keyCode: string) => void;
+  setColour: (id: string, colour: string) => void;
+  /** Moves a player to another place in the line-up, which is the seating. */
+  movePlayer: (from: number, to: number) => void;
   addPlayer: () => void;
   removePlayer: (id: string) => void;
   /** The whole stored setup, for turning into the rules a game runs with. */
@@ -50,10 +54,27 @@ export function useGameSetup(): GameSetupControls {
     }));
   }, []);
 
+  const setColour = useCallback((id: string, colour: string) => {
+    setSetup((current) => ({
+      ...current,
+      players: current.players.map((player) => (player.id === id ? { ...player, colour } : player)),
+    }));
+  }, []);
+
+  const movePlayer = useCallback((from: number, to: number) => {
+    setSetup((current) => ({
+      ...current,
+      players: [...moveItem(current.players, from, to)],
+    }));
+  }, []);
+
   const addPlayer = useCallback(() => {
     setSetup((current) => ({
       ...current,
-      players: [...current.players, createPlayerDraft()],
+      players: [
+        ...current.players,
+        createPlayerDraft(current.players.map((player) => player.colour)),
+      ],
     }));
   }, []);
 
@@ -92,6 +113,8 @@ export function useGameSetup(): GameSetupControls {
     setMode,
     rename,
     assignKey,
+    setColour,
+    movePlayer,
     addPlayer,
     removePlayer,
     setup,

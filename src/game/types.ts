@@ -8,6 +8,8 @@ export type PlayerDraft = {
   name: string;
   /** `KeyboardEvent.code`, or null while the player has not picked a key. */
   keyCode: string | null;
+  /** The avatar colour, as `#rrggbb`. */
+  colour: string;
 };
 
 /** A player a game actually runs with: named, and holding a key. */
@@ -15,8 +17,8 @@ export type GamePlayer = {
   id: PlayerId;
   name: string;
   keyCode: string;
-  /** Slot index, used to pick the avatar colour. */
-  hueIndex: number;
+  /** The avatar colour, as `#rrggbb`. */
+  colour: string;
 };
 
 /** The settings a game runs under, fixed once it starts. */

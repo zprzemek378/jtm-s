@@ -1,7 +1,8 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: $space-3;
+  // Tight: the rows are a list to run an eye down, not cards.
+  gap: $space-1;
 }
 
 .hint {
@@ -10,29 +11,98 @@
 }
 
 .row {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: $space-3;
+  padding: $space-1 $space-2;
+  border-radius: $radius-sm;
+  transition:
+    opacity $transition-fast,
+    background-color $transition-fast;
 }
 
-.avatar {
+// The row that is in the air: what is left behind is the gap it came from.
+.lifted {
+  opacity: 0.35;
+}
+
+// Where it would land — a line between two rows rather than a box around one,
+// because a row is not being replaced, it is being slotted in beside.
+.dropAbove::before,
+.dropBelow::after {
+  content: "";
+  position: absolute;
+  right: $space-2;
+  left: $space-2;
+  height: 2px;
+  border-radius: 2px;
+  background-color: $c-accent;
+}
+
+.dropAbove::before {
+  top: -2px;
+}
+
+.dropBelow::after {
+  bottom: -2px;
+}
+
+.grip {
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid color-mix(in oklab, hsl(var(--player-hue) 70% 45%) 60%, $c-border);
-  border-radius: 50%;
-  background-color: color-mix(in oklab, hsl(var(--player-hue) 70% 45%) 18%, $c-surface);
+  width: 1.5rem;
+  height: $touch-target;
+  border: none;
+  background: none;
+  color: $c-text-subtle;
+  font-size: $text-lg;
+  line-height: 1;
+  cursor: grab;
+}
+
+.grip:hover {
   color: $c-text;
-  font-size: $text-sm;
+}
+
+.grip:active {
+  cursor: grabbing;
+}
+
+// Which seat this is, and nothing more: the colour is chosen over on the right,
+// with the rest of the player's settings.
+.index {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background-color: $c-surface-alt;
+  color: $c-text-muted;
+  font-size: $text-xs;
   font-weight: 700;
 }
 
 .name {
   flex: 1 1 10rem;
+}
+
+// The field a player's name is typed into wears their colour: a strong edge and
+// a breath of it inside, so the line-up reads as the same colours the
+// scoreboard will show.
+.name input {
+  border-color: color-mix(in oklab, var(--player-colour) 60%, $c-border);
+  background-color: color-mix(in oklab, var(--player-colour) 12%, $c-surface);
+}
+
+.name input:hover:not(:disabled),
+.name input:focus {
+  border-color: var(--player-colour);
 }
 
 .keyCell {
