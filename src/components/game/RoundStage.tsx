@@ -168,9 +168,7 @@ export function RoundStage({
         <div className={styles.money} aria-live="off">
           {formatMoney(currentMoney)}
         </div>
-        <p className={styles.moneyLabel}>
-          {t("game.atStake")} · {secondsLeft} s
-        </p>
+        <p className={styles.secondsLeft}>{secondsLeft} s</p>
         <ProgressBar
           instant
           tall
@@ -179,8 +177,6 @@ export function RoundStage({
           ariaLabel={t("game.listening")}
           tone={secondsLeft <= 3 ? ProgressTone.Warning : ProgressTone.Accent}
         />
-
-        <p className={styles.hint}>{t("game.listeningHint")}</p>
       </div>
     );
   }
