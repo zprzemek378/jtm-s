@@ -96,6 +96,42 @@ export const REQUEST_GAP_MS = 80;
  */
 export const PRIORITY_AGING_MS = 500;
 
+/**
+ * Waiting for the music to actually start.
+ *
+ * Spotify answering 204 to a play command means it accepted it, not that the
+ * device is playing: the track still has to be fetched and started, which takes
+ * a few hundred milliseconds. A round that opened before that happened would
+ * accept a buzz the player's own pause command then arrives too early to stop —
+ * so the round waits for the sound. Asking the SDK costs no request, so it can
+ * be asked often. The timeout is a floor under a device that never reports
+ * itself playing: the round starts anyway rather than hanging on a spinner.
+ */
+export const PLAYBACK_START_POLL_MS = 80;
+export const PLAYBACK_START_TIMEOUT_MS = 2500;
+
+/**
+ * How long the device's own idea of which track is playing has to agree with
+ * ours before the wait gives up on matching them.
+ *
+ * Spotify can hand back a different recording of the same song for the market
+ * the account is in, and the player then names that one. Sound is sound, so
+ * past this point playing anything at all counts as started — the alternative
+ * is holding every round for the full timeout over a mismatch of names.
+ */
+export const PLAYBACK_START_GRACE_MS = 700;
+
+/**
+ * Making sure a pause stuck.
+ *
+ * The same race from the other side: a buzz landing in the moment between the
+ * play command and the first sound can pause a device that has nothing to
+ * pause yet, and the track then plays on with nobody left to stop it. So the
+ * player is asked again until it reports itself paused.
+ */
+export const PAUSE_VERIFY_DELAY_MS = 150;
+export const PAUSE_VERIFY_ATTEMPTS = 4;
+
 export const SEEK_COMMIT_DELAY_MS = 200;
 
 /** How far one arrow key moves the scrubber. */
