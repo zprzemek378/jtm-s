@@ -150,11 +150,26 @@
   color: $c-text-subtle;
 }
 
+// A key and the name of whoever holds it, carrying that player's colour — this
+// is the moment the table is looking for their own key.
 .legendItem {
   display: inline-flex;
   align-items: center;
   gap: $space-2;
+  padding: $space-1 $space-3 $space-1 $space-2;
+  border: 1px solid color-mix(in oklab, var(--player-colour) 60%, $c-border);
+  border-radius: $radius-lg;
+  background-color: color-mix(in oklab, var(--player-colour) 16%, $c-surface);
   font-size: $text-sm;
+}
+
+// The name of whoever just buzzed, in their own colour.
+.buzzedName {
+  display: inline-block;
+  padding: 0 $space-3;
+  border: 1px solid color-mix(in oklab, var(--player-colour) 60%, $c-border);
+  border-radius: $radius-md;
+  background-color: color-mix(in oklab, var(--player-colour) 16%, $c-surface);
 }
 
 // Applied alongside .legendItem for a player sitting the round out.

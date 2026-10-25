@@ -12,9 +12,11 @@
   flex-direction: column;
   gap: $space-2;
   padding: $space-3;
-  border: 1px solid color-mix(in oklab, var(--player-colour) 45%, $c-border);
+  // The player's colour on the edge, and a breath of it inside: strong enough
+  // to find the card by, gentle enough to read the money off.
+  border: 1px solid color-mix(in oklab, var(--player-colour) 55%, $c-border);
   border-radius: $radius-md;
-  background-color: color-mix(in oklab, var(--player-colour) 10%, $c-surface);
+  background-color: color-mix(in oklab, var(--player-colour) 12%, $c-surface);
   transition:
     opacity $transition-fast,
     border-color $transition-fast,

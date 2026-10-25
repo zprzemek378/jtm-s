@@ -61,8 +61,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+// The name carries the player's colour here too, so the final table reads as
+// the same people the scoreboard did.
 .name {
   margin-right: auto;
+  padding: 0 $space-2;
+  border: 1px solid color-mix(in oklab, var(--player-colour) 60%, $c-border);
+  border-radius: $radius-sm;
+  background-color: color-mix(in oklab, var(--player-colour) 16%, $c-surface);
   font-weight: 600;
 }
 
