@@ -339,7 +339,6 @@ const pl = {
   "game.abandonConfirm": "Przerwać rozgrywkę? Punkty przepadną.",
   "game.abandonConfirmYes": "Przerwij",
   "game.trackNumber": "Utwór {number}",
-  "game.keyLegend": "Klawisze graczy",
 } as const;
 
 export type TranslationKey = keyof typeof pl;
@@ -680,7 +679,6 @@ const en: Record<TranslationKey, string> = {
   "game.abandonConfirm": "Abandon this game? The scores will be lost.",
   "game.abandonConfirmYes": "Abandon",
   "game.trackNumber": "Track {number}",
-  "game.keyLegend": "Player keys",
 };
 
 export const TRANSLATIONS: Record<Language, Record<TranslationKey, string>> = {
