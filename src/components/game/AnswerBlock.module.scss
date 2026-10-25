@@ -1,0 +1,27 @@
+.answer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: $space-4;
+  width: 100%;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  min-width: 0;
+}
+
+// Both halves share the stage rather than sitting in a narrow column of their
+// own: on a wide screen the room is there to be used.
+@container round-stage (min-width: 52rem) {
+  .answer {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .main {
+    flex: 1 1 50%;
+  }
+}

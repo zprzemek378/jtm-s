@@ -16,6 +16,8 @@ export const STORAGE_KEYS = {
   playedTracks: "jtm-s.played-tracks",
   /** Whether the game's own sound effects play. */
   soundEnabled: "jtm-s.sound-enabled",
+  /** Whether the words appear on screen once the answer is revealed. */
+  karaokeEnabled: "jtm-s.karaoke-enabled",
   /** Whether presses close together are judged a tie, and how close that is. */
   tiesEnabled: "jtm-s.ties-enabled",
   tieThreshold: "jtm-s.tie-threshold",

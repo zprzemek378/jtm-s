@@ -1,0 +1,152 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  width: 100%;
+  padding: $space-4 $space-5;
+  border: 1px solid $c-border;
+  border-radius: $radius-md;
+  background-color: $c-surface-alt;
+  text-align: left;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  min-height: $touch-target;
+}
+
+.label {
+  font-size: $text-xs;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $c-text-subtle;
+}
+
+// The window the song scrolls through, by itself or by hand. Lines arrive and
+// leave through a soft edge rather than being cut off at a hard one.
+.viewport {
+  position: relative;
+  height: 11rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+  scrollbar-width: thin;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  // Room above the first line and below the last, so either can be brought to
+  // the middle of the window like any other.
+  padding-block: 4.5rem;
+}
+
+.line {
+  // The box hugs the words rather than the panel, so clicking a line means
+  // clicking its words.
+  align-self: center;
+  max-width: 100%;
+  font-size: $text-lg;
+  line-height: 1.35;
+  text-align: center;
+  text-wrap: balance;
+  color: $c-text;
+  transition:
+    opacity 260ms ease,
+    color 260ms ease;
+}
+
+// How far from the line being sung — the further away, the fainter.
+.fade1 {
+  opacity: 0.55;
+}
+
+.fade2 {
+  opacity: 0.3;
+}
+
+.fade3 {
+  opacity: 0.16;
+}
+
+/** The line being sung. */
+.current {
+  color: $c-accent;
+  font-weight: 700;
+}
+
+// Every line is a way back into the track: clicking one plays from there.
+.jump {
+  display: block;
+  width: 100%;
+  padding: $space-1 $space-3;
+  border: none;
+  border-radius: $radius-sm;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  transition: background-color $transition-fast;
+}
+
+.jump:hover {
+  background-color: $c-surface;
+}
+
+// A break in the singing.
+.rest {
+  color: $c-text-subtle;
+}
+
+// An untimed file: the whole song at once, scrolled by hand if it is long.
+.plainViewport {
+  max-height: 12rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.plain {
+  font-size: $text-sm;
+  line-height: 1.5;
+  color: $c-text;
+  white-space: pre-wrap;
+}
+
+.note {
+  font-size: $text-xs;
+  color: $c-text-muted;
+}
+
+// Beside the track card there is room for more of the song at a time.
+@container round-stage (min-width: 52rem) {
+  // The other half of the stage, beside the track card.
+  .panel {
+    flex: 1 1 50%;
+    min-width: 0;
+  }
+
+  .viewport {
+    height: 15rem;
+  }
+
+  .column {
+    padding-block: 6.5rem;
+  }
+
+  .line {
+    font-size: $text-xl;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line {
+    transition: none;
+  }
+}
