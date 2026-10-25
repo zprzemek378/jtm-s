@@ -12,9 +12,9 @@
   flex-direction: column;
   gap: $space-2;
   padding: $space-3;
-  border: 1px solid color-mix(in oklab, hsl(var(--player-hue) 70% 45%) 45%, $c-border);
+  border: 1px solid color-mix(in oklab, var(--player-colour) 45%, $c-border);
   border-radius: $radius-md;
-  background-color: color-mix(in oklab, hsl(var(--player-hue) 70% 45%) 10%, $c-surface);
+  background-color: color-mix(in oklab, var(--player-colour) 10%, $c-surface);
   transition:
     opacity $transition-fast,
     border-color $transition-fast,

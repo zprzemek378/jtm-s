@@ -89,6 +89,6 @@ export function toGamePlayers(
     id: player.id,
     name: displayName(player, index, fallbackName),
     keyCode: player.keyCode as string,
-    hueIndex: index,
+    colour: player.colour,
   }));
 }

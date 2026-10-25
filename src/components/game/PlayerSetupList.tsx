@@ -1,7 +1,6 @@
 import { useState, type CSSProperties } from "react";
 
 import { MAX_PLAYERS, MIN_PLAYERS } from "@/constants/gameRules";
-import { playerHue } from "@/constants/players";
 import type { PlayerDraft } from "@/game/types";
 import { keyCodeLabel } from "@/helpers/keys";
 import {
@@ -11,10 +10,12 @@ import {
   isAssignableKeyCode,
 } from "@/helpers/playerSetup";
 import { useKeyCapture } from "@/hooks/useKeyCapture";
+import { DropEdge, useListReorder } from "@/hooks/useListReorder";
 import { useLanguage } from "@/i18n/useLanguage";
 
 import { Button } from "../ui/Button";
 import { ButtonVariant } from "../ui/buttonVariant";
+import { ColourSwatch } from "../ui/ColourSwatch";
 import { Input } from "../ui/Input";
 import { Keycap } from "../ui/Keycap";
 import styles from "./PlayerSetupList.module.scss";
@@ -23,6 +24,9 @@ type PlayerSetupListProps = {
   players: readonly PlayerDraft[];
   onRename: (id: string, name: string) => void;
   onAssignKey: (id: string, keyCode: string) => void;
+  onSetColour: (id: string, colour: string) => void;
+  /** Reorders the line-up — which is where everyone is sitting. */
+  onMove: (from: number, to: number) => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
   /** Falls back to "Player N" when a name is left empty. */
@@ -34,6 +38,8 @@ export function PlayerSetupList({
   players,
   onRename,
   onAssignKey,
+  onSetColour,
+  onMove,
   onAdd,
   onRemove,
   defaultName,
@@ -41,6 +47,7 @@ export function PlayerSetupList({
   const { t } = useLanguage();
   const [capturingId, setCapturingId] = useState<string | null>(null);
   const [keyProblem, setKeyProblem] = useState<string | null>(null);
+  const reorder = useListReorder(onMove);
 
   const stopCapturing = () => {
     setCapturingId(null);
@@ -87,7 +94,7 @@ export function PlayerSetupList({
   );
 
   return (
-    <div className={styles.list}>
+    <div className={styles.list} {...reorder.listProps}>
       <p className={styles.hint}>
         {t("setup.playersHint", { min: MIN_PLAYERS, max: MAX_PLAYERS })}
       </p>
@@ -96,13 +103,46 @@ export function PlayerSetupList({
         const isCapturing = capturingId === player.id;
         const name = player.name.trim() || defaultName(index);
 
+        const edge = reorder.dropEdge(index);
+        const rowClasses = [
+          styles.row,
+          reorder.draggingIndex === index ? styles.lifted : null,
+          edge === DropEdge.Above ? styles.dropAbove : null,
+          edge === DropEdge.Below ? styles.dropBelow : null,
+        ]
+          .filter(Boolean)
+          .join(" ");
+
         return (
-          <div key={player.id} className={styles.row}>
-            <span
-              className={styles.avatar}
-              style={{ "--player-hue": playerHue(index) } as CSSProperties}
-              aria-hidden="true"
+          <div
+            key={player.id}
+            className={rowClasses}
+            style={{ "--player-colour": player.colour } as CSSProperties}
+            {...reorder.rowProps(index)}
+          >
+            <button
+              type="button"
+              className={styles.grip}
+              title={t("setup.reorder", { name })}
+              aria-label={t("setup.reorder", { name })}
+              // Dragging is the quick way; the arrows are the one that works
+              // without a pointer, and keep the focus on the moving row.
+              onKeyDown={(event) => {
+                const step = event.key === "ArrowUp" ? -1 : event.key === "ArrowDown" ? 1 : 0;
+
+                if (step === 0) {
+                  return;
+                }
+
+                event.preventDefault();
+                onMove(index, index + step);
+              }}
+              {...reorder.handleProps(index)}
             >
+              <span aria-hidden="true">⠿</span>
+            </button>
+
+            <span className={styles.index} aria-hidden="true">
               {index + 1}
             </span>
 
@@ -116,6 +156,12 @@ export function PlayerSetupList({
                 number: index + 1,
               })}
               onChange={(event) => onRename(player.id, event.target.value)}
+            />
+
+            <ColourSwatch
+              colour={player.colour}
+              label={t("setup.colourOf", { name })}
+              onChange={(colour) => onSetColour(player.id, colour)}
             />
 
             <div className={styles.keyCell}>

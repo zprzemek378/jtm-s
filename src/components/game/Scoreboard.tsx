@@ -1,6 +1,5 @@
 import type { CSSProperties } from "react";
 
-import { playerHue } from "@/constants/players";
 import { formatMoney } from "@/game/rewards";
 import type { GamePlayer, PlayerId } from "@/game/types";
 import { balanceOf, type Accounts } from "@/helpers/money";
@@ -58,7 +57,7 @@ export function Scoreboard({
           <li
             key={player.id}
             className={classNames}
-            style={{ "--player-hue": playerHue(player.hueIndex) } as CSSProperties}
+            style={{ "--player-colour": player.colour } as CSSProperties}
           >
             <div className={styles.head}>
               <span className={styles.name}>{player.name}</span>

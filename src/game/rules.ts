@@ -17,18 +17,23 @@ import {
   MIN_ROUND_SECONDS,
   MIN_TARGET_MONEY,
 } from "@/constants/gameRules";
+import { nextFreeColour, normaliseColour, playerColour } from "@/constants/players";
 import { STORAGE_KEYS, readStoredJson } from "@/storage/localStorage";
 
 import { DEFAULT_REWARD_MODE, isRewardMode } from "./rewards";
 import type { GameRules, GameSetup, PlayerDraft } from "./types";
 
-export function createPlayerDraft(): PlayerDraft {
-  return { id: crypto.randomUUID(), name: "", keyCode: null };
+/** @param taken The colours already in use, so the new slot gets one of its own. */
+export function createPlayerDraft(taken: readonly string[] = []): PlayerDraft {
+  return { id: crypto.randomUUID(), name: "", keyCode: null, colour: nextFreeColour(taken) };
 }
 
 export function createDefaultSetup(): GameSetup {
   return {
-    players: Array.from({ length: MIN_PLAYERS }, createPlayerDraft),
+    players: Array.from({ length: MIN_PLAYERS }, (_, index) => ({
+      ...createPlayerDraft(),
+      colour: playerColour(index),
+    })),
     targetMoney: DEFAULT_TARGET_MONEY,
     roundSeconds: DEFAULT_ROUND_SECONDS,
     answerSeconds: DEFAULT_ANSWER_SECONDS,
@@ -48,6 +53,20 @@ function isPlayerDraft(value: unknown): value is PlayerDraft {
     typeof draft.name === "string" &&
     (draft.keyCode === null || typeof draft.keyCode === "string")
   );
+}
+
+/**
+ * Colours were a slot number, and then a hue, before they could be anything at
+ * all. Either way a player keeps the colour they have always had on screen,
+ * rather than coming back from an older version as a blank.
+ */
+function withColour(draft: PlayerDraft, index: number): PlayerDraft {
+  const stored = draft as PlayerDraft & { hue?: unknown };
+
+  return {
+    ...draft,
+    colour: normaliseColour(stored.colour) ?? normaliseColour(stored.hue) ?? playerColour(index),
+  };
 }
 
 /** Keeps a stored number usable, whatever an older version wrote there. */
@@ -71,7 +90,7 @@ export function normaliseSetup(stored: unknown): GameSetup {
   }
 
   return {
-    players: setup.players,
+    players: setup.players.map(withColour),
     targetMoney: clampSetting(
       setup.targetMoney,
       MIN_TARGET_MONEY,

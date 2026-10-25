@@ -149,6 +149,8 @@ export function GamePage() {
                 defaultName={defaultName}
                 onRename={setup.rename}
                 onAssignKey={setup.assignKey}
+                onSetColour={setup.setColour}
+                onMove={setup.movePlayer}
                 onAdd={setup.addPlayer}
                 onRemove={setup.removePlayer}
               />
