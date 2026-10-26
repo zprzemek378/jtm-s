@@ -18,7 +18,9 @@ export const DEFAULT_PLAYER_VOLUME = 0.8;
 /**
  * `streaming` lets the Web Playback SDK play audio, the two `playlist-read`
  * scopes list the account's playlists, and the `user-*-playback-state` pair is
- * needed to start a specific track on our own device.
+ * needed to start a specific track on our own device. The `user-library-*` pair
+ * and the two `playlist-modify` scopes are what let the table keep a song it
+ * liked: the first saves it, the second adds it to a playlist.
  */
 export const SPOTIFY_SCOPES: readonly string[] = [
   "streaming",
@@ -28,6 +30,10 @@ export const SPOTIFY_SCOPES: readonly string[] = [
   "playlist-read-collaborative",
   "user-modify-playback-state",
   "user-read-playback-state",
+  "user-library-read",
+  "user-library-modify",
+  "playlist-modify-private",
+  "playlist-modify-public",
 ];
 
 /**

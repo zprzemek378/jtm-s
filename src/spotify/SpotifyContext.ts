@@ -64,6 +64,12 @@ export type SpotifyContextValue = {
   /** Where playback stands right now, or null when nothing is loaded. */
   readPlayback: () => Promise<PlaybackPosition | null>;
 
+  /** Whether the account has already saved these tracks, by Spotify URI. */
+  fetchSaved: (trackUris: readonly string[]) => Promise<readonly boolean[]>;
+  /** Puts a track into the account's library, or takes it out. */
+  setSaved: (trackUri: string, saved: boolean) => Promise<void>;
+  addToPlaylist: (playlistId: string, trackUri: string) => Promise<void>;
+
   fetchPlaylists: () => Promise<readonly PlaylistSummary[]>;
   fetchPlaylistById: (playlistId: string) => Promise<PlaylistSummary>;
   fetchTracks: (playlistId: string) => Promise<PlaylistTracks>;

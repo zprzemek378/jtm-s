@@ -26,6 +26,13 @@ export type StoredTokens = {
   refreshToken: string | null;
   /** Epoch milliseconds. */
   expiresAt: number;
+  /**
+   * What the account granted, space separated, or null for a session stored
+   * before this was recorded. Nothing branches on it: it is kept because when
+   * a call comes back forbidden, the first question is always which
+   * permissions the session actually holds, and this answers it.
+   */
+  scope: string | null;
 };
 
 export const AuthErrorKind = {
@@ -134,6 +141,7 @@ type TokenResponse = {
   access_token: string;
   expires_in: number;
   refresh_token?: string;
+  scope?: string;
 };
 
 /** Both the code exchange and the refresh post a form to the same endpoint. */
@@ -162,6 +170,7 @@ async function requestTokens(body: URLSearchParams): Promise<StoredTokens> {
     accessToken: payload.access_token,
     refreshToken: payload.refresh_token ?? null,
     expiresAt: Date.now() + payload.expires_in * 1000,
+    scope: payload.scope ?? null,
   };
 }
 
@@ -227,6 +236,7 @@ export async function completeLogin(
 
 /** Exchanges a refresh token for a fresh access token, rotating it if Spotify does. */
 export async function refreshTokens(clientId: string, refreshToken: string): Promise<StoredTokens> {
+  const previous = readTokens();
   const refreshed = await requestTokens(
     new URLSearchParams({
       grant_type: "refresh_token",
@@ -236,9 +246,13 @@ export async function refreshTokens(clientId: string, refreshToken: string): Pro
   );
 
   // Spotify may or may not issue a new refresh token; keep the old one if not.
+  // The same goes for the scope: a refresh can only ever return what the
+  // account already granted, so a response that leaves it out is saying
+  // nothing rather than taking anything away.
   const tokens: StoredTokens = {
     ...refreshed,
     refreshToken: refreshed.refreshToken ?? refreshToken,
+    scope: refreshed.scope ?? previous?.scope ?? null,
   };
 
   writeTokens(tokens);

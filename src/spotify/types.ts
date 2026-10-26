@@ -27,6 +27,12 @@ export type PlaylistSummary = {
    * every other one answers 403, however public it is.
    */
   canReadContents: boolean;
+  /**
+   * Whether tracks can be added to it. The same two cases as reading — owned
+   * or collaborative — but for a different reason: Spotify only accepts an
+   * addition from somebody with a claim to the playlist.
+   */
+  canModify: boolean;
 };
 
 /** A track long enough to build a snippet from. */
