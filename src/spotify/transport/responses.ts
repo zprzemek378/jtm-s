@@ -41,6 +41,7 @@ export function toPlaylistSummary(playlist: ApiPlaylist, currentUserId: string):
     // Measured, not assumed: unblocking someone else's playlist only produced
     // a 403 from Spotify, so the documented restriction is real.
     canReadContents: isOwn || playlist.collaborative === true,
+    canModify: isOwn || playlist.collaborative === true,
   };
 }
 

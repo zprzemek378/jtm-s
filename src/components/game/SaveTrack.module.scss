@@ -1,0 +1,118 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  gap: $space-2;
+}
+
+// The two share the width evenly, so they read as one control under the track
+// rather than as two buttons that happen to be next to each other.
+.action {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+// Opens as a panel of its own, with the same shape as the playlist list on the
+// setup screen — a filter, then the playlists.
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  padding: $space-3;
+  border: 1px solid $c-border;
+  border-radius: $radius-md;
+  background-color: $c-surface-alt;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+  max-height: 13rem;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  width: 100%;
+  padding: $space-2;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  background-color: transparent;
+  color: $c-text;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast;
+}
+
+.item:hover {
+  border-color: $c-border-accent;
+  background-color: $c-surface;
+}
+
+.cover {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: $radius-sm;
+  object-fit: cover;
+}
+
+.coverFallback {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: $radius-sm;
+  background-color: $c-surface;
+  color: $c-text-subtle;
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.itemName {
+  overflow: hidden;
+  font-size: $text-sm;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.itemMeta {
+  font-size: $text-xs;
+  color: $c-text-muted;
+}
+
+.empty {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.note {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.failed {
+  font-size: $text-sm;
+  color: $c-negative;
+}

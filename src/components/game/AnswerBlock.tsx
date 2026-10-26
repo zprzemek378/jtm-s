@@ -2,6 +2,7 @@ import type { PooledTrack } from "@/helpers/trackUnion";
 import type { LyricsReadout } from "@/lyrics/useLyrics";
 
 import { KaraokePanel } from "./KaraokePanel";
+import { SaveTrack } from "./SaveTrack";
 import { TrackCard } from "./TrackCard";
 import { TrackScrubber } from "./TrackScrubber";
 import styles from "./AnswerBlock.module.scss";
@@ -35,6 +36,7 @@ export function AnswerBlock({
       <div className={styles.main}>
         <TrackCard track={track} startPositionMs={startPositionMs} />
         {scrubber ? <TrackScrubber /> : null}
+        <SaveTrack track={track} />
       </div>
       <KaraokePanel readout={lyrics} />
     </div>

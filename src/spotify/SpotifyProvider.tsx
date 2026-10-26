@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { DEFAULT_PLAYER_VOLUME, PLAYER_DEVICE_NAME } from "@/constants/spotify";
 
+import { addTrackToPlaylist, fetchSavedState, setTrackSaved } from "./library";
 import {
   fetchCurrentUser,
   fetchMyPlaylists,
@@ -488,6 +489,22 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
     [connectPlayer, getAccessToken, pause],
   );
 
+  const fetchSaved = useCallback(
+    (trackUris: readonly string[]) => fetchSavedState(getAccessToken, trackUris),
+    [getAccessToken],
+  );
+
+  const setSaved = useCallback(
+    (trackUri: string, saved: boolean) => setTrackSaved(getAccessToken, trackUri, saved),
+    [getAccessToken],
+  );
+
+  const addToPlaylist = useCallback(
+    (playlistId: string, trackUri: string) =>
+      addTrackToPlaylist(getAccessToken, playlistId, trackUri),
+    [getAccessToken],
+  );
+
   const fetchPlaylists = useCallback(
     () => fetchMyPlaylists(getAccessToken, user?.id ?? ""),
     [getAccessToken, user],
@@ -523,17 +540,22 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       resume,
       seek,
       readPlayback,
+      fetchSaved,
+      setSaved,
+      addToPlaylist,
       fetchPlaylists,
       fetchPlaylistById,
       fetchTracks,
       scanPlaylist,
     }),
     [
+      addToPlaylist,
       connectPlayer,
       deviceId,
       error,
       fetchPlaylistById,
       fetchPlaylists,
+      fetchSaved,
       fetchTracks,
       login,
       logout,
@@ -545,6 +567,7 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       resume,
       scanPlaylist,
       seek,
+      setSaved,
       status,
       user,
     ],
