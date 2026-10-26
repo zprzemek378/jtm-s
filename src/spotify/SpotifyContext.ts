@@ -69,6 +69,11 @@ export type SpotifyContextValue = {
   /** Puts a track into the account's library, or takes it out. */
   setSaved: (trackUri: string, saved: boolean) => Promise<void>;
   addToPlaylist: (playlistId: string, trackUri: string) => Promise<void>;
+  /**
+   * Whether a playlist already holds a track, or null when it could not be
+   * settled within the page cap.
+   */
+  playlistHolds: (playlistId: string, trackUri: string) => Promise<boolean | null>;
 
   fetchPlaylists: () => Promise<readonly PlaylistSummary[]>;
   fetchPlaylistById: (playlistId: string) => Promise<PlaylistSummary>;

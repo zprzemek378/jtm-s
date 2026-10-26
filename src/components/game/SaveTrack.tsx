@@ -49,7 +49,7 @@ function refusal(failure: unknown): string | undefined {
 /** Keeping a song that the room liked: into the library, or onto a playlist. */
 export function SaveTrack({ track }: SaveTrackProps) {
   const { t } = useLanguage();
-  const { fetchSaved, setSaved, addToPlaylist, fetchPlaylists, user } = useSpotify();
+  const { fetchSaved, setSaved, addToPlaylist, playlistHolds, fetchPlaylists, user } = useSpotify();
 
   /** Null until Spotify has said; true or false once it has. */
   const [saved, setSavedState] = useState<boolean | null>(null);
@@ -57,13 +57,15 @@ export function SaveTrack({ track }: SaveTrackProps) {
   const [picking, setPicking] = useState(false);
   const [playlists, setPlaylists] = useState<readonly PlaylistSummary[] | null>(null);
   const [note, setNote] = useState<{
-    key: "library.added" | "library.failed";
+    key: "library.added" | "library.alreadyIn" | "library.failed";
     name?: string;
     /** What Spotify itself said, when it is a refusal worth reading. */
     detail?: string;
   } | null>(null);
   /** What has been typed into the playlist filter. */
   const [query, setQuery] = useState("");
+  /** Playlists known to hold this track: found there, or put there just now. */
+  const [knownOn, setKnownOn] = useState<readonly string[]>([]);
   /** Guards state updates after the round has moved on. */
   const liveRef = useRef(true);
 
@@ -84,6 +86,8 @@ export function SaveTrack({ track }: SaveTrackProps) {
     setNote(null);
     // oxlint-disable-next-line react/set-state-in-effect
     setPicking(false);
+    // oxlint-disable-next-line react/set-state-in-effect
+    setKnownOn([]);
 
     let current = true;
 
@@ -105,6 +109,17 @@ export function SaveTrack({ track }: SaveTrackProps) {
       current = false;
     };
   }, [fetchSaved, track.uri]);
+
+  /**
+   * Whether this playlist is known to hold the track already.
+   *
+   * Two things are known for nothing: the playlists the game drew this track
+   * from, and whatever was added during this round. Spotify has no way to ask
+   * "is this track on that playlist" — the only answer is to page through the
+   * whole playlist — so a playlist outside both is offered and trusted.
+   */
+  const holds = (playlistId: string) =>
+    track.playlistIds.includes(playlistId) || knownOn.includes(playlistId);
 
   const needle = fold(query);
   const matching = (playlists ?? []).filter((playlist) => fold(playlist.name).includes(needle));
@@ -165,12 +180,27 @@ export function SaveTrack({ track }: SaveTrackProps) {
 
   const addTo = async (playlist: PlaylistSummary) => {
     setBusy(true);
-    setPicking(false);
+    setNote(null);
 
     try {
+      // Spotify will hold the same song twice without complaint, and has no
+      // way to be asked whether it already does — so the playlist is read
+      // through first. A playlist too long to finish reading answers null, and
+      // is added to regardless.
+      if (await playlistHolds(playlist.id, track.uri)) {
+        if (liveRef.current) {
+          setKnownOn((current) => [...current, playlist.id]);
+          setNote({ key: "library.alreadyIn", name: playlist.name });
+        }
+
+        return;
+      }
+
       await addToPlaylist(playlist.id, track.uri);
 
       if (liveRef.current) {
+        setKnownOn((current) => [...current, playlist.id]);
+        setPicking(false);
         setNote({ key: "library.added", name: playlist.name });
       }
     } catch (failure) {
@@ -237,35 +267,43 @@ export function SaveTrack({ track }: SaveTrackProps) {
                 <p className={styles.empty}>{t("library.noMatches")}</p>
               ) : (
                 <ul className={styles.list}>
-                  {matching.map((playlist) => (
-                    <li key={playlist.id}>
-                      <button
-                        type="button"
-                        className={styles.item}
-                        onClick={() => void addTo(playlist)}
-                      >
-                        {playlist.imageUrl ? (
-                          <img
-                            className={styles.cover}
-                            src={playlist.imageUrl}
-                            alt=""
-                            width={32}
-                            height={32}
-                          />
-                        ) : (
-                          <span className={styles.coverFallback} aria-hidden="true">
-                            ♪
+                  {matching.map((playlist) => {
+                    const already = holds(playlist.id);
+
+                    return (
+                      <li key={playlist.id}>
+                        <button
+                          type="button"
+                          className={already ? `${styles.item} ${styles.itemHas}` : styles.item}
+                          disabled={already || busy}
+                          title={already ? t("library.alreadyOn") : undefined}
+                          onClick={() => void addTo(playlist)}
+                        >
+                          {playlist.imageUrl ? (
+                            <img
+                              className={styles.cover}
+                              src={playlist.imageUrl}
+                              alt=""
+                              width={32}
+                              height={32}
+                            />
+                          ) : (
+                            <span className={styles.coverFallback} aria-hidden="true">
+                              ♪
+                            </span>
+                          )}
+                          <span className={styles.itemText}>
+                            <span className={styles.itemName}>{playlist.name}</span>
+                            <span className={styles.itemMeta}>
+                              {already
+                                ? t("library.alreadyOn")
+                                : t("playlist.trackCount", { count: playlist.trackCount })}
+                            </span>
                           </span>
-                        )}
-                        <span className={styles.itemText}>
-                          <span className={styles.itemName}>{playlist.name}</span>
-                          <span className={styles.itemMeta}>
-                            {t("playlist.trackCount", { count: playlist.trackCount })}
-                          </span>
-                        </span>
-                      </button>
-                    </li>
-                  ))}
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </>

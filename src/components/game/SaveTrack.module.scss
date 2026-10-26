@@ -64,6 +64,18 @@
   background-color: $c-surface;
 }
 
+// A playlist that already holds this track: still listed, so it is clear the
+// song is there, but not offered a second time.
+.itemHas {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.itemHas:hover {
+  border-color: transparent;
+  background-color: transparent;
+}
+
 .cover {
   flex-shrink: 0;
   width: 2rem;

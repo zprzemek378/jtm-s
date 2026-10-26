@@ -15,6 +15,7 @@ import {
 
 /** One chosen playlist's contribution to the pool. */
 export type TrackSource = {
+  playlistId: string;
   playlistName: string;
   tracks: PlaylistTracks;
 };
@@ -23,6 +24,12 @@ export type TrackSource = {
 export type PooledTrack = PlayableTrack & {
   /** Every chosen playlist holding this track, in the order they were picked. */
   playlistNames: readonly string[];
+  /**
+   * The same playlists by id. Names are for reading; anything that has to
+   * decide something — such as whether this track is already on a playlist —
+   * needs the identity, because two playlists may well share a name.
+   */
+  playlistIds: readonly string[];
 };
 
 export type TrackUnion = {
@@ -60,8 +67,9 @@ export function unionTracks(sources: readonly TrackSource[]): TrackUnion {
 
         // The same recording from another playlist: keep one entry, but record
         // that this playlist holds it too.
-        if (!existing.playlistNames.includes(source.playlistName)) {
+        if (!existing.playlistIds.includes(source.playlistId)) {
           existing.playlistNames = [...existing.playlistNames, source.playlistName];
+          existing.playlistIds = [...existing.playlistIds, source.playlistId];
         }
 
         continue;
@@ -70,6 +78,7 @@ export function unionTracks(sources: readonly TrackSource[]): TrackUnion {
       const pooled: PooledTrack = {
         ...track,
         playlistNames: [source.playlistName],
+        playlistIds: [source.playlistId],
       };
       byId.set(track.id, pooled);
       tracks.push(pooled);
