@@ -316,6 +316,7 @@ export function PlaylistPicker({ initialPlaylistIds = [], onStart }: PlaylistPic
         chosenList
           .filter((entry): entry is Chosen & { tracks: PlaylistTracks } => entry.tracks !== null)
           .map((entry) => ({
+            playlistId: entry.playlist.id,
             playlistName: entry.playlist.name,
             tracks: entry.tracks,
           })),

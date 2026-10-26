@@ -10,6 +10,8 @@
 // `/items`; the paths they replaced answer 403, which is exactly what this
 // module's first draft earned.
 
+import { PLAYLIST_LOOKUP_MAX_PAGES, PLAYLIST_PAGE_SIZE } from "@/constants/spotify";
+
 import { Priority } from "./transport/queue";
 import { request, type AccessTokenProvider } from "./transport/request";
 
@@ -78,4 +80,47 @@ export async function addTrackToPlaylist(
     { method: "POST", body: JSON.stringify({ uris: [trackUri] }) },
     { priority: Priority.Playback },
   );
+}
+
+/**
+ * Whether a playlist already holds this track.
+ *
+ * Null when it could not be settled — a playlist longer than the page cap, or
+ * a read that failed. The caller adds the track anyway in that case: a
+ * duplicate is a smaller sin than refusing to add a song because we could not
+ * finish looking.
+ *
+ * Read priority rather than playback: it is a handful of requests, and the
+ * queue's ageing keeps it from being held behind anything for long.
+ */
+export async function playlistHoldsTrack(
+  getAccessToken: AccessTokenProvider,
+  playlistId: string,
+  trackUri: string,
+): Promise<boolean | null> {
+  for (let page = 0; page < PLAYLIST_LOOKUP_MAX_PAGES; page += 1) {
+    const params = new URLSearchParams({
+      limit: String(PLAYLIST_PAGE_SIZE),
+      offset: String(page * PLAYLIST_PAGE_SIZE),
+      // Only the one field that answers the question.
+      fields: "items(item(uri)),next",
+    });
+
+    const payload = (await request(
+      getAccessToken,
+      `/playlists/${playlistId}/items?${params.toString()}`,
+      undefined,
+      { priority: Priority.Catalogue },
+    )) as { items?: ({ item?: { uri?: string } | null } | null)[]; next?: string | null };
+
+    if ((payload.items ?? []).some((entry) => entry?.item?.uri === trackUri)) {
+      return true;
+    }
+
+    if (!payload.next) {
+      return false;
+    }
+  }
+
+  return null;
 }

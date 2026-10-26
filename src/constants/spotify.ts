@@ -69,6 +69,16 @@ export const SCAN_JUMP_DELAY_MS = 3000;
 /** A jump collects about 21 tracks, so this caps a scan near 170. */
 export const SCAN_MAX_JUMPS = 8;
 
+/**
+ * How many pages to read before giving up on "is this track already here?".
+ *
+ * Spotify offers no way to ask, so the only answer is to page through the
+ * playlist. One page per fifty tracks, paid once per deliberate click, caps
+ * the wait at something a host will sit through — and a playlist longer than
+ * this is added to without the check rather than holding the room up.
+ */
+export const PLAYLIST_LOOKUP_MAX_PAGES = 10;
+
 /** How many tracks one queue read reports beyond the current one. */
 export const QUEUE_LOOKAHEAD = 20;
 
