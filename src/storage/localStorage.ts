@@ -8,6 +8,8 @@ export const STORAGE_KEYS = {
   // this module — keep the two in sync.
   theme: "jtm-s.theme",
   sidebarCollapsed: "jtm-s.sidebar-collapsed",
+  /** Which typeface the interface is set in. */
+  font: "jtm-s.font",
   /** Players, their keys and the target score — reused between games. */
   gameSetup: "jtm-s.game-setup",
   /** The playlists picked for the previous game. */

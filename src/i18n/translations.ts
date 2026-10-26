@@ -87,6 +87,9 @@ const pl = {
   "settings.title": "Ustawienia",
   "settings.appearance": "Wygląd",
   "settings.theme": "Motyw",
+  "settings.font": "Czcionka",
+  "settings.fontHint":
+    "Dotyczy całego interfejsu. {names} nie ma liter ą ć ę ł ń ś ź ż — rysuje je wtedy Kodchasan, dobrana pomiarem tak, by miała tę samą wysokość i grubość kreski.",
   "settings.sound": "Dźwięki gry",
   "settings.soundEnabled": "Odtwarzaj dźwięki gry",
   "settings.soundHint":
@@ -436,6 +439,9 @@ const en: Record<TranslationKey, string> = {
   "settings.title": "Settings",
   "settings.appearance": "Appearance",
   "settings.theme": "Theme",
+  "settings.font": "Typeface",
+  "settings.fontHint":
+    "Applies to the whole interface. {names} has no ą ć ę ł ń ś ź ż — Kodchasan draws those, measured to match its height and stroke weight.",
   "settings.sound": "Game sounds",
   "settings.soundEnabled": "Play the game sounds",
   "settings.soundHint":
