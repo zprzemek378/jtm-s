@@ -1,11 +1,60 @@
-@import url("https://fonts.googleapis.com/css2?family=Happy+Monkey&family=Maven+Pro:wght@400..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Comic+Relief&family=Grandstander:wght@400..900&family=Happy+Monkey&family=Kodchasan&family=Maven+Pro:wght@400..900&family=Press+Start+2P&family=Shantell+Sans&display=swap");
 
 // Reset plus theme values. The active theme is set by ThemeProvider
 // through the `data-theme` attribute on <html>.
 
 :root {
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-system: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  // The interface font. Replaced per choice below; the system stack always
+  // stands behind the chosen one, for the letters it happens to lack.
+  --font-sans: var(--font-system);
   --row-height: 2.75rem;
+}
+
+// Set on <html> by the font setting. The attribute may be missing entirely —
+// before the script runs, or with storage blocked — so the value above is the
+// same as the default choice.
+[data-font="system"] {
+  --font-sans: var(--font-system);
+}
+
+[data-font="grandstander"] {
+  --font-sans: "Grandstander", var(--font-system);
+}
+
+// Happy Monkey has no ą ć ę ł ń ś ź ż, and a browser falls back letter by
+// letter — so the letters it cannot draw should come from the nearest thing to
+// it rather than from a system font that looks nothing like it.
+//
+// Kodchasan was picked by measuring every free family that has the Polish
+// letters — 979 of them — against Happy Monkey's own outlines: x-height 499
+// against 500, stem 73 against 74, and the closest letter shapes of anything
+// that also matched those. Nothing matches it closely; it is an idiosyncratic
+// face, and the best overlap in the whole catalogue is about two thirds.
+[data-font="happy-monkey"] {
+  --font-sans: "Happy Monkey", "Kodchasan", var(--font-system);
+}
+
+[data-font="maven-pro"] {
+  --font-sans: "Maven Pro", var(--font-system);
+}
+
+// Taken from the machine where it exists — Windows and macOS both ship it —
+// and downloaded as Comic Relief where it does not. Comic Neue is the usual
+// web substitute and is not used here: it has no Polish letters at all.
+[data-font="comic-sans"] {
+  --font-sans: "Comic Sans MS", "Comic Relief", var(--font-system);
+}
+
+[data-font="shantell-sans"] {
+  --font-sans: "Shantell Sans", var(--font-system);
+}
+
+// Twice the width of anything else per letter, so a long name will wrap where
+// it would not otherwise. Offered anyway: it is the one that makes the room
+// laugh.
+[data-font="press-start"] {
+  --font-sans: "Press Start 2P", var(--font-system);
 }
 
 // A mouse or trackpad hits a much smaller target than a finger, so dense lists

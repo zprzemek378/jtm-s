@@ -14,6 +14,14 @@ import { ButtonVariant } from "@/components/ui/buttonVariant";
 import { Input } from "@/components/ui/Input";
 import { Panel } from "@/components/ui/Panel";
 import { useLanguage } from "@/i18n/useLanguage";
+import {
+  FONTS_WITHOUT_POLISH,
+  FONT_CHOICES,
+  FONT_LABELS,
+  readFontChoice,
+  setFontChoice,
+  type FontChoice,
+} from "@/settings/font";
 import { isKaraokeEnabled, setKaraokeEnabled } from "@/settings/karaoke";
 import { isSafeModeEnabled, setSafeModeEnabled } from "@/settings/safeMode";
 import {
@@ -47,6 +55,7 @@ export function SettingsPage() {
   const [safeMode, setSafeMode] = useState(isSafeModeEnabled);
   const [ties, setTies] = useState(areTiesEnabled);
   const [karaoke, setKaraoke] = useState(isKaraokeEnabled);
+  const [font, setFont] = useState<FontChoice>(readFontChoice);
   const [tieThreshold, setTieThreshold] = useState(() => String(readTieThreshold()));
   const [tieError, setTieError] = useState<string | null>(null);
   const [clientId, setClientId] = useState(() => readClientIdOverride() ?? "");
@@ -120,6 +129,33 @@ export function SettingsPage() {
 
       <Panel title={t("settings.sound")}>
         <SoundSettings />
+      </Panel>
+
+      <Panel title={t("settings.font")}>
+        <div className={styles.fonts} role="group" aria-label={t("settings.font")}>
+          {FONT_CHOICES.map((choice) => (
+            <Button
+              key={choice}
+              // Each option is written in the typeface it offers, which says
+              // more than any description would.
+              className={`${styles.fontOption} ${styles[`font-${choice}`]}`}
+              variant={ButtonVariant.Secondary}
+              active={choice === font}
+              aria-pressed={choice === font}
+              onClick={() => {
+                setFont(choice);
+                setFontChoice(choice);
+              }}
+            >
+              {FONT_LABELS[choice]}
+            </Button>
+          ))}
+        </div>
+        <p className={styles.hint}>
+          {t("settings.fontHint", {
+            names: FONTS_WITHOUT_POLISH.map((choice) => FONT_LABELS[choice]).join(", "),
+          })}
+        </p>
       </Panel>
 
       <Panel title={t("settings.karaoke")}>

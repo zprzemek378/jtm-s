@@ -58,3 +58,44 @@
   font-size: $text-sm;
   color: $c-text;
 }
+
+.fonts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+// Each button wears the typeface it offers, so the choice is made by eye.
+.fontOption {
+  font-size: $text-base;
+}
+
+.font-system {
+  font-family: var(--font-system);
+}
+
+.font-grandstander {
+  font-family: "Grandstander", var(--font-system);
+}
+
+.font-happy-monkey {
+  font-family: "Happy Monkey", var(--font-system);
+}
+
+.font-maven-pro {
+  font-family: "Maven Pro", var(--font-system);
+}
+
+.font-comic-sans {
+  font-family: "Comic Sans MS", "Comic Relief", var(--font-system);
+}
+
+.font-shantell-sans {
+  font-family: "Shantell Sans", var(--font-system);
+}
+
+// Its own sample has to shrink: at the button's size the name would not fit.
+.font-press-start {
+  font-family: "Press Start 2P", var(--font-system);
+  font-size: $text-xs;
+}
