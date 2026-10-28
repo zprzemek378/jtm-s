@@ -19,6 +19,7 @@ import type { Accounts } from "@/helpers/money";
 import type { PooledTrack } from "@/helpers/trackUnion";
 import type { LyricsReadout } from "@/lyrics/types";
 import { useLyrics } from "@/lyrics/useLyrics";
+import { refusalText } from "@/spotify/types";
 import { useSpotify } from "@/spotify/useSpotify";
 
 import { createGameState, gameReducer, type GameState } from "./gameState";
@@ -44,6 +45,8 @@ export type GameSession = {
   loadingTrack: boolean;
   /** Set when starting a track failed, so the host can retry instead of waiting. */
   startFailed: boolean;
+  /** What Spotify said about it, when it was Spotify that refused. */
+  startFailure: string | null;
   /** True from the moment the host starts a round until the music is playing. */
   preRollActive: boolean;
   /** Milliseconds left of the "get ready" countdown. */
@@ -101,6 +104,7 @@ export function useGameSession(
   }, [historyKey, state.playedIds]);
   const [loadingTrack, setLoadingTrack] = useState(false);
   const [startFailed, setStartFailed] = useState(false);
+  const [startFailure, setStartFailure] = useState<string | null>(null);
   /**
    * Identifies the current "get ready" countdown, or null when none is running.
    * A fresh number each time, so a new count-in always starts from the top.
@@ -144,6 +148,7 @@ export function useGameSession(
     startingRef.current = true;
     setLoadingTrack(true);
     setStartFailed(false);
+    setStartFailure(null);
 
     try {
       const draw = pending;
@@ -187,11 +192,14 @@ export function useGameSession(
         lyricsFrom: lyricsOnly && lines ? openingLine(lines.length) : 0,
       });
       setPending(null);
-    } catch {
+    } catch (failure) {
       // Spotify can refuse to play — the account started listening elsewhere,
-      // or the device dropped out. Let the host retry rather than sit on a
-      // spinner that will never resolve.
+      // the subscription lapsed, the device dropped out. Let the host retry
+      // rather than sit on a spinner that will never resolve, and tell them
+      // which of those it was: the generic line sent us hunting a stale device
+      // for an evening.
       setStartFailed(true);
+      setStartFailure(refusalText(failure));
     } finally {
       setLoadingTrack(false);
       setPreRollKey(null);
@@ -532,6 +540,7 @@ export function useGameSession(
     pickTitle,
     loadingTrack,
     startFailed,
+    startFailure,
     preRollActive: preRollKey !== null,
     preRollRemainingMs,
     currentMoney,

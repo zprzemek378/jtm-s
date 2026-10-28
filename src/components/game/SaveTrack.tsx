@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { PooledTrack } from "@/helpers/trackUnion";
 import { useLanguage } from "@/i18n/useLanguage";
-import { SpotifyError, type PlaylistSummary } from "@/spotify/types";
+import { refusalText, type PlaylistSummary } from "@/spotify/types";
 import { useSpotify } from "@/spotify/useSpotify";
 
 import { Button } from "../ui/Button";
@@ -39,11 +39,6 @@ function fold(text: string): string {
       .replace(/ł/g, "l")
       .trim()
   );
-}
-
-/** What Spotify said, without the method and path this module already knows. */
-function refusal(failure: unknown): string | undefined {
-  return failure instanceof SpotifyError ? failure.message.split(" — ").pop() : undefined;
 }
 
 /** Keeping a song that the room liked: into the library, or onto a playlist. */
@@ -137,7 +132,7 @@ export function SaveTrack({ track }: SaveTrackProps) {
     } catch (failure) {
       if (liveRef.current) {
         setSavedState(!next);
-        setNote({ key: "library.failed", detail: refusal(failure) });
+        setNote({ key: "library.failed", detail: refusalText(failure) ?? undefined });
       }
     } finally {
       if (liveRef.current) {
@@ -173,7 +168,7 @@ export function SaveTrack({ track }: SaveTrackProps) {
     } catch (failure) {
       if (liveRef.current) {
         setPlaylists([]);
-        setNote({ key: "library.failed", detail: refusal(failure) });
+        setNote({ key: "library.failed", detail: refusalText(failure) ?? undefined });
       }
     }
   };
@@ -205,7 +200,7 @@ export function SaveTrack({ track }: SaveTrackProps) {
       }
     } catch (failure) {
       if (liveRef.current) {
-        setNote({ key: "library.failed", detail: refusal(failure) });
+        setNote({ key: "library.failed", detail: refusalText(failure) ?? undefined });
       }
     } finally {
       if (liveRef.current) {

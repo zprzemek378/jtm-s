@@ -25,7 +25,12 @@ import {
 } from "./auth/tokens";
 import { isRedirectHostAcceptable, resolveClientId } from "./auth/clientId";
 import { loadPlaybackSdk } from "./playback/loadPlaybackSdk";
-import { pauseActiveDevice, startTrackPlayback } from "./playback/viaRest";
+import {
+  fetchDeviceIds,
+  pauseActiveDevice,
+  startTrackPlayback,
+  transferPlayback,
+} from "./playback/viaRest";
 import * as sdk from "./playback/viaSdk";
 import { scanPlaylist as runScan, type ScanProgress } from "./playlistScan";
 import {
@@ -403,8 +408,35 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  /**
+   * Throws away the browser player and registers a new one.
+   *
+   * A device id can outlive the device it names: let another of the account's
+   * players take over for a while and Spotify may forget ours, while the SDK
+   * sits here holding an id it will never honour again. Nothing short of a
+   * fresh registration gets out of that, which is why retrying by hand never
+   * helped — every attempt carried the same dead id.
+   */
+  const reconnectPlayer = useCallback(async () => {
+    playerRef.current?.disconnect();
+    playerRef.current = null;
+    deviceIdRef.current = null;
+    connectRef.current = null;
+    setDeviceId(null);
+
+    await connectPlayer();
+  }, [connectPlayer]);
+
   const playTrackAt = useCallback(
     async (trackUri: string, positionMs: number) => {
+      // Another of the account's players taking over makes the SDK report ours
+      // as gone, and it stays gone: without this, every attempt from then on
+      // failed before it reached Spotify at all, however many times the host
+      // pressed retry and whatever they stopped on the other device.
+      if (!deviceIdRef.current) {
+        await reconnectPlayer();
+      }
+
       const targetDeviceId = deviceIdRef.current;
 
       if (!targetDeviceId) {
@@ -412,7 +444,48 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       }
 
       wantsPausedRef.current = false;
-      await startTrackPlayback(getAccessToken, targetDeviceId, trackUri, positionMs);
+
+      try {
+        await startTrackPlayback(getAccessToken, targetDeviceId, trackUri, positionMs);
+      } catch (failure) {
+        // "Device not found" is the one failure worth answering rather than
+        // reporting: the id is stale, and a new one is a reconnection away.
+        if (!(failure instanceof SpotifyError) || failure.kind !== SpotifyErrorKind.NotFound) {
+          throw failure;
+        }
+
+        await reconnectPlayer();
+
+        const fresh = deviceIdRef.current;
+
+        if (!fresh) {
+          throw new Error("Device not found, and registering a new player produced none");
+        }
+
+        // Registering again is not always enough: until the account's playback
+        // is handed to the new device, Spotify can go on saying it does not
+        // know it. This is the documented way to do that handover.
+        await transferPlayback(getAccessToken, fresh);
+
+        try {
+          await startTrackPlayback(getAccessToken, fresh, trackUri, positionMs);
+        } catch (second) {
+          // Twice is enough to stop guessing: ask Spotify which devices it
+          // actually has, and say whether ours is among them.
+          const known = await fetchDeviceIds(getAccessToken).catch(() => null);
+          const where =
+            known === null
+              ? "the device list could not be read"
+              : known.includes(fresh)
+                ? "our player is on the account's device list, and Spotify still refused it"
+                : `our player is not on the account's device list (${known.length} there)`;
+
+          throw new Error(
+            `${second instanceof Error ? second.message : String(second)} — after reconnecting and transferring, ${where}`,
+          );
+        }
+      }
+
       hasPlayedRef.current = true;
 
       // Spotify accepting the command is not the device playing it. Holding the
@@ -420,7 +493,7 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       // from being answered by a pause that arrives before the music does.
       await sdk.waitUntilPlaying(playerRef.current, trackUri);
     },
-    [getAccessToken],
+    [getAccessToken, reconnectPlayer],
   );
 
   const pause = useCallback(async () => {

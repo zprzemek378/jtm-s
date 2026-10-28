@@ -46,6 +46,7 @@ export function RoundStage({
     extraTimeRemainingMs,
     loadingTrack,
     startFailed,
+    startFailure,
     preRollActive,
     preRollRemainingMs,
     currentMoney,
@@ -142,6 +143,7 @@ export function RoundStage({
         <p className={styles.failure} role="alert">
           {t("game.startFailed")}
         </p>
+        {startFailure ? <p className={styles.hint}>{startFailure}</p> : null}
         <Button large variant={ButtonVariant.Primary} onClick={session.nextRound}>
           {t("common.retry")}
         </Button>

@@ -103,6 +103,9 @@ export const SpotifyErrorKind = {
 
 export type SpotifyErrorKind = (typeof SpotifyErrorKind)[keyof typeof SpotifyErrorKind];
 
+/** What `SpotifyError` puts between the request it made and what came back. */
+const MESSAGE_SEPARATOR = " — ";
+
 export class SpotifyError extends Error {
   readonly kind: SpotifyErrorKind;
   readonly status: number;
@@ -121,3 +124,20 @@ export type PlaybackPosition = {
   durationMs: number;
   paused: boolean;
 };
+
+/**
+ * What went wrong, in words worth showing somebody.
+ *
+ * A `SpotifyError` carries the request in front of Spotify's own sentence, and
+ * the request is noise to a host; everything after the first separator is the
+ * part that says something. Any other failure speaks for itself.
+ */
+export function refusalText(failure: unknown): string | null {
+  if (failure instanceof SpotifyError) {
+    const at = failure.message.indexOf(MESSAGE_SEPARATOR);
+
+    return at === -1 ? failure.message : failure.message.slice(at + MESSAGE_SEPARATOR.length);
+  }
+
+  return failure instanceof Error ? failure.message : null;
+}
