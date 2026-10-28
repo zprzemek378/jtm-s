@@ -61,6 +61,15 @@
   color: $c-text-muted;
 }
 
+// The lifelines still in hand, along the bottom of the card.
+.lifelines {
+  display: flex;
+  justify-content: flex-end;
+  gap: $space-2;
+  margin-top: auto;
+  padding-top: $space-1;
+}
+
 .badge {
   font-size: $text-xs;
   font-weight: 500;

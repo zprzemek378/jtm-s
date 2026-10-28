@@ -38,6 +38,8 @@ export type GameState = {
    */
   playedIds: readonly string[];
   track: PooledTrack | null;
+  /** Players who still hold their extra time; empty when the modifier is off. */
+  extraTimeLeft: readonly PlayerId[];
   /** This round shows the words instead of playing the music. */
   lyricsOnly: boolean;
   /** The line the words started from. */
@@ -85,6 +87,14 @@ export type GameAction =
   /** Two or more were indistinguishable; the next round is theirs alone. */
   | { type: "tie"; playerIds: readonly PlayerId[] }
   | { type: "guess-window-elapsed" }
+  /** The buzzed player spends their one lifeline. */
+  | { type: "use-extra-time" }
+  /** Their extra seconds are up; they answer now. */
+  | {
+      type: "extra-time-elapsed";
+      /** Where the words got to, on a round that was showing them. */
+      lyricsShown: number | null;
+    }
   | { type: "reveal" }
   | { type: "judge"; verdict: Verdict }
   /** Edit mode: the host rewrites the standings and the line-up directly. */
@@ -125,6 +135,8 @@ export function createGameState(
     pool: unheard.length > 0 ? unheard : tracks,
     playedIds: unheard.length > 0 ? playedIds : [],
     track: null,
+    // One each, handed out at the start of the game and never replaced.
+    extraTimeLeft: rules.extraTime ? players.map((player) => player.id) : [],
     lyricsOnly: false,
     lyricsFrom: 0,
     lyricsShown: null,
@@ -225,6 +237,31 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       return { ...state, phase: GamePhase.TimedOut };
     }
+
+    case "use-extra-time": {
+      const playerId = state.buzzedPlayerId;
+
+      // Only from the chair they pressed in, only once, and only while the
+      // round is still waiting on them.
+      if (
+        state.phase !== GamePhase.Buzzed ||
+        playerId === null ||
+        !state.extraTimeLeft.includes(playerId)
+      ) {
+        return state;
+      }
+
+      return {
+        ...state,
+        phase: GamePhase.ExtraTime,
+        extraTimeLeft: state.extraTimeLeft.filter((id) => id !== playerId),
+      };
+    }
+
+    case "extra-time-elapsed":
+      return state.phase === GamePhase.ExtraTime
+        ? { ...state, phase: GamePhase.Buzzed, lyricsShown: action.lyricsShown }
+        : state;
 
     case "reveal": {
       if (state.phase !== GamePhase.Buzzed) {

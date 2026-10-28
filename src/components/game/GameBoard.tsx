@@ -85,6 +85,7 @@ export function GameBoard({
   const roundInPlay =
     state.phase === GamePhase.Listening ||
     state.phase === GamePhase.Buzzed ||
+    state.phase === GamePhase.ExtraTime ||
     state.phase === GamePhase.Revealed;
   const suspension = roundInPlay ? state.suspension : state.pendingSuspension;
   const suspendedNames = lineUp
@@ -138,6 +139,8 @@ export function GameBoard({
           suspended={roundInPlay ? (state.suspension?.playerIds ?? []) : []}
           pendingSuspended={state.pendingSuspension?.playerIds ?? []}
           buzzedPlayerId={state.buzzedPlayerId}
+          extraTimeLeft={state.extraTimeLeft}
+          onUseExtraTime={session.canUseExtraTime ? session.useExtraTime : undefined}
         />
       </section>
 

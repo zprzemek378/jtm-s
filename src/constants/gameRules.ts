@@ -109,3 +109,11 @@ export const MIN_LYRIC_LINES = 6;
  * out of words halfway through.
  */
 export const LYRIC_TAIL_LINES = 8;
+
+/**
+ * How much longer the music plays for somebody who spends their lifeline.
+ *
+ * Long enough to hear a chorus come round, short enough that the rest of the
+ * table does not feel shut out of their own round.
+ */
+export const EXTRA_TIME_MS = 10_000;
