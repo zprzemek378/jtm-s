@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 
 import { formatMoney, RewardDirection } from "@/game/rewards";
 import type { GameSession } from "@/game/useGameSession";
@@ -8,7 +8,6 @@ import { useActionKeys } from "@/hooks/useActionKeys";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useLanguage } from "@/i18n/useLanguage";
 import { useLyrics } from "@/lyrics/useLyrics";
-import { isKaraokeEnabled } from "@/settings/karaoke";
 
 import { Button } from "../ui/Button";
 import { ButtonGroup } from "../ui/ButtonGroup";
@@ -65,13 +64,10 @@ export function RoundStage({
     runKey: `${round}-answer`,
   });
 
-  // Read once, when the game screen appears: a switch flipped in Settings
-  // applies to the next game, not to a round in progress.
-  const [karaokeEnabled] = useState(isKaraokeEnabled);
   // Asked for as soon as the track is in play, so the words are in hand by the
   // time the title is revealed and the panel appears. Looking them up is not
   // part of starting a round and can never hold one up.
-  const lyrics = useLyrics(track, karaokeEnabled);
+  const lyrics = useLyrics(track, true);
 
   const buzzedPlayer = players.find((player) => player.id === buzzedPlayerId) ?? null;
 

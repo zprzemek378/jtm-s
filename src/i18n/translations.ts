@@ -95,11 +95,6 @@ const pl = {
   "settings.soundHint":
     "Krótkie sygnały zgłoszenia, odliczania i werdyktów. To nie jest głośność muzyki — ta idzie ze Spotify.",
 
-  "settings.karaoke": "Karaoke",
-  "settings.karaokeEnabled": "Pokazuj tekst utworu po odkryciu odpowiedzi",
-  "settings.karaokeHint":
-    "Tekst pojawia się dopiero wtedy, gdy tytuł jest już znany, i przewija się w rytm utworu. Pochodzi z otwartej bazy LRCLIB, nie ze Spotify — nie każdy utwór tam jest, a teksty pisali użytkownicy, więc mogą być w nich błędy.",
-
   "settings.ties": "Remisy",
   "settings.tiesEnabled": "Uznawaj jednoczesne naciśnięcia za remis",
   "settings.tiesHint":
@@ -446,11 +441,6 @@ const en: Record<TranslationKey, string> = {
   "settings.soundEnabled": "Play the game sounds",
   "settings.soundHint":
     "The short cues for buzzing in, the countdown and the verdicts. This is not the music volume — that comes from Spotify.",
-
-  "settings.karaoke": "Karaoke",
-  "settings.karaokeEnabled": "Show the lyrics once the answer is revealed",
-  "settings.karaokeHint":
-    "The words appear only once the title is known, and follow the music line by line. They come from LRCLIB, an open database, rather than from Spotify — not every track is in it, and the lyrics were typed in by its users, so they can be wrong.",
 
   "settings.ties": "Ties",
   "settings.tiesEnabled": "Treat simultaneous presses as a tie",
