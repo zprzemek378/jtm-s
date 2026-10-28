@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/i18n/useLanguage";
 import { activeLineIndex } from "@/lyrics/lrc";
 import { LyricsKind } from "@/lyrics/types";
-import { LyricsStatus, type LyricsReadout } from "@/lyrics/useLyrics";
+import { LyricsStatus, type LyricsReadout } from "@/lyrics/types";
 import { usePlaybackPosition } from "@/spotify/playback/usePlaybackPosition";
 import { useSpotify } from "@/spotify/useSpotify";
 

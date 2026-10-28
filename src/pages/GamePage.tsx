@@ -20,6 +20,7 @@ import {
 } from "@/constants/gameRules";
 import type { GamePlayer, GameRules } from "@/game/types";
 import { ModePicker } from "@/components/game/ModePicker";
+import { ModifierPicker } from "@/components/game/ModifierPicker";
 import { formatMoney } from "@/game/rewards";
 import { primeSounds } from "@/audio/player";
 import { selectionKey } from "@/game/playHistory";
@@ -158,6 +159,10 @@ export function GamePage() {
 
             <Panel title={t("setup.mode")}>
               <ModePicker value={setup.mode} onChange={setup.setMode} />
+            </Panel>
+
+            <Panel title={t("setup.modifiers")}>
+              <ModifierPicker value={setup.modifiers} onChange={setup.setModifiers} />
             </Panel>
 
             <Panel title={t("setup.targetMoney")}>

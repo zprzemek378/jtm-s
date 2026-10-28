@@ -58,6 +58,11 @@ export type SpotifyContextValue = {
   /** Starts a track on our device at the given position. */
   playTrackAt: (trackUri: string, positionMs: number) => Promise<void>;
   pause: () => Promise<void>;
+  /**
+   * Stops our player and whatever else the account is playing — for the round
+   * that is meant to be silent and cannot afford a stray song underneath it.
+   */
+  silence: () => Promise<void>;
   resume: () => Promise<void>;
   /** Jumps to a position in the track playing on our device. */
   seek: (positionMs: number) => Promise<void>;

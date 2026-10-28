@@ -84,3 +84,28 @@ export const BUZZ_COLLECTION_MAX_MS = 1500;
 export const MIN_TIE_THRESHOLD_MS = 0;
 export const MAX_TIE_THRESHOLD_MS = 500;
 export const DEFAULT_TIE_THRESHOLD_MS = 0.2;
+
+/**
+ * How long each line of a lyrics-only round stays alone on screen before the
+ * next one joins it.
+ *
+ * Slow enough to read and think, quick enough that a round's worth of time
+ * shows a useful stretch of the song — about ten lines over thirty seconds.
+ */
+export const LYRIC_LINE_INTERVAL_MS = 3000;
+
+/**
+ * The fewest lines a track must have before its words can stand in for it.
+ *
+ * A file with two lines gives the room nothing to work with, and the round
+ * would be over before the second one appeared.
+ */
+export const MIN_LYRIC_LINES = 6;
+
+/**
+ * How much of a file to leave below the starting line.
+ *
+ * The round can open anywhere in a song, but not so near the end that it runs
+ * out of words halfway through.
+ */
+export const LYRIC_TAIL_LINES = 8;

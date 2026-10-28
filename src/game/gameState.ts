@@ -38,6 +38,15 @@ export type GameState = {
    */
   playedIds: readonly string[];
   track: PooledTrack | null;
+  /** This round shows the words instead of playing the music. */
+  lyricsOnly: boolean;
+  /** The line the words started from. */
+  lyricsFrom: number;
+  /**
+   * How many lines stay on screen once the round stops revealing them — set
+   * at the press, because the clock they were counted from restarts.
+   */
+  lyricsShown: number | null;
   /** Where the snippet started — the point playback resumes from. */
   startPositionMs: number;
   /** Who is sitting out the current round, and why. */
@@ -60,9 +69,19 @@ export type GameAction =
       pool: readonly PooledTrack[];
       /** Drawn by the caller, so the random mode stays out of the reducer. */
       direction: RewardDirection | null;
+      /** True when this round shows the words instead of playing the music. */
+      lyricsOnly: boolean;
+      /** Which line of the file the round opens on. */
+      lyricsFrom: number;
     }
   /** `amount` is the stake as it stood on screen at the moment of the press. */
-  | { type: "buzz"; playerId: PlayerId; amount: number }
+  | {
+      type: "buzz";
+      playerId: PlayerId;
+      amount: number;
+      /** How many lines were on screen, on a round that was showing words. */
+      lyricsShown: number | null;
+    }
   /** Two or more were indistinguishable; the next round is theirs alone. */
   | { type: "tie"; playerIds: readonly PlayerId[] }
   | { type: "guess-window-elapsed" }
@@ -106,6 +125,9 @@ export function createGameState(
     pool: unheard.length > 0 ? unheard : tracks,
     playedIds: unheard.length > 0 ? playedIds : [],
     track: null,
+    lyricsOnly: false,
+    lyricsFrom: 0,
+    lyricsShown: null,
     startPositionMs: 0,
     suspension: null,
     pendingSuspension: null,
@@ -142,6 +164,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         phase: GamePhase.Listening,
         round: state.round + 1,
         track: action.track,
+        lyricsOnly: action.lyricsOnly,
+        lyricsFrom: action.lyricsFrom,
+        lyricsShown: null,
         startPositionMs: action.startPositionMs,
         pool: action.pool,
         direction: action.direction,
@@ -166,8 +191,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         phase: GamePhase.Buzzed,
         buzzedPlayerId: action.playerId,
         // Frozen here: the player gets what the counter showed, not what it
-        // would have shown a tick later.
+        // would have shown a tick later. The words freeze with it — whatever
+        // the room had to go on at the moment somebody pressed.
         pendingAmount: action.amount,
+        lyricsShown: action.lyricsShown,
       };
     }
 

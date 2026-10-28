@@ -25,7 +25,7 @@ import {
 } from "./auth/tokens";
 import { isRedirectHostAcceptable, resolveClientId } from "./auth/clientId";
 import { loadPlaybackSdk } from "./playback/loadPlaybackSdk";
-import { startTrackPlayback } from "./playback/viaRest";
+import { pauseActiveDevice, startTrackPlayback } from "./playback/viaRest";
 import * as sdk from "./playback/viaSdk";
 import { scanPlaylist as runScan, type ScanProgress } from "./playlistScan";
 import {
@@ -432,6 +432,30 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
     await sdk.pause(playerRef.current, () => wantsPausedRef.current);
   }, []);
 
+  /**
+   * Silence, whatever is making the noise.
+   *
+   * The ordinary pause is the player's own and costs no request, which is why
+   * every round uses it. This one also tells Spotify to stop the account's
+   * active device, for the case the player cannot reach: somebody started
+   * something on their own phone. Kept apart because it is a request, and a
+   * request per buzz is not a price worth paying.
+   */
+  const silence = useCallback(async () => {
+    wantsPausedRef.current = true;
+    await Promise.all([
+      // Pausing a player that has never been given a track makes the SDK
+      // answer "Cannot perform operation; no list was loaded", which lands on
+      // the screen as a playback error — on the very first round of a game,
+      // where nothing has gone wrong at all. The account-wide stop below is
+      // not the player's and has no such qualms.
+      hasPlayedRef.current
+        ? sdk.pause(playerRef.current, () => wantsPausedRef.current)
+        : Promise.resolve(),
+      pauseActiveDevice(getAccessToken),
+    ]);
+  }, [getAccessToken]);
+
   const resume = useCallback(async () => {
     if (!hasPlayedRef.current) {
       return;
@@ -543,6 +567,7 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       connectPlayer,
       playTrackAt,
       pause,
+      silence,
       resume,
       seek,
       readPlayback,
@@ -575,6 +600,7 @@ export function SpotifyProvider({ children }: { children: ReactNode }) {
       resume,
       scanPlaylist,
       seek,
+      silence,
       setSaved,
       status,
       user,

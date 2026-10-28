@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+import { lyricLinesFor } from "@/game/lyricsRound";
 import { formatMoney, RewardDirection } from "@/game/rewards";
 import type { GameSession } from "@/game/useGameSession";
 import { GamePhase, Verdict, type GamePlayer, type GameRules } from "@/game/types";
@@ -7,7 +8,6 @@ import { msToWholeSeconds } from "@/helpers/format";
 import { useActionKeys } from "@/hooks/useActionKeys";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useLanguage } from "@/i18n/useLanguage";
-import { useLyrics } from "@/lyrics/useLyrics";
 
 import { Button } from "../ui/Button";
 import { ButtonGroup } from "../ui/ButtonGroup";
@@ -16,6 +16,7 @@ import { ProgressBar } from "../ui/ProgressBar";
 import { ProgressTone } from "../ui/progressTone";
 import { Spinner } from "../ui/Spinner";
 import { AnswerBlock } from "./AnswerBlock";
+import { LyricsRound } from "./LyricsRound";
 import styles from "./RoundStage.module.scss";
 
 type RoundStageProps = {
@@ -64,10 +65,10 @@ export function RoundStage({
     runKey: `${round}-answer`,
   });
 
-  // Asked for as soon as the track is in play, so the words are in hand by the
-  // time the title is revealed and the panel appears. Looking them up is not
-  // part of starting a round and can never hold one up.
-  const lyrics = useLyrics(track, true);
+  // Asked for by the session as the count-in starts, because whether there are
+  // any decides what kind of round this is.
+  const { lyrics } = session;
+  const lyricLines = state.lyricsOnly ? lyricLinesFor(lyrics) : null;
 
   const buzzedPlayer = players.find((player) => player.id === buzzedPlayerId) ?? null;
 
@@ -159,7 +160,9 @@ export function RoundStage({
           {t("game.round", { number: round })}
           {state.direction === null ? "" : ` · ${t(`game.direction.${state.direction}`)}`}
         </p>
-        <h2 className={styles.headline}>{t("game.listening")}</h2>
+        <h2 className={styles.headline}>
+          {t(state.lyricsOnly ? "game.reading" : "game.listening")}
+        </h2>
 
         <div className={styles.money} aria-live="off">
           {formatMoney(currentMoney)}
@@ -173,6 +176,15 @@ export function RoundStage({
           ariaLabel={t("game.listening")}
           tone={secondsLeft <= 3 ? ProgressTone.Warning : ProgressTone.Accent}
         />
+
+        {lyricLines ? (
+          <LyricsRound
+            lines={lyricLines}
+            from={state.lyricsFrom}
+            elapsedMs={rules.roundDurationMs - guessRemainingMs}
+            frozenCount={null}
+          />
+        ) : null}
       </div>
     );
   }
@@ -207,6 +219,15 @@ export function RoundStage({
         >
           {secondsLeft}
         </div>
+        {lyricLines ? (
+          <LyricsRound
+            lines={lyricLines}
+            from={state.lyricsFrom}
+            elapsedMs={0}
+            frozenCount={state.lyricsShown}
+          />
+        ) : null}
+
         <ProgressBar
           instant
           value={answerRemainingMs}

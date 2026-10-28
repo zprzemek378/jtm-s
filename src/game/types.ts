@@ -1,3 +1,4 @@
+import type { GameModifiers, ModifierFrequency } from "./modifiers";
 import type { RewardMode } from "./rewards";
 
 export type PlayerId = string;
@@ -35,6 +36,8 @@ export type GameRules = {
    * Null switches ties off, and the first press simply wins.
    */
   tieThresholdMs: number | null;
+  /** How often a round plays its words instead of its music; null for never. */
+  lyricsOnly: ModifierFrequency | null;
 };
 
 /** What the setup screen stores between games. */
@@ -44,6 +47,7 @@ export type GameSetup = {
   roundSeconds: number;
   answerSeconds: number;
   mode: RewardMode;
+  modifiers: GameModifiers;
 };
 
 /**

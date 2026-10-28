@@ -11,25 +11,9 @@ import { LYRICS_CACHE_LIMIT } from "@/constants/lyrics";
 import type { PlayableTrack } from "@/spotify/types";
 
 import { fetchLyrics } from "./lrclib";
-import type { Lyrics } from "./types";
+import { LyricsStatus, type Lyrics, type LyricsReadout } from "./types";
 
-export const LyricsStatus = {
-  /** Karaoke is switched off, or no track is in play. */
-  Idle: "idle",
-  Loading: "loading",
-  Ready: "ready",
-  /** LRCLIB answered, and has nothing for this recording. */
-  Missing: "missing",
-  /** LRCLIB could not be reached, or would not answer. */
-  Failed: "failed",
-} as const;
-
-export type LyricsStatus = (typeof LyricsStatus)[keyof typeof LyricsStatus];
-
-export type LyricsReadout = {
-  status: LyricsStatus;
-  lyrics: Lyrics | null;
-};
+export { LyricsStatus, type LyricsReadout };
 
 const IDLE: LyricsReadout = { status: LyricsStatus.Idle, lyrics: null };
 
