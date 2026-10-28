@@ -12,17 +12,26 @@ import { drawFromPool } from "@/helpers/trackPool";
 import { pickSnippetStartMs } from "@/helpers/snippet";
 import type { Accounts } from "@/helpers/money";
 import type { PooledTrack } from "@/helpers/trackUnion";
+import type { LyricsReadout } from "@/lyrics/types";
+import { useLyrics } from "@/lyrics/useLyrics";
 import { useSpotify } from "@/spotify/useSpotify";
 
 import { createGameState, gameReducer, type GameState } from "./gameState";
 import { readPlayedTracks, writePlayedTracks } from "./playHistory";
-import { drawDirection, moneyAt } from "./rewards";
+import { lyricLinesFor, openingLine, visibleLineCount } from "./lyricsRound";
+import { FREQUENCY_CHANCE } from "./modifiers";
+import { drawDirection, moneyAt, type RewardDirection } from "./rewards";
 import { canBuzz } from "./gameState";
 import { resolveBuzz, type BuzzEntry } from "./tie";
 import { GamePhase, type GamePlayer, type GameRules, type PlayerId, type Verdict } from "./types";
 
 export type GameSession = {
   state: GameState;
+  /**
+   * The words for the track in play, asked for as the count-in starts so a
+   * round that means to show them has them in hand before it opens.
+   */
+  lyrics: LyricsReadout;
   /** Milliseconds left in the guessing window; full while not listening. */
   guessRemainingMs: number;
   /** True while a track is being started on the Spotify device. */
@@ -60,7 +69,7 @@ export function useGameSession(
    */
   historyKey: string,
 ): GameSession {
-  const { playTrackAt, pause, resume } = useSpotify();
+  const { playTrackAt, pause, resume, silence } = useSpotify();
   const [state, dispatch] = useReducer(
     gameReducer,
     undefined,
@@ -82,6 +91,32 @@ export function useGameSession(
   const preRollCounterRef = useRef(0);
   /** Stops the auto-advance effect from starting two rounds at once. */
   const startingRef = useRef(false);
+  /**
+   * The track for the round about to start, drawn when the count-in begins.
+   *
+   * Drawn that early for one reason: the words have to be fetched and read
+   * before the round opens, because whether there are any decides what kind of
+   * round it is. Three seconds of counting in is the time that buys.
+   */
+  const [pending, setPending] = useState<{
+    track: PooledTrack;
+    startPositionMs: number;
+    direction: RewardDirection | null;
+    pool: readonly PooledTrack[];
+  } | null>(null);
+
+  const lyrics = useLyrics(pending?.track ?? state.track, true);
+  /**
+   * The same readout, for the moment the count-in runs out.
+   *
+   * Starting a round must not be rebuilt every time the lookup moves a step,
+   * or the count-in would be left holding a stale one.
+   */
+  const lyricsRef = useRef(lyrics);
+
+  useEffect(() => {
+    lyricsRef.current = lyrics;
+  }, [lyrics]);
 
   const startRound = useCallback(async () => {
     if (startingRef.current) {
@@ -93,7 +128,7 @@ export function useGameSession(
     setStartFailed(false);
 
     try {
-      const draw = drawFromPool(state.pool, tracks);
+      const draw = pending;
 
       // Nothing at all to play. Reported as a failed start so the screen waits
       // for the host: the count-in that led here fires whenever the game is
@@ -104,19 +139,36 @@ export function useGameSession(
         return;
       }
 
-      const startPositionMs = pickSnippetStartMs(draw.item.durationMs);
-      // Drawn out here, so the random mode never reaches the pure reducer.
-      const direction = drawDirection(rules.mode, state.round + 1);
+      // The words stand in for the music only when there are enough of them.
+      // A track the database has nothing for simply plays, rather than being
+      // passed over for one that happens to be written down somewhere.
+      const lines = lyricLinesFor(lyricsRef.current);
+      const lyricsOnly =
+        rules.lyricsOnly !== null &&
+        lines !== null &&
+        Math.random() < FREQUENCY_CHANCE[rules.lyricsOnly];
 
-      // Playback starts first, so the countdown on screen matches the music.
-      await playTrackAt(draw.item.uri, startPositionMs);
+      if (lyricsOnly) {
+        // A round of words has to begin in silence, and the count-in's pause
+        // was three seconds ago: somebody may have put something on from their
+        // own phone since, which only the account-wide stop can reach.
+        await silence();
+      } else {
+        // Playback starts first, so the countdown on screen matches the music.
+        await playTrackAt(draw.track.uri, draw.startPositionMs);
+      }
+
       dispatch({
         type: "start-round",
-        track: draw.item,
-        startPositionMs,
-        pool: draw.remaining,
-        direction,
+        track: draw.track,
+        startPositionMs: draw.startPositionMs,
+        pool: draw.pool,
+        direction: draw.direction,
+        lyricsOnly,
+        // Anywhere in the song, as long as what follows lasts the round.
+        lyricsFrom: lyricsOnly && lines ? openingLine(lines.length) : 0,
       });
+      setPending(null);
     } catch {
       // Spotify can refuse to play — the account started listening elsewhere,
       // or the device dropped out. Let the host retry rather than sit on a
@@ -127,7 +179,7 @@ export function useGameSession(
       setPreRollKey(null);
       startingRef.current = false;
     }
-  }, [playTrackAt, rules.mode, state.pool, state.round, tracks]);
+  }, [pending, playTrackAt, rules.lyricsOnly, silence]);
 
   const preRollRemainingMs = useCountdown({
     durationMs: PRE_ROLL_MS,
@@ -143,10 +195,26 @@ export function useGameSession(
     // before the count-in — otherwise the old song runs under "3, 2, 1".
     void pause();
 
+    // Drawn now rather than when the count-in ends: looking the words up takes
+    // a moment, and the round cannot decide what it is until that is answered.
+    const draw = drawFromPool(state.pool, tracks);
+
+    setPending(
+      draw
+        ? {
+            track: draw.item,
+            startPositionMs: pickSnippetStartMs(draw.item.durationMs),
+            // Drawn out here, so the random mode never reaches the reducer.
+            direction: drawDirection(rules.mode, state.round + 1),
+            pool: draw.remaining,
+          }
+        : null,
+    );
+
     // This only counts the table in; the round begins when it runs out.
     preRollCounterRef.current += 1;
     setPreRollKey(preRollCounterRef.current);
-  }, [pause]);
+  }, [pause, rules.mode, state.pool, state.round, tracks]);
 
   // `idle` means a game that has been set up but has not played a round yet —
   // the opening round and a rematch. Both are counted in, exactly like every
@@ -160,12 +228,42 @@ export function useGameSession(
     }
   }, [nextRound, preRollKey, startFailed, state.phase]);
 
+  /**
+   * Starts the song a round played on words alone never played.
+   *
+   * However that round ended — answered, timed out or tied — the screen that
+   * follows names the track and plays it, like every other end of a round.
+   * Answers false when there was nothing to make up for.
+   */
+  const playAfterSilentRound = useCallback(() => {
+    if (!state.lyricsOnly || !state.track) {
+      return false;
+    }
+
+    void playTrackAt(state.track.uri, state.startPositionMs);
+
+    return true;
+  }, [playTrackAt, state.lyricsOnly, state.startPositionMs, state.track]);
+
   const guessRemainingMs = useCountdown({
     durationMs: rules.roundDurationMs,
     active: state.phase === GamePhase.Listening,
     runKey: state.round,
-    onElapsed: useCallback(() => dispatch({ type: "guess-window-elapsed" }), []),
+    onElapsed: useCallback(() => {
+      dispatch({ type: "guess-window-elapsed" });
+      playAfterSilentRound();
+    }, [playAfterSilentRound]),
   });
+
+  /**
+   * How many lines are on screen right now, on a round that is showing words.
+   *
+   * Counted from the same clock the stake is, so what a player captures and
+   * what they had to go on are the same moment.
+   */
+  const shownLines = state.lyricsOnly
+    ? visibleLineCount(rules.roundDurationMs - guessRemainingMs)
+    : null;
 
   // Derived from the very value the screen is showing, so a player captures
   // exactly the figure they were looking at when they hit their key.
@@ -213,7 +311,7 @@ export function useGameSession(
       // Ties switched off: the first press wins outright, as it always did.
       if (rules.tieThresholdMs === null) {
         playSound(SoundEvent.Buzz);
-        dispatch({ type: "buzz", playerId, amount: currentMoney });
+        dispatch({ type: "buzz", playerId, amount: currentMoney, lyricsShown: shownLines });
 
         return;
       }
@@ -252,6 +350,7 @@ export function useGameSession(
       // compared by their own timestamps.
       const entries: BuzzEntry[] = [{ playerId, at }];
       const amount = currentMoney;
+      const shown = shownLines;
       const resolve = () => {
         burstRef.current = null;
 
@@ -262,8 +361,9 @@ export function useGameSession(
 
         if (outcome?.kind === "tie") {
           dispatch({ type: "tie", playerIds: outcome.playerIds });
+          playAfterSilentRound();
         } else if (outcome?.kind === "single") {
-          dispatch({ type: "buzz", playerId: outcome.playerId, amount });
+          dispatch({ type: "buzz", playerId: outcome.playerId, amount, lyricsShown: shown });
         }
       };
 
@@ -276,7 +376,7 @@ export function useGameSession(
         resolve,
       };
     },
-    [collectionMs, currentMoney, rules.tieThresholdMs, state],
+    [collectionMs, currentMoney, playAfterSilentRound, rules.tieThresholdMs, shownLines, state],
   );
 
   // Only a buzz stops the music. When the window simply runs out the track
@@ -296,9 +396,12 @@ export function useGameSession(
 
   const reveal = useCallback(() => {
     dispatch({ type: "reveal" });
-    // Picks the snippet up where it was paused.
-    void resume();
-  }, [resume]);
+
+    if (!playAfterSilentRound()) {
+      // Picks the snippet up where it was paused.
+      void resume();
+    }
+  }, [playAfterSilentRound, resume]);
 
   const judge = useCallback((verdict: Verdict) => {
     // The track plays on under the verdict, as it does when nobody guessed;
@@ -323,6 +426,7 @@ export function useGameSession(
 
   return {
     state,
+    lyrics,
     guessRemainingMs,
     loadingTrack,
     startFailed,

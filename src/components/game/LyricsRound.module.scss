@@ -1,0 +1,54 @@
+.round {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-3;
+  width: 100%;
+  padding: $space-4;
+  border: 1px solid $c-border-accent;
+  border-radius: $radius-md;
+  background-color: $c-surface-alt;
+}
+
+.label {
+  font-size: $text-xs;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $c-text-subtle;
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-2;
+  width: 100%;
+}
+
+// The lines already read stay on screen but step back, so the one that just
+// arrived is the one the eye lands on.
+.line {
+  font-size: $text-lg;
+  line-height: 1.35;
+  text-align: center;
+  text-wrap: balance;
+  color: $c-text-muted;
+  opacity: 0.65;
+  transition:
+    color $transition-fast,
+    opacity $transition-fast;
+}
+
+.newest {
+  font-size: $text-xl;
+  font-weight: 700;
+  color: $c-accent;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line {
+    transition: none;
+  }
+}

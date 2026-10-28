@@ -1,0 +1,23 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.hint {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.frequency {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2;
+  padding-top: $space-2;
+}
+
+.frequencyLabel {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}

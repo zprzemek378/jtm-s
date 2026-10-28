@@ -20,6 +20,7 @@ import {
 import { nextFreeColour, normaliseColour, playerColour } from "@/constants/players";
 import { STORAGE_KEYS, readStoredJson } from "@/storage/localStorage";
 
+import { NO_MODIFIERS, normaliseModifiers } from "./modifiers";
 import { DEFAULT_REWARD_MODE, isRewardMode } from "./rewards";
 import type { GameRules, GameSetup, PlayerDraft } from "./types";
 
@@ -38,6 +39,7 @@ export function createDefaultSetup(): GameSetup {
     roundSeconds: DEFAULT_ROUND_SECONDS,
     answerSeconds: DEFAULT_ANSWER_SECONDS,
     mode: DEFAULT_REWARD_MODE,
+    modifiers: NO_MODIFIERS,
   };
 }
 
@@ -110,6 +112,7 @@ export function normaliseSetup(stored: unknown): GameSetup {
       DEFAULT_ANSWER_SECONDS,
     ),
     mode: isRewardMode(setup.mode) ? setup.mode : DEFAULT_REWARD_MODE,
+    modifiers: normaliseModifiers(setup.modifiers),
   };
 }
 
@@ -131,5 +134,6 @@ export function toGameRules(setup: GameSetup, tieThresholdMs: number | null): Ga
     targetMoney: setup.targetMoney,
     mode: setup.mode,
     tieThresholdMs,
+    lyricsOnly: setup.modifiers.lyricsOnly,
   };
 }

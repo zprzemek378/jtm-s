@@ -8,6 +8,37 @@
 
 import { Priority } from "../transport/queue";
 import { request, type AccessTokenProvider } from "../transport/request";
+import { SpotifyError, SpotifyErrorKind } from "../types";
+
+/**
+ * Stops whatever the account is playing, wherever it is playing it.
+ *
+ * The browser player can only silence itself, which is no use when somebody
+ * has started something on their own phone and the room can hear it. This
+ * addresses the account's active device instead, whichever that is.
+ *
+ * Nothing to pause is not a failure: an account with no active device answers
+ * 404, and one that is already paused can answer 403, and in both cases the
+ * room is silent, which is all this was for.
+ */
+export async function pauseActiveDevice(getAccessToken: AccessTokenProvider): Promise<void> {
+  try {
+    await request(
+      getAccessToken,
+      "/me/player/pause",
+      { method: "PUT" },
+      { retryRateLimit: false, priority: Priority.Urgent },
+    );
+  } catch (failure) {
+    const quiet =
+      failure instanceof SpotifyError &&
+      (failure.kind === SpotifyErrorKind.NotFound || failure.kind === SpotifyErrorKind.Forbidden);
+
+    if (!quiet) {
+      throw failure;
+    }
+  }
+}
 
 /** Starts a whole playlist on our device, at a given index inside it. */
 export async function startContextPlayback(

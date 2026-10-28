@@ -8,6 +8,7 @@ import { STORAGE_KEYS, writeStoredJson } from "@/storage/localStorage";
 
 import { createPlayerDraft, readStoredSetup } from "./rules";
 import type { RewardMode } from "./rewards";
+import type { GameModifiers } from "./modifiers";
 import type { GamePlayer, GameSetup, PlayerDraft } from "./types";
 
 export type GameSetupControls = {
@@ -16,10 +17,12 @@ export type GameSetupControls = {
   roundSeconds: number;
   answerSeconds: number;
   mode: RewardMode;
+  modifiers: GameModifiers;
   setTargetMoney: (value: number) => void;
   setRoundSeconds: (value: number) => void;
   setAnswerSeconds: (value: number) => void;
   setMode: (mode: RewardMode) => void;
+  setModifiers: (modifiers: GameModifiers) => void;
   rename: (id: string, name: string) => void;
   assignKey: (id: string, keyCode: string) => void;
   setColour: (id: string, colour: string) => void;
@@ -121,16 +124,22 @@ export function useGameSetup(): GameSetupControls {
     setSetup((current) => ({ ...current, mode }));
   }, []);
 
+  const setModifiers = useCallback((modifiers: GameModifiers) => {
+    setSetup((current) => ({ ...current, modifiers }));
+  }, []);
+
   return {
     players: setup.players,
     targetMoney: setup.targetMoney,
     roundSeconds: setup.roundSeconds,
     answerSeconds: setup.answerSeconds,
     mode: setup.mode,
+    modifiers: setup.modifiers,
     setTargetMoney,
     setRoundSeconds,
     setAnswerSeconds,
     setMode,
+    setModifiers,
     rename,
     assignKey,
     setColour,

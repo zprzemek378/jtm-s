@@ -1,5 +1,5 @@
 import type { PooledTrack } from "@/helpers/trackUnion";
-import type { LyricsReadout } from "@/lyrics/useLyrics";
+import type { LyricsReadout } from "@/lyrics/types";
 
 import { KaraokePanel } from "./KaraokePanel";
 import { SaveTrack } from "./SaveTrack";
