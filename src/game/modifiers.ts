@@ -37,9 +37,16 @@ export type GameModifiers = {
    * time instead, and the table has to name the song from them.
    */
   lyricsOnly: ModifierFrequency | null;
+  /**
+   * Extra time: the first of the lifelines, and the reason they are named for
+   * what they do rather than called lifelines in the code. Every player gets
+   * one for the game; spending it plays the music on for a few more seconds,
+   * and for those seconds the round is theirs alone.
+   */
+  extraTime: boolean;
 };
 
-export const NO_MODIFIERS: GameModifiers = { lyricsOnly: null };
+export const NO_MODIFIERS: GameModifiers = { lyricsOnly: null, extraTime: false };
 
 export function isModifierFrequency(value: unknown): value is ModifierFrequency {
   return MODIFIER_FREQUENCIES.includes(value as ModifierFrequency);
@@ -51,5 +58,6 @@ export function normaliseModifiers(stored: unknown): GameModifiers {
 
   return {
     lyricsOnly: isModifierFrequency(modifiers?.lyricsOnly) ? modifiers.lyricsOnly : null,
+    extraTime: modifiers?.extraTime === true,
   };
 }

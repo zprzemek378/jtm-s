@@ -89,6 +89,11 @@
   --c-positive-surface: #e8f5ec;
   --c-negative: #c0392f;
   --c-negative-surface: #fceceb;
+
+  // Each lifeline gets a colour of its own, so a glance at a card says which
+  // ones a player still holds. The first one is extra time.
+  --c-extra-time: #b36b00;
+  --c-extra-time-surface: #fdf2e0;
 }
 
 [data-theme="dark"] {
@@ -113,6 +118,9 @@
   --c-positive-surface: #14241a;
   --c-negative: #f0776c;
   --c-negative-surface: #2b1a19;
+
+  --c-extra-time: #f5a524;
+  --c-extra-time-surface: #2a1f0d;
 }
 
 *,

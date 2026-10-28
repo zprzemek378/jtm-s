@@ -4,6 +4,7 @@ import { lyricLinesFor } from "@/game/lyricsRound";
 import { formatMoney, RewardDirection } from "@/game/rewards";
 import type { GameSession } from "@/game/useGameSession";
 import { GamePhase, Verdict, type GamePlayer, type GameRules } from "@/game/types";
+import { EXTRA_TIME_MS } from "@/constants/gameRules";
 import { msToWholeSeconds } from "@/helpers/format";
 import { useActionKeys } from "@/hooks/useActionKeys";
 import { useCountdown } from "@/hooks/useCountdown";
@@ -41,6 +42,7 @@ export function RoundStage({
   const {
     state,
     guessRemainingMs,
+    extraTimeRemainingMs,
     loadingTrack,
     startFailed,
     preRollActive,
@@ -79,16 +81,20 @@ export function RoundStage({
       ? {}
       : startFailed
         ? { onConfirm: session.nextRound }
-        : phase === GamePhase.Buzzed
-          ? { onConfirm: session.reveal }
-          : phase === GamePhase.Revealed
-            ? {
-                onConfirm: () => session.judge(Verdict.Correct),
-                onReject: () => session.judge(Verdict.Incorrect),
-              }
-            : phase === GamePhase.TimedOut || phase === GamePhase.Judged || phase === GamePhase.Tied
-              ? { onConfirm: session.nextRound }
-              : {},
+        : phase === GamePhase.ExtraTime
+          ? {}
+          : phase === GamePhase.Buzzed
+            ? { onConfirm: session.reveal }
+            : phase === GamePhase.Revealed
+              ? {
+                  onConfirm: () => session.judge(Verdict.Correct),
+                  onReject: () => session.judge(Verdict.Incorrect),
+                }
+              : phase === GamePhase.TimedOut ||
+                  phase === GamePhase.Judged ||
+                  phase === GamePhase.Tied
+                ? { onConfirm: session.nextRound }
+                : {},
     shortcutsEnabled,
     // Names the screen on show. The round number is part of it so that two
     // rounds reaching the same phase are still two separate arrivals.
@@ -183,6 +189,45 @@ export function RoundStage({
             from={state.lyricsFrom}
             elapsedMs={rules.roundDurationMs - guessRemainingMs}
             frozenCount={null}
+          />
+        ) : null}
+      </div>
+    );
+  }
+
+  // Bought with a lifeline: the music is back on, and the only thing anybody
+  // else can do is listen along.
+  if (phase === GamePhase.ExtraTime) {
+    return (
+      <div className={styles.stage}>
+        <p className={styles.eyebrow}>
+          {t("game.extraTime", { seconds: Math.round(EXTRA_TIME_MS / 1000) })}
+        </p>
+        <h2 className={styles.headline}>
+          {t("game.extraTimeRunning", { name: buzzedPlayer?.name ?? "" })}
+        </h2>
+
+        <div className={styles.money} aria-live="off">
+          {msToWholeSeconds(extraTimeRemainingMs)}
+        </div>
+
+        <ProgressBar
+          instant
+          tall
+          value={extraTimeRemainingMs}
+          max={EXTRA_TIME_MS}
+          ariaLabel={t("game.extraTime", { seconds: Math.round(EXTRA_TIME_MS / 1000) })}
+          tone={ProgressTone.Accent}
+        />
+
+        {lyricLines ? (
+          <LyricsRound
+            lines={lyricLines}
+            from={state.lyricsFrom}
+            // The seconds it bought buy more words, on a round made of them.
+            elapsedMs={EXTRA_TIME_MS - extraTimeRemainingMs}
+            frozenCount={null}
+            startedAt={state.lyricsShown}
           />
         ) : null}
       </div>

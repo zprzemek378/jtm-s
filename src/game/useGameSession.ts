@@ -5,7 +5,12 @@ import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 
 import { playSound } from "@/audio/player";
 import { SoundEvent } from "@/constants/soundChoices";
-import { BUZZ_COLLECTION_MAX_MS, BUZZ_COLLECTION_MS, PRE_ROLL_MS } from "@/constants/gameRules";
+import {
+  BUZZ_COLLECTION_MAX_MS,
+  BUZZ_COLLECTION_MS,
+  EXTRA_TIME_MS,
+  PRE_ROLL_MS,
+} from "@/constants/gameRules";
 import { useBuzzerKeys } from "@/hooks/useBuzzerKeys";
 import { useCountdown } from "@/hooks/useCountdown";
 import { drawFromPool } from "@/helpers/trackPool";
@@ -47,6 +52,12 @@ export type GameSession = {
   buzz: (playerId: PlayerId, at: number) => void;
   reveal: () => void;
   judge: (verdict: Verdict) => void;
+  /** Milliseconds left of the extra time a lifeline bought. */
+  extraTimeRemainingMs: number;
+  /** Whether the player who buzzed can still spend a lifeline. */
+  canUseExtraTime: boolean;
+  /** Spends it: the music plays on, and nobody else may press. */
+  useExtraTime: () => void;
   /** Counts the table in, then plays the next track. */
   nextRound: () => void;
   /** Starts over with the same players, target and playlist. */
@@ -394,6 +405,47 @@ export function useGameSession(
     }
   }, [pause, state.phase]);
 
+  /**
+   * How many lines the words have reached, counting the seconds a lifeline
+   * added on a round that is showing them.
+   */
+  const linesWithExtraTime = useCallback(
+    (elapsedMs: number) =>
+      state.lyricsShown === null ? null : state.lyricsShown + visibleLineCount(elapsedMs) - 1,
+    [state.lyricsShown],
+  );
+
+  const extraTimeRemainingMs = useCountdown({
+    durationMs: EXTRA_TIME_MS,
+    active: state.phase === GamePhase.ExtraTime,
+    runKey: `${state.round}-extra-time`,
+    onElapsed: useCallback(() => {
+      // Silence again, and the answer window starts over: they have had their
+      // extra listen and now owe the table an answer.
+      void pause();
+      dispatch({ type: "extra-time-elapsed", lyricsShown: linesWithExtraTime(EXTRA_TIME_MS) });
+    }, [linesWithExtraTime, pause]),
+  });
+
+  const canUseExtraTime =
+    state.phase === GamePhase.Buzzed &&
+    state.buzzedPlayerId !== null &&
+    state.extraTimeLeft.includes(state.buzzedPlayerId);
+
+  const useExtraTime = useCallback(() => {
+    if (!canUseExtraTime) {
+      return;
+    }
+
+    dispatch({ type: "use-extra-time" });
+
+    // A round played on words alone has no music to turn back on; its extra
+    // seconds are extra lines instead, which the screen counts out on its own.
+    if (!state.lyricsOnly) {
+      void resume();
+    }
+  }, [canUseExtraTime, resume, state.lyricsOnly]);
+
   const reveal = useCallback(() => {
     dispatch({ type: "reveal" });
 
@@ -428,6 +480,9 @@ export function useGameSession(
     state,
     lyrics,
     guessRemainingMs,
+    extraTimeRemainingMs,
+    canUseExtraTime,
+    useExtraTime,
     loadingTrack,
     startFailed,
     preRollActive: preRollKey !== null,

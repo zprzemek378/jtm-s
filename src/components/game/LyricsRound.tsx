@@ -15,6 +15,11 @@ type LyricsRoundProps = {
    * them. Null while it still is.
    */
   frozenCount: number | null;
+  /**
+   * How many were already on screen when this stretch began — a lifeline
+   * carries on from where the round left off rather than starting over.
+   */
+  startedAt?: number | null;
 };
 
 /**
@@ -24,9 +29,15 @@ type LyricsRoundProps = {
  * at a glance where the song has got to. Nothing new appears once somebody has
  * pressed — what they had to go on is what stays on screen.
  */
-export function LyricsRound({ lines, from, elapsedMs, frozenCount }: LyricsRoundProps) {
+export function LyricsRound({
+  lines,
+  from,
+  elapsedMs,
+  frozenCount,
+  startedAt = null,
+}: LyricsRoundProps) {
   const { t } = useLanguage();
-  const count = frozenCount ?? visibleLineCount(elapsedMs);
+  const count = frozenCount ?? (startedAt ?? 1) + visibleLineCount(elapsedMs) - 1;
   const shown = lines.slice(from, from + count);
 
   return (

@@ -1,0 +1,55 @@
+.badge {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: none;
+  background: none;
+  line-height: 0;
+}
+
+.mark {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.case,
+.sweep {
+  fill: none;
+  stroke: $c-extra-time;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.dial {
+  fill: $c-extra-time-surface;
+  stroke: $c-extra-time;
+  stroke-width: 3;
+  transition: fill $transition-fast;
+}
+
+.text {
+  fill: $c-extra-time;
+  font-size: 15px;
+  font-weight: 700;
+  transition: fill $transition-fast;
+}
+
+// Unspent but not yet spendable: present, and clearly not the thing to click.
+.badge:not(.ready) {
+  opacity: 0.55;
+}
+
+// The one moment it can be spent.
+.ready {
+  cursor: pointer;
+}
+
+.ready:hover .dial {
+  fill: $c-extra-time;
+}
+
+.ready:hover .text {
+  fill: $c-extra-time-surface;
+}
