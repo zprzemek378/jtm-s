@@ -44,9 +44,18 @@ export type GameModifiers = {
    * and for those seconds the round is theirs alone.
    */
   extraTime: boolean;
+  /**
+   * The second lifeline: six titles, one of them right. Picking one answers
+   * the round there and then — nobody judges it, the choice does.
+   */
+  titles: boolean;
 };
 
-export const NO_MODIFIERS: GameModifiers = { lyricsOnly: null, extraTime: false };
+export const NO_MODIFIERS: GameModifiers = {
+  lyricsOnly: null,
+  extraTime: false,
+  titles: false,
+};
 
 export function isModifierFrequency(value: unknown): value is ModifierFrequency {
   return MODIFIER_FREQUENCIES.includes(value as ModifierFrequency);
@@ -59,5 +68,6 @@ export function normaliseModifiers(stored: unknown): GameModifiers {
   return {
     lyricsOnly: isModifierFrequency(modifiers?.lyricsOnly) ? modifiers.lyricsOnly : null,
     extraTime: modifiers?.extraTime === true,
+    titles: modifiers?.titles === true,
   };
 }

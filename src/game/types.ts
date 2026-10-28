@@ -40,6 +40,8 @@ export type GameRules = {
   lyricsOnly: ModifierFrequency | null;
   /** Whether every player starts with one lifeline. */
   extraTime: boolean;
+  /** Whether every player starts with the six-titles lifeline. */
+  titles: boolean;
 };
 
 /** What the setup screen stores between games. */
@@ -59,6 +61,8 @@ export type GameSetup = {
  * - `buzzed` — somebody pressed their key; music is paused, answer clock runs.
  * - `extra-time` — they spent that lifeline instead of answering: the music is
  *   back on for a few more seconds, and nobody else may press.
+ * - `titles` — they spent the other one: six titles are on screen, and picking
+ *   one answers the round outright.
  * - `revealed` — the answer is on screen, music resumed, waiting to be judged.
  * - `timedOut` — nobody buzzed; the title is on screen, waiting for the host.
  * - `judged` — the answer has been marked; the title is on screen, the track
@@ -73,6 +77,8 @@ export const GamePhase = {
   Buzzed: "buzzed",
   /** The buzzed player spent their lifeline: the music plays on, for them alone. */
   ExtraTime: "extra-time",
+  /** They spent the other one: six titles are on screen, and the pick answers. */
+  Titles: "titles",
   Revealed: "revealed",
   TimedOut: "timed-out",
   Judged: "judged",

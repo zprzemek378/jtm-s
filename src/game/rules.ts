@@ -136,5 +136,6 @@ export function toGameRules(setup: GameSetup, tieThresholdMs: number | null): Ga
     tieThresholdMs,
     lyricsOnly: setup.modifiers.lyricsOnly,
     extraTime: setup.modifiers.extraTime,
+    titles: setup.modifiers.titles,
   };
 }

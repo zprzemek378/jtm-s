@@ -7,6 +7,7 @@ import { useLanguage } from "@/i18n/useLanguage";
 
 import { Keycap } from "../ui/Keycap";
 import { ExtraTimeBadge } from "./ExtraTimeBadge";
+import { TitlesBadge } from "./TitlesBadge";
 import styles from "./Scoreboard.module.scss";
 
 type ScoreboardProps = {
@@ -19,10 +20,12 @@ type ScoreboardProps = {
   pendingSuspended: readonly PlayerId[];
   /** The player who buzzed in, highlighted while they answer. */
   buzzedPlayerId: PlayerId | null;
-  /** Players who still hold their lifeline; empty when the game has none. */
+  /** Players who still hold each lifeline; empty when the game has none. */
   extraTimeLeft: readonly PlayerId[];
-  /** Spends the buzzed player's lifeline, when this is the moment for it. */
+  titlesLeft: readonly PlayerId[];
+  /** Spend the buzzed player's lifelines, when this is the moment for them. */
   onUseExtraTime?: () => void;
+  onUseTitles?: () => void;
   /** Marks the winner once the game is over. */
   winnerId?: PlayerId | null;
 };
@@ -36,7 +39,9 @@ export function Scoreboard({
   pendingSuspended,
   buzzedPlayerId,
   extraTimeLeft,
+  titlesLeft,
   onUseExtraTime,
+  onUseTitles,
   winnerId = null,
 }: ScoreboardProps) {
   const { t } = useLanguage();
@@ -89,7 +94,7 @@ export function Scoreboard({
             {/* A row of its own along the bottom, where the lifelines a player
                 still holds line up. Only the player who pressed, and only
                 while the round waits on them, can actually spend one. */}
-            {extraTimeLeft.includes(player.id) ? (
+            {extraTimeLeft.includes(player.id) || titlesLeft.includes(player.id) ? (
               <div className={styles.lifelines}>
                 {extraTimeLeft.includes(player.id) ? (
                   <ExtraTimeBadge
@@ -97,6 +102,12 @@ export function Scoreboard({
                     onUse={
                       onUseExtraTime && player.id === buzzedPlayerId ? onUseExtraTime : undefined
                     }
+                  />
+                ) : null}
+                {titlesLeft.includes(player.id) ? (
+                  <TitlesBadge
+                    name={player.name}
+                    onUse={onUseTitles && player.id === buzzedPlayerId ? onUseTitles : undefined}
                   />
                 ) : null}
               </div>

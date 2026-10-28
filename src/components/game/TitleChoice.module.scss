@@ -1,0 +1,41 @@
+.choice {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  width: 100%;
+}
+
+.label {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: $space-3;
+}
+
+// Big enough to hit from across the table, and plain enough that no option
+// looks more likely than another.
+.option {
+  min-height: 3.5rem;
+  padding: $space-3 $space-4;
+  border: 1px solid $c-border-strong;
+  border-radius: $radius-md;
+  background-color: $c-surface;
+  color: $c-text;
+  font-size: $text-base;
+  font-weight: 600;
+  text-align: center;
+  text-wrap: balance;
+  cursor: pointer;
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast;
+}
+
+.option:hover {
+  border-color: $c-titles;
+  background-color: $c-titles-surface;
+}

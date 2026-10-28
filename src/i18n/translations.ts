@@ -172,6 +172,8 @@ const pl = {
   "setup.frequency.often": "Często",
   "setup.extraTimeHint":
     "Koło ratunkowe: każdy dostaje jedno na całą grę. Po zgłoszeniu się może je kliknąć w swojej karcie — muzyka gra jeszcze {seconds} s, ale już tylko dla niego, nikt inny nie może się w tym czasie zgłosić.",
+  "setup.titlesHint":
+    "Drugie koło ratunkowe, też po jednym na grę. Po zgłoszeniu się gracz widzi {count} tytułów — jeden poprawny, reszta z tej samej playlisty. Kliknięcie jest odpowiedzią: tura kończy się od razu, bez oceniania.",
   "setup.colourOf": "Zmień kolor gracza {name}",
   "setup.playerNamePlaceholder": "Gracz {number}",
   "setup.defaultPlayerName": "Gracz {number}",
@@ -286,6 +288,10 @@ const pl = {
   "game.extraTimeHas": "{name} ma jeszcze przedłużenie +{seconds} s",
   "game.extraTimeUse": "Przedłuż graczowi {name} słuchanie o {seconds} s",
   "game.extraTimeRunning": "{name} słucha dalej — nikt inny się nie zgłasza",
+  "game.titles": "{count} tytułów",
+  "game.titlesHas": "{name} ma jeszcze koło z {count} tytułami",
+  "game.titlesUse": "Pokaż graczowi {name} {count} tytułów do wyboru",
+  "game.titlesPick": "Jeden z nich jest poprawny. Kliknięcie od razu kończy turę.",
   "game.buzzedIn": "się zgłasza!",
   "game.answerWindow": "Czas na odpowiedź",
   "game.answerWindowOver": "Umowny czas minął — możecie kończyć odpowiedź.",
@@ -533,6 +539,8 @@ const en: Record<TranslationKey, string> = {
   "setup.frequency.often": "Often",
   "setup.extraTimeHint":
     "A lifeline: one each, for the whole game. After buzzing in they can click it on their own card — the music plays for another {seconds}s, for them alone, and nobody else may buzz while it does.",
+  "setup.titlesHint":
+    "The second lifeline, also one each. After buzzing in, the player sees {count} titles — one right, the rest from the same playlist. The click is the answer: the round ends there, with nothing to judge.",
   "setup.colourOf": "Change {name}'s colour",
   "setup.playerNamePlaceholder": "Player {number}",
   "setup.defaultPlayerName": "Player {number}",
@@ -647,6 +655,10 @@ const en: Record<TranslationKey, string> = {
   "game.extraTimeHas": "{name} still has extra time: +{seconds}s",
   "game.extraTimeUse": "Give {name} {seconds}s more listening",
   "game.extraTimeRunning": "{name} listens on — nobody else may buzz",
+  "game.titles": "{count} titles",
+  "game.titlesHas": "{name} still has the {count}-titles lifeline",
+  "game.titlesUse": "Put {count} titles in front of {name}",
+  "game.titlesPick": "One of them is right. Picking answers the round there and then.",
   "game.buzzedIn": "buzzed in!",
   "game.answerWindow": "Time to answer",
   "game.answerWindowOver": "The agreed time is up — wrap up the answer.",

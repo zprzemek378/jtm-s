@@ -1,5 +1,5 @@
 import { Checkbox } from "@/components/ui/Checkbox";
-import { EXTRA_TIME_MS } from "@/constants/gameRules";
+import { EXTRA_TIME_MS, TITLE_OPTIONS } from "@/constants/gameRules";
 import { MODIFIER_FREQUENCIES, ModifierFrequency, type GameModifiers } from "@/game/modifiers";
 import { useLanguage } from "@/i18n/useLanguage";
 
@@ -61,6 +61,15 @@ export function ModifierPicker({ value, onChange }: ModifierPickerProps) {
         onChange={(checked) => onChange({ ...value, extraTime: checked })}
       />
       <p className={styles.hint}>{t("setup.extraTimeHint", { seconds: EXTRA_TIME_SECONDS })}</p>
+
+      <hr className={styles.rule} />
+
+      <Checkbox
+        checked={value.titles}
+        label={t("game.titles", { count: TITLE_OPTIONS })}
+        onChange={(checked) => onChange({ ...value, titles: checked })}
+      />
+      <p className={styles.hint}>{t("setup.titlesHint", { count: TITLE_OPTIONS })}</p>
     </div>
   );
 }

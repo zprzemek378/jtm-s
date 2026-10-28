@@ -18,6 +18,7 @@ import { ProgressTone } from "../ui/progressTone";
 import { Spinner } from "../ui/Spinner";
 import { AnswerBlock } from "./AnswerBlock";
 import { LyricsRound } from "./LyricsRound";
+import { TitleChoice } from "./TitleChoice";
 import styles from "./RoundStage.module.scss";
 
 type RoundStageProps = {
@@ -81,7 +82,7 @@ export function RoundStage({
       ? {}
       : startFailed
         ? { onConfirm: session.nextRound }
-        : phase === GamePhase.ExtraTime
+        : phase === GamePhase.ExtraTime || phase === GamePhase.Titles
           ? {}
           : phase === GamePhase.Buzzed
             ? { onConfirm: session.reveal }
@@ -191,6 +192,27 @@ export function RoundStage({
             frozenCount={null}
           />
         ) : null}
+      </div>
+    );
+  }
+
+  // The other lifeline: six titles, and the pick is the answer.
+  if (phase === GamePhase.Titles) {
+    return (
+      <div className={styles.stage}>
+        <p className={styles.eyebrow}>{t("game.titles", { count: state.titleOptions.length })}</p>
+        <h2 className={styles.headline}>
+          {buzzedPlayer ? (
+            <span
+              className={styles.buzzedName}
+              style={{ "--player-colour": buzzedPlayer.colour } as CSSProperties}
+            >
+              {buzzedPlayer.name}
+            </span>
+          ) : null}
+        </h2>
+
+        <TitleChoice options={state.titleOptions} onPick={session.pickTitle} />
       </div>
     );
   }
