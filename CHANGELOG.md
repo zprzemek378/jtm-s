@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.5.0](https://github.com/zprzemek378/jtm-s/compare/v1.4.0...v1.5.0) (2026-10-28)
+
+### Features
+
+* **game:** add modifiers, starting with a round of words instead of music ([1ed9f1e](https://github.com/zprzemek378/jtm-s/commit/1ed9f1e0be64539b6394c3d93cccaff682a1618e))
+* **game:** add the first lifeline, extra time ([b22aefe](https://github.com/zprzemek378/jtm-s/commit/b22aefee1ad17f4ea7c6863a3f1b426eac826f25))
+* **game:** add the second lifeline, six titles ([d65357c](https://github.com/zprzemek378/jtm-s/commit/d65357cd250f7f2fc4ffd0b6f0f92ca86265cf89))
+* **settings:** choose the interface typeface ([f8ae81a](https://github.com/zprzemek378/jtm-s/commit/f8ae81a890ef08918519ebbee052c7e5441724f2))
+* **spotify:** keep a song from the round, in the library or on a playlist ([dc3aff8](https://github.com/zprzemek378/jtm-s/commit/dc3aff8fad841c47518721be6531573a97719f96))
+* **spotify:** stop a song being added to a playlist it is already on ([224b0e0](https://github.com/zprzemek378/jtm-s/commit/224b0e0f2c22c4df5b507f6134cadcc958a1f411))
+
+### Bug Fixes
+
+* **spotify:** read a reply as JSON only when it says it is ([c5e975d](https://github.com/zprzemek378/jtm-s/commit/c5e975d2bf6d2209f6e5ca61c9b75ce3d0f15410))
+* **spotify:** recover when Spotify no longer knows our player ([3a65f43](https://github.com/zprzemek378/jtm-s/commit/3a65f43ea677503ccc8bee8bd63ad15667d41c5d))
+
+### Refactoring
+
+* **settings:** make the lyrics panel unconditional ([1caa6ad](https://github.com/zprzemek378/jtm-s/commit/1caa6ad26bdfbc41a72d87429c257da4a352083c))
+
 ## [1.4.0](https://github.com/zprzemek378/jtm-s/compare/v1.3.1...v1.4.0) (2026-10-25)
 
 ### Features
