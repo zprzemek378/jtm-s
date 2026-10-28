@@ -22,7 +22,6 @@ import {
   setFontChoice,
   type FontChoice,
 } from "@/settings/font";
-import { isKaraokeEnabled, setKaraokeEnabled } from "@/settings/karaoke";
 import { isSafeModeEnabled, setSafeModeEnabled } from "@/settings/safeMode";
 import {
   areTiesEnabled,
@@ -54,7 +53,6 @@ export function SettingsPage() {
 
   const [safeMode, setSafeMode] = useState(isSafeModeEnabled);
   const [ties, setTies] = useState(areTiesEnabled);
-  const [karaoke, setKaraoke] = useState(isKaraokeEnabled);
   const [font, setFont] = useState<FontChoice>(readFontChoice);
   const [tieThreshold, setTieThreshold] = useState(() => String(readTieThreshold()));
   const [tieError, setTieError] = useState<string | null>(null);
@@ -156,18 +154,6 @@ export function SettingsPage() {
             names: FONTS_WITHOUT_POLISH.map((choice) => FONT_LABELS[choice]).join(", "),
           })}
         </p>
-      </Panel>
-
-      <Panel title={t("settings.karaoke")}>
-        <Checkbox
-          checked={karaoke}
-          label={t("settings.karaokeEnabled")}
-          onChange={(checked) => {
-            setKaraoke(checked);
-            setKaraokeEnabled(checked);
-          }}
-        />
-        <p className={styles.hint}>{t("settings.karaokeHint")}</p>
       </Panel>
 
       <Panel title={t("settings.keyboard")}>
