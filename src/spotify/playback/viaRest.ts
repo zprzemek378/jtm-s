@@ -40,6 +40,44 @@ export async function pauseActiveDevice(getAccessToken: AccessTokenProvider): Pr
   }
 }
 
+/**
+ * Hands the account's playback to a device without starting anything.
+ *
+ * The documented way to take over from another of the account's players. The
+ * play command carries a device id of its own and usually needs no help, but
+ * when Spotify has answered "Device not found" it is the step that makes the
+ * device current again.
+ */
+export async function transferPlayback(
+  getAccessToken: AccessTokenProvider,
+  deviceId: string,
+): Promise<void> {
+  await request(
+    getAccessToken,
+    "/me/player",
+    { method: "PUT", body: JSON.stringify({ device_ids: [deviceId], play: false }) },
+    { retryRateLimit: false, priority: Priority.Urgent },
+  );
+}
+
+/**
+ * The devices Spotify currently knows about for this account.
+ *
+ * Only ever read when something has already gone wrong: it turns "Device not
+ * found" from a guess into a fact about whether our player is on the list.
+ */
+export async function fetchDeviceIds(
+  getAccessToken: AccessTokenProvider,
+): Promise<readonly string[]> {
+  const payload = (await request(getAccessToken, "/me/player/devices", undefined, {
+    priority: Priority.Urgent,
+  })) as { devices?: { id?: string | null }[] };
+
+  return (payload.devices ?? [])
+    .map((device) => device.id)
+    .filter((id): id is string => typeof id === "string");
+}
+
 /** Starts a whole playlist on our device, at a given index inside it. */
 export async function startContextPlayback(
   getAccessToken: AccessTokenProvider,
