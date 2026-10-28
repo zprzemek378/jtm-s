@@ -1,0 +1,39 @@
+.badge {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: none;
+  background: none;
+  line-height: 0;
+}
+
+.mark {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.cell {
+  fill: $c-titles-surface;
+  stroke: $c-titles;
+  stroke-width: 2;
+  transition: fill $transition-fast;
+}
+
+// The one that was picked out of the six.
+.chosen {
+  fill: $c-titles;
+}
+
+.badge:not(.ready) {
+  opacity: 0.55;
+}
+
+.ready {
+  cursor: pointer;
+}
+
+.ready:hover .cell {
+  fill: $c-titles;
+}

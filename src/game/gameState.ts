@@ -8,6 +8,7 @@ import { balanceOf, createAccounts, type Accounts } from "@/helpers/money";
 import type { PooledTrack } from "@/helpers/trackUnion";
 
 import { drawDirection, type RewardDirection } from "./rewards";
+import type { TitleOption } from "./titleChoice";
 import {
   GamePhase,
   SuspensionReason,
@@ -40,6 +41,10 @@ export type GameState = {
   track: PooledTrack | null;
   /** Players who still hold their extra time; empty when the modifier is off. */
   extraTimeLeft: readonly PlayerId[];
+  /** Players who still hold the six-titles lifeline. */
+  titlesLeft: readonly PlayerId[];
+  /** The six on screen, while that lifeline is being answered. */
+  titleOptions: readonly TitleOption[];
   /** This round shows the words instead of playing the music. */
   lyricsOnly: boolean;
   /** The line the words started from. */
@@ -89,6 +94,8 @@ export type GameAction =
   | { type: "guess-window-elapsed" }
   /** The buzzed player spends their one lifeline. */
   | { type: "use-extra-time" }
+  /** The buzzed player spends their other lifeline; the six are drawn outside. */
+  | { type: "use-titles"; options: readonly TitleOption[] }
   /** Their extra seconds are up; they answer now. */
   | {
       type: "extra-time-elapsed";
@@ -137,6 +144,8 @@ export function createGameState(
     track: null,
     // One each, handed out at the start of the game and never replaced.
     extraTimeLeft: rules.extraTime ? players.map((player) => player.id) : [],
+    titlesLeft: rules.titles ? players.map((player) => player.id) : [],
+    titleOptions: [],
     lyricsOnly: false,
     lyricsFrom: 0,
     lyricsShown: null,
@@ -258,6 +267,25 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case "use-titles": {
+      const playerId = state.buzzedPlayerId;
+
+      if (
+        state.phase !== GamePhase.Buzzed ||
+        playerId === null ||
+        !state.titlesLeft.includes(playerId)
+      ) {
+        return state;
+      }
+
+      return {
+        ...state,
+        phase: GamePhase.Titles,
+        titlesLeft: state.titlesLeft.filter((id) => id !== playerId),
+        titleOptions: [...action.options],
+      };
+    }
+
     case "extra-time-elapsed":
       return state.phase === GamePhase.ExtraTime
         ? { ...state, phase: GamePhase.Buzzed, lyricsShown: action.lyricsShown }
@@ -275,7 +303,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const playerId = state.buzzedPlayerId;
       const amount = state.pendingAmount ?? 0;
 
-      if (state.phase !== GamePhase.Revealed || playerId === null) {
+      // Either the table judged a spoken answer, or a pick among the six did
+      // the judging itself.
+      if (
+        (state.phase !== GamePhase.Revealed && state.phase !== GamePhase.Titles) ||
+        playerId === null
+      ) {
         return state;
       }
 

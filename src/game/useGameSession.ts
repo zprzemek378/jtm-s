@@ -24,11 +24,12 @@ import { useSpotify } from "@/spotify/useSpotify";
 import { createGameState, gameReducer, type GameState } from "./gameState";
 import { readPlayedTracks, writePlayedTracks } from "./playHistory";
 import { lyricLinesFor, openingLine, visibleLineCount } from "./lyricsRound";
+import { pickTitleOptions } from "./titleChoice";
 import { FREQUENCY_CHANCE } from "./modifiers";
 import { drawDirection, moneyAt, type RewardDirection } from "./rewards";
 import { canBuzz } from "./gameState";
 import { resolveBuzz, type BuzzEntry } from "./tie";
-import { GamePhase, type GamePlayer, type GameRules, type PlayerId, type Verdict } from "./types";
+import { GamePhase, Verdict, type GamePlayer, type GameRules, type PlayerId } from "./types";
 
 export type GameSession = {
   state: GameState;
@@ -58,6 +59,12 @@ export type GameSession = {
   canUseExtraTime: boolean;
   /** Spends it: the music plays on, and nobody else may press. */
   useExtraTime: () => void;
+  /** Whether the player who buzzed can still put six titles on screen. */
+  canUseTitles: boolean;
+  /** Spends that one: the six are drawn and the pick answers the round. */
+  useTitles: () => void;
+  /** Answers with one of the six — right or wrong, the round is judged by it. */
+  pickTitle: (trackId: string) => void;
   /** Counts the table in, then plays the next track. */
   nextRound: () => void;
   /** Starts over with the same players, target and playlist. */
@@ -446,6 +453,43 @@ export function useGameSession(
     }
   }, [canUseExtraTime, resume, state.lyricsOnly]);
 
+  const canUseTitles =
+    state.phase === GamePhase.Buzzed &&
+    state.buzzedPlayerId !== null &&
+    state.titlesLeft.includes(state.buzzedPlayerId);
+
+  const useTitles = useCallback(() => {
+    if (!canUseTitles || !state.track) {
+      return;
+    }
+
+    // Drawn here rather than in the reducer, which must stay predictable: the
+    // five wrong ones are a draw, and a draw has no place in a pure function.
+    dispatch({ type: "use-titles", options: pickTitleOptions(state.track, tracks) });
+  }, [canUseTitles, state.track, tracks]);
+
+  const pickTitle = useCallback(
+    (trackId: string) => {
+      if (state.phase !== GamePhase.Titles || !state.track) {
+        return;
+      }
+
+      // The pick is the verdict: nobody says the answer out loud, so there is
+      // nothing for the table to judge afterwards.
+      dispatch({
+        type: "judge",
+        verdict: trackId === state.track.id ? Verdict.Correct : Verdict.Incorrect,
+      });
+
+      // The round is over and its track plays on under the verdict, as it does
+      // after any other answer.
+      if (!playAfterSilentRound()) {
+        void resume();
+      }
+    },
+    [playAfterSilentRound, resume, state.phase, state.track],
+  );
+
   const reveal = useCallback(() => {
     dispatch({ type: "reveal" });
 
@@ -483,6 +527,9 @@ export function useGameSession(
     extraTimeRemainingMs,
     canUseExtraTime,
     useExtraTime,
+    canUseTitles,
+    useTitles,
+    pickTitle,
     loadingTrack,
     startFailed,
     preRollActive: preRollKey !== null,

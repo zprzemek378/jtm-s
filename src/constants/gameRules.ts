@@ -117,3 +117,6 @@ export const LYRIC_TAIL_LINES = 8;
  * table does not feel shut out of their own round.
  */
 export const EXTRA_TIME_MS = 10_000;
+
+/** How many titles that lifeline puts on screen, the right one among them. */
+export const TITLE_OPTIONS = 6;
