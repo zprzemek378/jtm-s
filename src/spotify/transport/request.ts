@@ -138,6 +138,14 @@ async function finishRequest(
     return null;
   }
 
+  // Only what says it is JSON is read as JSON. The player's commands have been
+  // seen to answer 200 with something else entirely in the body — a bare id,
+  // in the one case that reached a user — and nothing here wants a command's
+  // body anyway, so a reply that is not JSON is simply nothing to report.
+  if (!response.headers.get("Content-Type")?.includes("application/json")) {
+    return null;
+  }
+
   const text = await response.text();
 
   return text.length > 0 ? (JSON.parse(text) as unknown) : null;
