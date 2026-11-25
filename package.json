@@ -9,6 +9,8 @@
     "build:pages": "VITE_BASE=/jtm-s/ npm run build",
     "preview:pages": "VITE_BASE=/jtm-s/ vite preview --host 127.0.0.1 --port 4173",
     "lint": "oxlint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview",
@@ -30,6 +32,7 @@
     "prettier": "^3.9.9",
     "sass": "^1.103.1",
     "typescript": "~6.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "vitest": "^5.1.2"
   }
 }
