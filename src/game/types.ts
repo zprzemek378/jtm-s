@@ -91,14 +91,17 @@ export type GamePhase = (typeof GamePhase)[keyof typeof GamePhase];
 /**
  * How the table marked an answer.
  *
- * `Close` exists for the answer that was nearly right — one word off in the
- * title, say. It earns nothing, but the table waives the round's ban, which is
- * otherwise automatic for a wrong answer.
+ * Two of them are for the answer that was nearly right — one word off in the
+ * title, say. `Close` earns nothing and `Half` earns half the stake, and both
+ * waive the round's ban, which is otherwise automatic for a wrong answer. Which
+ * of the two an answer deserves is the table's call, not a rule's.
  */
 export const Verdict = {
   Correct: "correct",
   Incorrect: "incorrect",
   Close: "close",
+  /** Close enough to be worth something: half the stake, and no ban either. */
+  Half: "half",
 } as const;
 
 export type Verdict = (typeof Verdict)[keyof typeof Verdict];

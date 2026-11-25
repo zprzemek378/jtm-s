@@ -315,10 +315,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // A verdict does not start the next round: it puts the answer on screen,
       // leaves the track playing and waits for the host, exactly like a round
       // nobody guessed.
-      // Anything but a correct answer forfeits the stake; the money simply
-      // never arrives. The ban is what separates a wrong answer from a near
-      // miss the table decided to let go.
-      if (action.verdict !== Verdict.Correct) {
+      //
+      // What an answer is worth: all of the stake, half of it, or none. The ban
+      // is a separate question, and only an outright wrong answer earns one.
+      const won =
+        action.verdict === Verdict.Correct
+          ? amount
+          : action.verdict === Verdict.Half
+            ? Math.round(amount / 2)
+            : 0;
+
+      if (won === 0) {
         return {
           ...state,
           phase: GamePhase.Judged,
@@ -333,8 +340,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       const accounts = {
         ...state.accounts,
-        [playerId]: balanceOf(state.accounts, playerId) + amount,
+        [playerId]: balanceOf(state.accounts, playerId) + won,
       };
+      // Half of the stake still counts towards the target: it is money, and the
+      // game ends when somebody has enough of it however it was earned.
       const hasWon = (accounts[playerId] ?? 0) >= state.rules.targetMoney;
 
       return {
@@ -342,7 +351,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         phase: hasWon ? GamePhase.Finished : GamePhase.Judged,
         accounts,
         buzzedPlayerId: null,
-        lastVerdict: { playerId, verdict: Verdict.Correct, amount },
+        lastVerdict: { playerId, verdict: action.verdict, amount: won },
         pendingSuspension: null,
         winnerId: hasWon ? playerId : null,
       };
