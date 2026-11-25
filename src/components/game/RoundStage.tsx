@@ -348,13 +348,23 @@ export function RoundStage({
         </ButtonGroup>
         {shortcutHint("game.shortcutJudge")}
 
-        {/* The rare third option: wrong, but the table waives the ban. Kept
+        {/* The two the table reaches for when an answer was nearly right. Kept
             small, kept out of the button group the arrows walk, and given no
-            shortcut of its own — a slip here would quietly cancel a penalty. */}
+            shortcut of their own — a slip here would quietly cancel a penalty
+            or hand out money. */}
         <div className={styles.asideAction}>
-          <Button small variant={ButtonVariant.Ghost} onClick={() => session.judge(Verdict.Close)}>
-            {t("game.close")}
-          </Button>
+          <div className={styles.asideButtons}>
+            <Button small variant={ButtonVariant.Ghost} onClick={() => session.judge(Verdict.Half)}>
+              {t("game.half")}
+            </Button>
+            <Button
+              small
+              variant={ButtonVariant.Ghost}
+              onClick={() => session.judge(Verdict.Close)}
+            >
+              {t("game.close")}
+            </Button>
+          </div>
           <p className={styles.asideHint}>{t("game.closeHint")}</p>
         </div>
       </div>
@@ -397,20 +407,23 @@ export function RoundStage({
   if (phase === GamePhase.Judged && lastVerdict) {
     const judged = players.find((player) => player.id === lastVerdict.playerId) ?? null;
     const name = judged?.name ?? "";
-    const wasCorrect = lastVerdict.verdict === Verdict.Correct;
+    // Half an answer is still an answer that paid, so it reads as a win.
+    const paid = lastVerdict.amount > 0;
     const headline =
       lastVerdict.verdict === Verdict.Correct
         ? "game.verdictCorrect"
-        : lastVerdict.verdict === Verdict.Close
-          ? "game.verdictClose"
-          : "game.verdictIncorrect";
+        : lastVerdict.verdict === Verdict.Half
+          ? "game.verdictHalf"
+          : lastVerdict.verdict === Verdict.Close
+            ? "game.verdictClose"
+            : "game.verdictIncorrect";
 
     return (
       <div className={styles.stage}>
-        <p className={wasCorrect ? styles.verdictCorrect : styles.verdictIncorrect}>
+        <p className={paid ? styles.verdictCorrect : styles.verdictIncorrect}>
           {t(headline, { name })}
           {" — "}
-          {t(wasCorrect ? "game.won" : "game.lost", {
+          {t(paid ? "game.won" : "game.lost", {
             amount: formatMoney(lastVerdict.amount),
           })}
         </p>

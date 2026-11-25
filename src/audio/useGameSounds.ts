@@ -29,9 +29,13 @@ function cueForPhase(phase: GamePhase, verdict: Verdict | null): SoundEvent | nu
     case GamePhase.Finished:
       return SoundEvent.GameOver;
     case GamePhase.Judged:
-      // A near miss costs the same money as a wrong answer, so it sounds the
-      // same; only the penalty differs, and the screen says that.
-      return verdict === Verdict.Correct ? SoundEvent.Correct : SoundEvent.Incorrect;
+      // What the room hears follows the money: an answer that paid sounds like
+      // one, whether it paid in full or in half. A near miss that paid nothing
+      // sounds like a wrong answer, and only the screen says the penalty was
+      // waived.
+      return verdict === Verdict.Correct || verdict === Verdict.Half
+        ? SoundEvent.Correct
+        : SoundEvent.Incorrect;
     default:
       return null;
   }

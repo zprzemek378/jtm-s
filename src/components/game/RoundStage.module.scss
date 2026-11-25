@@ -99,6 +99,13 @@
   border-top: 1px solid $c-border;
 }
 
+.asideButtons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $space-2;
+}
+
 .asideHint {
   max-width: 26rem;
   font-size: $text-xs;
