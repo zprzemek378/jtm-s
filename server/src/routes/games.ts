@@ -93,6 +93,7 @@ games.put("/:id", async (context) => {
       origin: fields.origin ?? null,
       catalogue: fields.catalogue ?? null,
       tracks: fields.tracks ?? null,
+      upTo: fields.upTo === undefined ? null : number(fields.upTo, "upTo"),
     },
     Date.now(),
   );

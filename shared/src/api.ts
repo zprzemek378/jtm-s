@@ -59,6 +59,14 @@ export type PutGameRequest = {
    */
   catalogue?: unknown;
   /**
+   * The last event number this client holds.
+   *
+   * Anything the backend has above it is gone — taken back from the hidden
+   * edit screen — and goes with this call. The client's log is the truth about
+   * its own game.
+   */
+  upTo?: number;
+  /**
    * The songs that were actually played, by title.
    *
    * Kept for ever, unlike the list above: it is a round or two of titles

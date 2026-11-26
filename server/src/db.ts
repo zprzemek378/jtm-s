@@ -335,6 +335,8 @@ export async function putGame(
     origin: unknown;
     catalogue: unknown;
     tracks: unknown;
+    /** The last event the client holds; anything above it has been taken back. */
+    upTo: number | null;
   },
   now: number,
 ): Promise<void> {
@@ -370,6 +372,16 @@ export async function putGame(
       now,
     )
     .run();
+
+  // A move taken back on the client cuts its log short, and the client's log is
+  // the truth about its own game: whatever is stored above that number was
+  // undone and has no business being read back as history.
+  if (game.upTo !== null) {
+    await db
+      .prepare(`DELETE FROM events WHERE game_id = ? AND seq > ?`)
+      .bind(game.id, game.upTo)
+      .run();
+  }
 }
 
 export async function getGame(
