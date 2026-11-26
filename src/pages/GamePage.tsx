@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { BackendStatus } from "@/backend/BackendContext";
 import { useBackend } from "@/backend/useBackend";
 import { GameBoard } from "@/components/game/GameBoard";
+import { ResumePanel } from "@/components/game/ResumePanel";
 import { PlaylistPicker } from "@/components/game/PlaylistPicker";
 import { PlayerSetupList } from "@/components/game/PlayerSetupList";
 import { SpotifyGate } from "@/components/game/SpotifyGate";
@@ -56,16 +57,6 @@ function readRestoredPlaylistIds(): readonly string[] {
   const stored = readStoredJson<unknown>(STORAGE_KEYS.playlists);
 
   return Array.isArray(stored) ? stored.filter((id): id is string => typeof id === "string") : [];
-}
-
-/**
- * Which round a stored game was in the middle of.
- *
- * The interrupted round is given up on when the game is picked up again, so
- * what the host is offered is the round they are about to play.
- */
-function resumedRound(stored: StoredGame): number {
-  return stored.events.filter((event) => event.action.type === "start-round").length;
 }
 
 /**
@@ -246,34 +237,13 @@ export function GamePage() {
       <SpotifyGate>
         {stage === Stage.Setup ? (
           <div className={styles.stack}>
-            {unfinished ? (
-              <Panel title={t("resume.title")}>
-                <p className={styles.resumeLead}>{t("resume.lead")}</p>
-                <p className={styles.resumeDetail}>
-                  {t("resume.detail", {
-                    round: resumedRound(unfinished),
-                    names: unfinished.origin.players.map((player) => player.name).join(", "),
-                  })}
-                </p>
-                <div className={styles.resumeActions}>
-                  <Button
-                    variant={ButtonVariant.Primary}
-                    disabled={connecting}
-                    onClick={() => void handleResume(unfinished)}
-                  >
-                    {t("resume.continue")}
-                  </Button>
-                  <Button
-                    variant={ButtonVariant.Ghost}
-                    disabled={connecting}
-                    onClick={() => handleDiscardUnfinished(unfinished)}
-                  >
-                    {t("resume.discard")}
-                  </Button>
-                </div>
-                {connecting ? <Spinner showLabel label={t("spotify.playerConnecting")} /> : null}
-              </Panel>
-            ) : null}
+            <ResumePanel
+              local={unfinished}
+              universeId={universeId}
+              busy={connecting}
+              onResume={(game) => void handleResume(game)}
+              onDiscard={handleDiscardUnfinished}
+            />
 
             {backend.status === BackendStatus.Ready && universes.length > 0 ? (
               <Panel title={t("universe.pool")}>
