@@ -4,6 +4,7 @@ import { useGameSounds } from "@/audio/useGameSounds";
 import { formatMoney, upcomingDirectionHint } from "@/game/rewards";
 import { useCheatCode } from "@/hooks/useCheatCode";
 import { GamePhase, SuspensionReason, type GamePlayer, type GameRules } from "@/game/types";
+import type { StoredGame } from "@/game/gameStore";
 import { useGameSession } from "@/game/useGameSession";
 import { useLanguage } from "@/i18n/useLanguage";
 import type { PooledTrack } from "@/helpers/trackUnion";
@@ -23,6 +24,8 @@ type GameBoardProps = {
   tracks: readonly PooledTrack[];
   /** Identifies the playlist selection, for the no-repeats history. */
   historyKey: string;
+  /** The stored game this one carries on from, or null for a new one. */
+  resumed?: StoredGame | null;
   /** Leaves the game and returns to the setup screen. */
   onChangeSettings: () => void;
   /**
@@ -39,11 +42,12 @@ export function GameBoard({
   rules,
   tracks,
   historyKey,
+  resumed = null,
   onChangeSettings,
   onPlayersEdited,
 }: GameBoardProps) {
   const { t } = useLanguage();
-  const session = useGameSession(players, rules, tracks, historyKey);
+  const session = useGameSession(players, rules, tracks, historyKey, resumed);
 
   useGameSounds(session);
   const [confirmingAbandon, setConfirmingAbandon] = useState(false);
@@ -170,7 +174,11 @@ export function GameBoard({
           confirmLabel={t("game.abandonConfirmYes")}
           cancelLabel={t("common.cancel")}
           closeLabel={t("common.close")}
-          onConfirm={onChangeSettings}
+          onConfirm={() => {
+            // Given up on deliberately, so it is not offered back later.
+            session.abandon();
+            onChangeSettings();
+          }}
           onCancel={() => setConfirmingAbandon(false)}
         />
       ) : null}

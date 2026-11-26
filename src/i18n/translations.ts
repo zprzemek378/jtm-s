@@ -223,6 +223,13 @@ const pl = {
   "setup.continue": "Dalej: playlista",
   "setup.summary": "{count} graczy, gra do {target}",
 
+  "resume.title": "Niedokończona gra",
+  "resume.lead":
+    "Poprzednia gra nie została dokończona — możesz do niej wrócić albo zacząć zupełnie nową.",
+  "resume.detail": "Tura {round} · {names}",
+  "resume.continue": "Wznów tę grę",
+  "resume.discard": "Porzuć ją",
+
   "playlist.title": "Wybór playlist",
   "playlist.mine": "Moje playlisty",
   "playlist.multiHint":
@@ -591,6 +598,13 @@ const en: Record<TranslationKey, string> = {
     "One of the players holds a key the interface reserves (Enter, Space, Backspace, Tab or Esc). Pick another one for them.",
   "setup.continue": "Next: playlist",
   "setup.summary": "{count} players, playing to {target}",
+
+  "resume.title": "An unfinished game",
+  "resume.lead":
+    "The last game never finished — you can pick it up where it stopped, or start a new one.",
+  "resume.detail": "Round {round} · {names}",
+  "resume.continue": "Carry on with it",
+  "resume.discard": "Drop it",
 
   "playlist.title": "Choose playlists",
   "playlist.mine": "My playlists",
