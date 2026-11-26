@@ -22,6 +22,7 @@ import {
   removeMember,
   renameUniverse,
   setOwner,
+  touchAccount,
   updatePlayer,
 } from "../db";
 import type { AppEnv } from "../env";
@@ -57,6 +58,10 @@ universes.post("/", async (context) => {
     createdAt: Date.now(),
   };
 
+  // The universe and its first member both point at this account, and a
+  // session outlives the row that names it — so make sure there is one to
+  // point at rather than failing on a constraint the caller cannot see.
+  await touchAccount(context.env.DB, account, universe.createdAt);
   await createUniverse(context.env.DB, universe);
 
   return context.json({ universe }, 201);

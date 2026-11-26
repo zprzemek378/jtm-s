@@ -43,9 +43,20 @@ session.post("/session", async (context) => {
   return context.json<SessionResponse>({ token, expiresAt, account });
 });
 
-/** Who the caller is, and what they can reach. */
+/**
+ * Who the caller is, and what they can reach.
+ *
+ * Also the moment the directory of who has signed in is brought up to date.
+ * A session lasts a month and carries the identity itself, so it can outlive
+ * the row that names it — the database may have been reset, or the row removed
+ * — and everything that points at an account would then have nothing to point
+ * at. Writing it back here costs one row per visit and makes that repair
+ * itself.
+ */
 session.get("/me", async (context) => {
   const account = context.get("account");
+
+  await touchAccount(context.env.DB, account, Date.now());
 
   return context.json({
     account,
