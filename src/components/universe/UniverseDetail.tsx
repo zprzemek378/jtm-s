@@ -11,9 +11,17 @@ import { useLanguage } from "@/i18n/useLanguage";
 import { GameHistoryList } from "./GameHistoryList";
 import { MemberList } from "./MemberList";
 import { PlayerList } from "./PlayerList";
+import { UniverseSettings } from "./UniverseSettings";
 import styles from "./UniverseDetail.module.scss";
 
-export function UniverseDetail({ universeId }: { universeId: string }) {
+export function UniverseDetail({
+  universeId,
+  onDeleted,
+}: {
+  universeId: string;
+  /** The universe is gone, so whatever was showing it has to look again. */
+  onDeleted: () => void;
+}) {
   const { t } = useLanguage();
   const { account, request } = useBackend();
   const [detail, setDetail] = useState<UniverseDetailData | null>(null);
@@ -91,6 +99,16 @@ export function UniverseDetail({ universeId }: { universeId: string }) {
         onChanged={() => void load()}
         onFailure={setFailure}
       />
+
+      {detail.universe.ownerId === account?.id ? (
+        <UniverseSettings
+          universe={detail.universe}
+          games={detail.games.length}
+          onChanged={() => void load()}
+          onDeleted={onDeleted}
+          onFailure={setFailure}
+        />
+      ) : null}
     </div>
   );
 }
