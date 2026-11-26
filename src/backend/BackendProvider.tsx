@@ -29,7 +29,13 @@ import { SpotifyStatus } from "@/spotify/SpotifyContext";
 import { BackendContext, BackendStatus, type BackendContextValue } from "./BackendContext";
 import { BackendError, BackendFailure, call, type Call } from "./client";
 import { hasBackend } from "./config";
-import { clearSession, readSession, writeSession, type BackendSession } from "./session";
+import {
+  clearSession,
+  readSession,
+  sameAccount,
+  writeSession,
+  type BackendSession,
+} from "./session";
 import { pushPending } from "./sync";
 
 /** How long to leave a push after a write before making it. */
@@ -56,6 +62,8 @@ export function BackendProvider({ children }: { children: ReactNode }) {
   );
   const [syncing, setSyncing] = useState(false);
 
+  /** The session as something that changes only when it really does. */
+  const token = session?.token ?? null;
   const sessionRef = useRef(session);
   /** Guards against two sign-ins or two pushes at once, without a render. */
   const signingInRef = useRef(false);
@@ -104,7 +112,13 @@ export function BackendProvider({ children }: { children: ReactNode }) {
       const me = await request<{ account: Account; universes: readonly Universe[] }>(API.me);
 
       setUniverses(me.universes);
-      setSession((held) => (held ? { ...held, account: me.account } : held));
+      // Kept as it is when it says the same thing. A new object here is what
+      // sets off everything watching the session — including the effect that
+      // called this, which is how reading the account once turns into reading
+      // it hundreds of times a second.
+      setSession((held) =>
+        !held || sameAccount(held.account, me.account) ? held : { ...held, account: me.account },
+      );
       setError(null);
     } catch (thrown) {
       setError(thrown instanceof Error ? thrown.message : String(thrown));
@@ -232,12 +246,16 @@ export function BackendProvider({ children }: { children: ReactNode }) {
   // Reading the account and its universes is the one thing that follows from
   // holding a session, wherever that session came from — a fresh sign-in or
   // one stored since the last visit.
+  //
+  // Keyed on the token rather than on the object that holds it. This effect
+  // writes to that object, so hanging it off the object's identity makes it
+  // its own trigger; the token is what actually changes when the session does.
   useEffect(() => {
-    if (session) {
+    if (token !== null) {
       // oxlint-disable-next-line react/set-state-in-effect
       void refresh();
     }
-  }, [refresh, session]);
+  }, [refresh, token]);
 
   /**
    * Counts what is waiting, and arms a push only if anything is.
@@ -258,7 +276,7 @@ export function BackendProvider({ children }: { children: ReactNode }) {
   }, [arm]);
 
   useEffect(() => {
-    if (!session) {
+    if (token === null) {
       return;
     }
 
@@ -278,7 +296,7 @@ export function BackendProvider({ children }: { children: ReactNode }) {
         pushRef.current = null;
       }
     };
-  }, [lookAgain, session]);
+  }, [lookAgain, token]);
 
   const value = useMemo<BackendContextValue>(
     () => ({

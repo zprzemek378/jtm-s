@@ -29,12 +29,14 @@
     "react-router-dom": "^7.18.3"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@types/spotify-web-playback-sdk": "^0.1.19",
     "@vitejs/plugin-react": "^6.1.0",
     "commit-and-tag-version": "^13.2.1",
+    "happy-dom": "^21.0.4",
     "oxlint": "^1.79.0",
     "prettier": "^3.9.9",
     "sass": "^1.103.1",
