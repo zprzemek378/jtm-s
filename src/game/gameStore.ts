@@ -56,6 +56,15 @@ export type StoredGame = {
   confirmedUpTo: number;
   /** When it was won or walked away from; null while it is still a game. */
   closedAt: number | null;
+  /**
+   * Whether the backend has been told that it ended.
+   *
+   * Separate from the events, because ending a game is not an event: a game
+   * abandoned an hour after its last round has nothing unsent and would
+   * otherwise stay unfinished in the backend for ever — offered back on every
+   * other machine in the universe.
+   */
+  closedSent: boolean;
 };
 
 export type GameLog = {
@@ -67,9 +76,14 @@ export type GameLog = {
 
 export const EMPTY_LOG: GameLog = { version: STORE_VERSION, currentId: null, games: [] };
 
-/** Whether anything in this game still has to reach the backend. */
+/** Whether any of this game's events still have to reach the backend. */
 export function hasUnsentEvents(game: StoredGame): boolean {
   return game.events.length > game.confirmedUpTo;
+}
+
+/** Whether anything about this game still has to reach the backend at all. */
+export function needsSync(game: StoredGame): boolean {
+  return hasUnsentEvents(game) || (game.closedAt !== null && !game.closedSent);
 }
 
 const replace = (log: GameLog, id: string, change: (game: StoredGame) => StoredGame): GameLog => ({
@@ -106,6 +120,7 @@ export function beginGame(
         events: [],
         confirmedUpTo: 0,
         closedAt: null,
+        closedSent: false,
       },
     ],
   });
@@ -133,7 +148,10 @@ export function closeGame(log: GameLog, id: string, at: number): GameLog {
   return prune(
     replace(log, id, (game) => ({
       ...game,
-      closedAt: at,
+      // Closing a game twice is closing it once: a rematch closes the game it
+      // follows, which the winning round has already closed, and moving the
+      // time would make it look unsent again.
+      closedAt: game.closedAt ?? at,
       // The titles are taken out of the list before the list goes, because
       // they are what the history reads.
       tracks: game.tracks.length > 0 ? game.tracks : playedTracks(game),
@@ -160,6 +178,11 @@ export function playedTracks(game: Pick<StoredGame, "catalogue" | "events">): Pl
   }
 
   return played;
+}
+
+/** Records that the backend has been told this game ended. */
+export function markClosedSent(log: GameLog, id: string): GameLog {
+  return prune(replace(log, id, (game) => ({ ...game, closedSent: true })));
 }
 
 /** Records how far the backend has accepted this game's events. */
@@ -236,7 +259,7 @@ export function forgetGame(log: GameLog, id: string): GameLog {
  */
 export function prune(log: GameLog): GameLog {
   const worth = log.games.filter(
-    (game) => game.id === log.currentId || game.closedAt === null || hasUnsentEvents(game),
+    (game) => game.id === log.currentId || game.closedAt === null || needsSync(game),
   );
   // Newest last, as they went in; the limit takes from the front, except that
   // nothing with unsent events is ever dropped for being old.
@@ -248,7 +271,7 @@ export function prune(log: GameLog): GameLog {
       : ordered.filter((game, index) => {
           const old = index < over;
 
-          return !old || game.id === log.currentId || hasUnsentEvents(game);
+          return !old || game.id === log.currentId || needsSync(game);
         });
 
   return { ...log, games: dropped };
@@ -269,9 +292,7 @@ export function resumableGame(log: GameLog): StoredGame | null {
 
 /** Every game with something the backend has not seen, oldest first. */
 export function pendingGames(log: GameLog): readonly StoredGame[] {
-  return log.games
-    .filter(hasUnsentEvents)
-    .sort((first, second) => first.startedAt - second.startedAt);
+  return log.games.filter(needsSync).sort((first, second) => first.startedAt - second.startedAt);
 }
 
 export function readGameLog(): GameLog {
@@ -321,9 +342,15 @@ function withStoredConfirmations(log: GameLog): GameLog {
     games: log.games.map((game) => {
       const known = stored.games.find((other) => other.id === game.id);
 
-      return known && known.confirmedUpTo > game.confirmedUpTo
-        ? { ...game, confirmedUpTo: known.confirmedUpTo }
-        : game;
+      if (!known) {
+        return game;
+      }
+
+      return {
+        ...game,
+        confirmedUpTo: Math.max(game.confirmedUpTo, known.confirmedUpTo),
+        closedSent: game.closedSent || known.closedSent,
+      };
     }),
   };
 }

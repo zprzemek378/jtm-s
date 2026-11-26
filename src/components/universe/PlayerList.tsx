@@ -6,7 +6,13 @@
 
 import { useState } from "react";
 
-import { API, type Universe, type UniversePlayer } from "@jtm-s/shared";
+import {
+  API,
+  type CreatePlayerRequest,
+  type UniversePlayer,
+  type UpdatePlayerRequest,
+  type Universe,
+} from "@jtm-s/shared";
 
 import { useBackend } from "@/backend/useBackend";
 import { Button } from "@/components/ui/Button";
@@ -46,7 +52,7 @@ export function PlayerList({ universe, players, onChanged, onFailure }: PlayerLi
     }
   };
 
-  const update = (player: UniversePlayer, fields: Record<string, unknown>) =>
+  const update = (player: UniversePlayer, fields: UpdatePlayerRequest) =>
     change(() =>
       request(API.player(universe.id, player.number), { method: "PATCH", body: fields }),
     );
@@ -121,7 +127,10 @@ export function PlayerList({ universe, players, onChanged, onFailure }: PlayerLi
             void change(async () => {
               await request(API.players(universe.id), {
                 method: "POST",
-                body: { name: draft.name.trim(), colour: draft.colour },
+                body: {
+                  name: draft.name.trim(),
+                  colour: draft.colour,
+                } satisfies CreatePlayerRequest,
               });
               setDraft({
                 name: "",

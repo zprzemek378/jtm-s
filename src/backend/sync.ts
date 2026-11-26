@@ -9,9 +9,15 @@
 // by (game, seq), so sending the same batch twice is sending it once, and a
 // push that fails halfway simply leaves the rest for the next attempt.
 
-import { API, type SyncEventsResponse } from "@jtm-s/shared";
+import {
+  API,
+  type PutGameRequest,
+  type SyncEventsRequest,
+  type SyncEventsResponse,
+} from "@jtm-s/shared";
 
 import {
+  markClosedSent,
   markConfirmed,
   pendingGames,
   playedTracks,
@@ -73,7 +79,7 @@ async function putGame(token: string, game: StoredGame): Promise<void> {
       // Always, and whatever is known: the titles are what a finished game's
       // history reads, and they weigh a round or two rather than a playlist.
       tracks: game.tracks.length > 0 ? game.tracks : playedTracks(game),
-    },
+    } satisfies PutGameRequest,
   });
 }
 
@@ -87,6 +93,13 @@ async function putGame(token: string, game: StoredGame): Promise<void> {
 async function pushGame(token: string, game: StoredGame): Promise<void> {
   await putGame(token, game);
 
+  // Ending a game is not an event, so it is acknowledged on its own: without
+  // this, a game abandoned long after its last round would stay unfinished in
+  // the backend for ever and be offered back on every other machine.
+  if (game.closedAt !== null) {
+    writeGameLog(markClosedSent(readGameLog(), game.id));
+  }
+
   let from = game.confirmedUpTo;
 
   for (;;) {
@@ -99,7 +112,7 @@ async function pushGame(token: string, game: StoredGame): Promise<void> {
     const { confirmedUpTo } = await call<SyncEventsResponse>(API.gameEvents(game.id), {
       method: "POST",
       token,
-      body: { clientNow: Date.now(), events },
+      body: { clientNow: Date.now(), events } satisfies SyncEventsRequest,
     });
 
     // Read back rather than written through: the game being played holds its

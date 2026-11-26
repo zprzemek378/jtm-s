@@ -8,7 +8,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
-import { API, type Account, type SessionResponse, type Universe } from "@jtm-s/shared";
+import {
+  API,
+  type Account,
+  type SessionRequest,
+  type SessionResponse,
+  type Universe,
+} from "@jtm-s/shared";
 
 import { pendingGames, readGameLog, watchGameLog } from "@/game/gameStore";
 import {
@@ -115,7 +121,7 @@ export function BackendProvider({ children }: { children: ReactNode }) {
       const spotifyToken = await getAccessToken();
       const answer = await call<SessionResponse>(API.session, {
         method: "POST",
-        body: { spotifyToken },
+        body: { spotifyToken } satisfies SessionRequest,
       });
       const held: BackendSession = {
         token: answer.token,

@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 
-import { API, type Account, type Universe, type UniverseMember } from "@jtm-s/shared";
+import {
+  API,
+  type Account,
+  type AddMemberRequest,
+  type SetOwnerRequest,
+  type Universe,
+  type UniverseMember,
+} from "@jtm-s/shared";
 
 import { useBackend } from "@/backend/useBackend";
 import { Button } from "@/components/ui/Button";
@@ -70,7 +77,7 @@ export function MemberList({ universe, members, accounts, onChanged, onFailure }
                       void change(() =>
                         request(API.owner(universe.id), {
                           method: "PUT",
-                          body: { accountId: member.account.id },
+                          body: { accountId: member.account.id } satisfies SetOwnerRequest,
                         }),
                       )
                     }
@@ -129,7 +136,7 @@ export function MemberList({ universe, members, accounts, onChanged, onFailure }
               void change(async () => {
                 await request(API.members(universe.id), {
                   method: "POST",
-                  body: { accountId: adding },
+                  body: { accountId: adding } satisfies AddMemberRequest,
                 });
                 setAdding("");
               })

@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 
-import { API, type Universe } from "@jtm-s/shared";
+import { API, type UpdateUniverseRequest, type Universe } from "@jtm-s/shared";
 
 import { useBackend } from "@/backend/useBackend";
 import { ConfirmDialog } from "@/components/advanced/ConfirmDialog";
@@ -74,7 +74,7 @@ export function UniverseSettings({
               () =>
                 request(API.universe(universe.id), {
                   method: "PATCH",
-                  body: { name: name.trim() },
+                  body: { name: name.trim() } satisfies UpdateUniverseRequest,
                 }),
               onChanged,
             )
