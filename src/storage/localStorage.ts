@@ -30,6 +30,8 @@ export const STORAGE_KEYS = {
   /** Which of the built-in Spotify applications the host picked. */
   clientIdChoice: "jtm-s.client-id-choice",
   spotifyTokens: "jtm-s.spotify-tokens",
+  /** Games as their event logs: the current one, and any not yet sent. */
+  games: "jtm-s.games",
 } as const;
 
 /** Keys that only live for as long as the tab — the PKCE handshake state. */
@@ -80,6 +82,24 @@ export function readStoredJson<T>(key: string): T | null {
 
 export function writeStoredJson(key: string, value: unknown): void {
   writeStoredString(key, JSON.stringify(value));
+}
+
+/**
+ * Writes, and says whether it stuck.
+ *
+ * Most of what is stored here is a preference, and losing one costs nothing —
+ * hence the silence everywhere else. A game in progress is different: if it
+ * will not fit, something has to be given up on purpose, so the caller has to
+ * be able to tell.
+ */
+export function tryWriteStoredJson(key: string, value: unknown): boolean {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function readSessionString(key: string): string | null {
