@@ -18,6 +18,7 @@ import {
   pendingGames,
   prune,
   readGameLog,
+  restoreEvents,
   resumableGame,
   truncateEvents,
   writeGameLog,
@@ -550,6 +551,27 @@ describe("taking a move back", () => {
     assert.deepEqual(
       pendingGames(appendAction(log, "g1", { type: "reveal" }, 3000)).map((game) => game.id),
       ["g1"],
+    );
+  });
+
+  test("and putting it back puts the same events back, with the numbers they had", () => {
+    // Keeping the numbers is what makes redoing free: the backend stores by
+    // (game, seq), so an event that goes back where it was is the same event.
+    const before = sent();
+    const dropped = before.games[0]!.events.filter((event) => event.seq > 1);
+    const log = restoreEvents(truncateEvents(before, "g1", 1), "g1", dropped);
+
+    assert.deepEqual(log.games[0]?.events, before.games[0]?.events);
+  });
+
+  test("putting a move back leaves the log in order, however it is handed over", () => {
+    const before = sent();
+    const dropped = [...before.games[0]!.events.filter((event) => event.seq > 1)].reverse();
+    const log = restoreEvents(truncateEvents(before, "g1", 1), "g1", dropped);
+
+    assert.deepEqual(
+      log.games[0]?.events.map((event) => event.seq),
+      [1, 2, 3],
     );
   });
 

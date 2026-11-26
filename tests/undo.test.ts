@@ -153,6 +153,43 @@ describe("taking back a pick among the six", () => {
   });
 });
 
+describe("how far back it goes", () => {
+  /** Five rounds, each answered, so there is plenty to walk back through. */
+  const evening = () => {
+    const actions = ["t1", "t2", "t3", "t1", "t2"].flatMap((id) => [
+      round(id),
+      ...answered(Verdict.Close, 100),
+    ]);
+
+    return game(actions);
+  };
+
+  test("five moves, and the sixth is refused", () => {
+    let held = evening();
+    const reached: GamePhase[] = [];
+
+    for (let taken = 0; taken < 5; taken += 1) {
+      const back = previousMove(held, taken);
+
+      assert.ok(back, `the ${taken + 1}. move should have been there`);
+      reached.push(back.state.phase);
+      held = { ...held, events: held.events.filter((event) => event.seq <= back.seq) };
+    }
+
+    assert.equal(previousMove(held, 5), null, "the sixth is as far as it goes");
+    // Each one landed somewhere the game waits on somebody.
+    assert.ok(reached.every(canSitIn), reached.join(", "));
+  });
+
+  test("and it is the count of moves already taken that stops it, not the log", () => {
+    const held = evening();
+
+    assert.ok(previousMove(held, 4));
+    assert.equal(previousMove(held, 5), null);
+    assert.equal(previousMove(held, 50), null);
+  });
+});
+
 describe("when there is nothing to take back", () => {
   test("a game whose first round is still being played", () => {
     assert.equal(previousMove(game([round("t1")])), null);

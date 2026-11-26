@@ -11,6 +11,7 @@
 //
 // So a move is "as far back as it takes to reach somewhere the game can wait".
 
+import { UNDO_STEPS } from "@/constants/gameRules";
 import type { PooledTrack } from "@/helpers/trackUnion";
 
 import { replay, type GameOrigin, type LoggedEvent } from "./eventLog";
@@ -51,9 +52,14 @@ export function canSitIn(phase: GamePhase): boolean {
  *
  * Always at least one event shorter than what it was given, so repeated undos
  * walk backwards rather than settling on the state they started from.
+ *
+ * @param taken How many moves have already been taken back. Five is as far as
+ *   this goes: deep enough to undo a verdict given to the wrong player and the
+ *   round it was given in, shallow enough that nobody can quietly rewind the
+ *   evening.
  */
-export function previousMove(game: ReplayableGame | null): UndoTarget | null {
-  if (!game) {
+export function previousMove(game: ReplayableGame | null, taken = 0): UndoTarget | null {
+  if (!game || taken >= UNDO_STEPS) {
     return null;
   }
 
