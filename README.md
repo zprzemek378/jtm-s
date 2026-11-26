@@ -1,6 +1,6 @@
 # JTM-S — Jaka To Melodia (Spotify)
 
-Lokalna gra w „Jaka To Melodia" dla 2–8 osób przy jednym komputerze. Muzyka leci
+Lokalna gra w „Jaka To Melodia" dla 2–50 osób przy jednym komputerze. Muzyka leci
 z wybranej playlisty Spotify, a każdy gracz ma przypisany własny klawisz.
 
 React + TypeScript + React Router + Vite, style w SCSS (CSS Modules), dwa języki
@@ -150,6 +150,89 @@ podbiciu wersji. W trakcie pracy możesz commitować bałaganiarsko, porządek
 wystarczy zrobić przy scalaniu.
 
 Nie włączaj przy tym ostrej ochrony `main`, bo blokowałaby commit wydania.
+
+## Serwer: uniwersa i historia
+
+Gra działa **bez serwera** i tak też jest domyślnie zbudowana: bez zmiennej
+`VITE_API_URL` aplikacja jest dokładnie tym, czym była wcześniej — jeden
+komputer, jeden wieczór, żadnego konta poza Spotify. Serwer dokłada do tego
+wspólną pulę gier („uniwersum"): tych samych graczy z numerami i kolorami,
+wspólną historię, wznawianie gry na innym komputerze. Niczego nie blokuje: gra
+zapisuje się lokalnie w trakcie i wysyła, gdy serwer jest osiągalny.
+
+Kod siedzi w `server/` (Cloudflare Worker + D1) i `shared/` (typy wspólne dla
+obu stron) — oba jako workspace'y npm obok frontu, który został w korzeniu.
+
+### Czego potrzeba
+
+- Konto Cloudflare (darmowy plan wystarcza).
+- `wrangler` — jest już w zależnościach `server/`, więc `npx wrangler` działa po
+  `npm install` w korzeniu repozytorium.
+
+### Pierwsze wdrożenie, po kolei
+
+```bash
+npm install                      # instaluje też server/ i shared/
+cd server
+npx wrangler login               # otwiera przeglądarkę
+npx wrangler d1 create jtm-s     # wypisze database_id
+```
+
+1. Wklej `database_id` do `server/wrangler.toml` w miejsce
+   `PUT-THE-DATABASE-ID-HERE`.
+2. Założenie tabel: `npm run db:remote` (lokalnie: `npm run db:local`).
+3. Klucz do podpisywania sesji — losowy i tylko po stronie Cloudflare:
+
+   ```bash
+   openssl rand -base64 32 | npx wrangler secret put SESSION_SECRET
+   ```
+
+   Zmiana tego klucza wylogowuje wszystkich; to też jedyny sposób, żeby to
+   zrobić.
+
+4. W `server/wrangler.toml` ustaw:
+   - `UNIVERSE_CREATORS` — ID kont Spotify, które mogą **tworzyć** uniwersa, po
+     przecinku. Dodać kogoś do istniejącego może każdy jego członek; tworzyć —
+     tylko te konta. To jedyna rzecz między publicznym adresem a obcymi ludźmi
+     zapychającymi darmowy limit. Swoje ID zobaczysz na ekranie **Uniwersum** po
+     połączeniu konta.
+   - `ALLOWED_ORIGINS` — adresy, z których wolno wołać Workera, po przecinku i
+     bez ukośnika na końcu: `https://<user>.github.io,http://127.0.0.1:5173`.
+5. `npx wrangler deploy` — wypisze adres Workera.
+6. W repozytorium: _Settings → Secrets and variables → Actions → Variables_,
+   zmienna `VITE_API_URL` = ten adres. Build Pages wstawia ją do bundle'a; bez
+   niej aplikacja po prostu nie ma serwera.
+7. Wypchnij cokolwiek na `main` (albo _Run workflow_), żeby Pages przebudowało
+   się z tą zmienną.
+
+### Lokalnie
+
+```bash
+npm run server:dev               # wrangler dev, własna lokalna baza
+```
+
+Sekrety lokalnie trzymaj w `server/.dev.vars` (plik jest w `.gitignore`):
+
+```
+SESSION_SECRET=cokolwiek-losowego
+```
+
+Front z lokalnym serwerem: `VITE_API_URL=http://127.0.0.1:8787 npm run dev`.
+
+### Co serwer wie, a czego nie
+
+Zasady gry nie przechodzą na serwer. Reguły, skład i każde zdarzenie lecą jako
+JSON i wracają nietknięte, więc gra może dostać nowe zasady bez żadnej migracji
+po tamtej stronie, a serwer zostaje trwałym magazynem, nie drugą implementacją
+gry. Logowanie to wyłącznie Spotify: klient raz wydaje token Spotify na pytanie
+„czyj to token", a potem nosi własną sesję — bo zapytanie do Spotify przed każdym
+żądaniem byłoby wolne i niepotrzebnie zużywałoby wspólny limit.
+
+Zdarzenia numeruje klient i serwer trzyma je po `(gra, numer)`, więc ta sama
+paczka wysłana dwa razy zostawia to, co jedna — na tym stoi cała wysyłka „kiedyś
+później". Każda paczka niesie też zegar klienta: jeden pomiar różnicy przy
+odbiorze ustawia wieczór zagrany na maszynie ze złym zegarem w prawym miejscu
+historii.
 
 ## Wdrożenie na GitHub Pages
 

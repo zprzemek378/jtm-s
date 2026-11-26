@@ -36,6 +36,10 @@ jobs:
 
       - run: npm run lint
 
+      # The suites run before anything is published: a broken rule should stop
+      # a deployment, not be found at a party.
+      - run: npm test
+
       # Every push that publishes gets its own version, whatever its commits
       # say: a breaking change moves the first number, a feature the second,
       # anything else the third. The point is not tidy numbering but that every
@@ -124,6 +128,10 @@ jobs:
           # A project page is served from /<repo>/, so the asset base has to
           # match the repository name whatever it is called.
           VITE_BASE: /${{ github.event.repository.name }}/
+          # Where our own backend lives, if one has been set up. Unset is the
+          # normal case and means the app has no backend at all — which is a
+          # working app, not a broken one.
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
 
       - uses: actions/configure-pages@v5
 
