@@ -9,8 +9,7 @@
 # starting the front end first gives you an app that quietly has no backend.
 #
 #   npm run dev:all
-#   JTM_CREATOR=<spotify-id> npm run dev:all   # may create universes locally
-#   PORT=8788 npm run dev:all                  # if 8787 is taken
+#   PORT=8788 npm run dev:all   # if 8787 is taken
 #
 set -euo pipefail
 
@@ -35,25 +34,8 @@ if [ ! -f "$VARS" ]; then
   echo "Zakładam $VARS z nowym kluczem sesji."
   {
     echo "SESSION_SECRET=$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("base64"))')"
-    echo "# Konta Spotify, które mogą tworzyć uniwersa. Swoje ID zobaczysz na"
-    echo "# ekranie Uniwersum po połączeniu konta."
-    echo "UNIVERSE_CREATORS="
     echo "ALLOWED_ORIGINS=http://127.0.0.1:5173"
   } > "$VARS"
-fi
-
-if [ -n "${JTM_CREATOR:-}" ]; then
-  # Written in rather than exported: the Worker reads this file, and having to
-  # remember the variable on every run is how it ends up missing.
-  if grep -q '^UNIVERSE_CREATORS=' "$VARS"; then
-    sed -i "s|^UNIVERSE_CREATORS=.*|UNIVERSE_CREATORS=$JTM_CREATOR|" "$VARS"
-  else
-    echo "UNIVERSE_CREATORS=$JTM_CREATOR" >> "$VARS"
-  fi
-  echo "Uniwersa może tworzyć: $JTM_CREATOR"
-else
-  echo "Uniwersa może tworzyć: $(grep '^UNIVERSE_CREATORS=' "$VARS" | cut -d= -f2-)"
-  echo "  (puste albo nie Twoje ID? uruchom: JTM_CREATOR=<twoje-id-spotify> npm run dev:all)"
 fi
 
 # Said plainly rather than left to wrangler, which fails with a stack trace.

@@ -20,8 +20,6 @@ export type BackendContextValue = {
   status: BackendStatus;
   /** Who the backend thinks is calling, once signed in. */
   account: Account | null;
-  /** Whether this account may start a universe of its own. */
-  mayCreateUniverse: boolean;
   /** The universes this account belongs to. */
   universes: readonly Universe[];
   /** What went wrong last, in plain words from the backend, or null. */

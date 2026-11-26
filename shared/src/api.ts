@@ -25,8 +25,6 @@ export type SessionResponse = {
   /** When it stops being accepted. */
   expiresAt: number;
   account: Account;
-  /** Whether this account may create a universe at all. */
-  mayCreateUniverse: boolean;
 };
 
 export type UniverseDetail = {

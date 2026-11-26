@@ -5,8 +5,7 @@ import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 
 import { getUniverse, isMember } from "./db";
-import type { AppEnv, Env } from "./env";
-import { mayCreateUniverse } from "./settings";
+import type { AppEnv } from "./env";
 
 /** Refuses the request outright, with a line the client can show. */
 export function refuse(status: 400 | 401 | 403 | 404 | 409 | 413, message: string): never {
@@ -35,12 +34,6 @@ export async function universeFor(
   }
 
   return universe;
-}
-
-export function requireCreator(env: Env, accountId: string): void {
-  if (!mayCreateUniverse(env, accountId)) {
-    refuse(403, "this account cannot create universes");
-  }
 }
 
 /** The body as an object, or a refusal. */

@@ -29,7 +29,6 @@ export function UniversePage() {
   const {
     status,
     account,
-    mayCreateUniverse,
     universes,
     error,
     signIn,
@@ -43,9 +42,11 @@ export function UniversePage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
 
   const create = async () => {
     setCreating(true);
+    setFailure(null);
 
     try {
       const { universe } = await request<{ universe: Universe }>(API.universes, {
@@ -56,6 +57,11 @@ export function UniversePage() {
       setNewName("");
       await refresh();
       setSelected(universe.id);
+    } catch (thrown) {
+      // Said rather than thrown away: the backend refuses for reasons worth
+      // reading — a name it will not take, or one account having made as many
+      // universes as it may.
+      setFailure(thrown instanceof Error ? thrown.message : String(thrown));
     } finally {
       setCreating(false);
     }
@@ -145,28 +151,30 @@ export function UniversePage() {
               </ul>
             )}
 
-            {mayCreateUniverse ? (
-              <div className={styles.createRow}>
-                <Input
-                  label={t("universe.newName")}
-                  hideLabel
-                  placeholder={t("universe.newName")}
-                  value={newName}
-                  maxLength={80}
-                  disabled={creating}
-                  onChange={(event) => setNewName(event.target.value)}
-                />
-                <Button
-                  variant={ButtonVariant.Secondary}
-                  disabled={creating || newName.trim().length === 0}
-                  onClick={() => void create()}
-                >
-                  {t("universe.create")}
-                </Button>
-              </div>
-            ) : (
-              <p className={styles.hint}>{t("universe.cannotCreate")}</p>
-            )}
+            <div className={styles.createRow}>
+              <Input
+                label={t("universe.newName")}
+                hideLabel
+                placeholder={t("universe.newName")}
+                value={newName}
+                maxLength={80}
+                disabled={creating}
+                onChange={(event) => setNewName(event.target.value)}
+              />
+              <Button
+                variant={ButtonVariant.Secondary}
+                disabled={creating || newName.trim().length === 0}
+                onClick={() => void create()}
+              >
+                {t("universe.create")}
+              </Button>
+            </div>
+
+            {failure ? (
+              <p className={styles.failure} role="alert">
+                {failure}
+              </p>
+            ) : null}
           </Panel>
 
           {selected ? (

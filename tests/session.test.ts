@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { describe, test } from "vitest";
 
 import { bearer, mintSession, readSession } from "@server/auth";
-import { listSetting, mayCreateUniverse } from "@server/settings";
+import { listSetting } from "@server/settings";
 import { clockSkewMs, correctedAt } from "@jtm-s/shared";
 
 const SECRET = "a-test-secret";
@@ -63,18 +63,17 @@ describe("the header a session arrives in", () => {
   });
 });
 
-describe("who may start a universe", () => {
-  test("only the accounts named in the setting", () => {
-    const env = { UNIVERSE_CREATORS: "ala, bo " } as { UNIVERSE_CREATORS?: string };
-
-    assert.equal(mayCreateUniverse(env as never, "ala"), true);
-    assert.equal(mayCreateUniverse(env as never, "bo"), true);
-    assert.equal(mayCreateUniverse(env as never, "cy"), false);
+describe("the lists the Worker is configured with", () => {
+  test("are read as lists, whatever the spacing", () => {
+    assert.deepEqual(
+      [...listSetting("https://a.example, http://127.0.0.1:5173 ")],
+      ["https://a.example", "http://127.0.0.1:5173"],
+    );
   });
 
-  test("and nobody at all when it is unset, which is how it starts", () => {
-    assert.equal(mayCreateUniverse({} as never, "ala"), false);
+  test("and an unset one is empty rather than a list with nothing in it", () => {
     assert.deepEqual([...listSetting(undefined)], []);
+    assert.deepEqual([...listSetting("")], []);
     assert.deepEqual([...listSetting(" , ")], []);
   });
 });

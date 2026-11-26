@@ -190,14 +190,27 @@ npx wrangler d1 create jtm-s     # wypisze database_id
    Zmiana tego klucza wylogowuje wszystkich; to też jedyny sposób, żeby to
    zrobić.
 
-4. W `server/wrangler.toml` ustaw:
-   - `UNIVERSE_CREATORS` — ID kont Spotify, które mogą **tworzyć** uniwersa, po
-     przecinku. Dodać kogoś do istniejącego może każdy jego członek; tworzyć —
-     tylko te konta. To jedyna rzecz między publicznym adresem a obcymi ludźmi
-     zapychającymi darmowy limit. Swoje ID zobaczysz na ekranie **Uniwersum** po
-     połączeniu konta.
-   - `ALLOWED_ORIGINS` — adresy, z których wolno wołać Workera, po przecinku i
-     bez ukośnika na końcu: `https://<user>.github.io,http://127.0.0.1:5173`.
+4. W `server/wrangler.toml` ustaw `ALLOWED_ORIGINS` — adresy, z których wolno
+   wołać Workera, po przecinku i bez ukośnika na końcu:
+   `https://<user>.github.io,http://127.0.0.1:5173`.
+
+   **Kto może tworzyć uniwersa: każde konto, które potrafi się zalogować.** Nie
+   ma żadnej listy do pilnowania — jedyny limit to 20 uniwersów na konto i nie
+   jest regułą gry, tylko bezpiecznikiem na wypadek pomyłki albo kogoś
+   znudzonego ze skryptem.
+
+   Warto wiedzieć dokładnie, co z czego wynika. Do **gry** wpuszcza _User
+   Management_ aplikacji Spotify: kto nie jest tam dopisany, nie zaloguje się i
+   nie posłucha ani jednej nuty. **Worker to inna sprawa:** pyta Spotify „czyj
+   to token" i nie ma jak sprawdzić, dla której aplikacji token wydano — więc
+   ktokolwiek z własną aplikacją Spotify, kto zna adres Workera, może dostać
+   sesję i zapisywać swoje gry. W praktyce chronią go trzy rzeczy: adres nie
+   jest nigdzie publikowany, CORS wpuszcza tylko `ALLOWED_ORIGINS` (co zamyka
+   drogę przez cudzą stronę w przeglądarce, choć nie przez `curl`) i limit
+   wyżej. Gdyby kiedykolwiek ktoś to wykorzystał, zamknięcie tego to albo
+   reguła _Rate limiting_ w panelu Cloudflare, albo powrót do listy kont, które
+   mogą się łączyć.
+
 5. `npx wrangler deploy` — wypisze adres Workera.
 6. W repozytorium: _Settings → Secrets and variables → Actions → Variables_,
    zmienna `VITE_API_URL` = ten adres. Build Pages wstawia ją do bundle'a; bez
@@ -217,14 +230,7 @@ wskazującym na niego. Przy pierwszym uruchomieniu zakłada `server/.dev.vars`
 (plik jest w `.gitignore`) z losowym `SESSION_SECRET` — i nigdy go potem nie
 nadpisuje, bo zmiana tego klucza wylogowuje.
 
-Żeby móc lokalnie **tworzyć** uniwersa, trzeba wpisać swoje ID konta Spotify na
-listę twórców. Zobaczysz je na ekranie **Uniwersum** po połączeniu konta, a
-potem wystarczy:
-
-```bash
-JTM_CREATOR=<twoje-id-spotify> npm run dev:all   # zapisze je w .dev.vars
-PORT=8788 npm run dev:all                        # gdy 8787 jest zajęty
-```
+Gdy 8787 jest zajęty: `PORT=8788 npm run dev:all`.
 
 Po kawałku, w trzech terminalach, da się tak:
 

@@ -11,6 +11,7 @@ import type { UniverseDetail, UniversePlayer } from "@jtm-s/shared";
 
 import {
   addMember,
+  countUniversesOwnedBy,
   createPlayer,
   createUniverse,
   deleteUniverse,
@@ -24,17 +25,29 @@ import {
   updatePlayer,
 } from "../db";
 import type { AppEnv } from "../env";
-import { body, colour, refuse, requireCreator, text, universeFor } from "../guards";
+import { body, colour, refuse, text, universeFor } from "../guards";
 
 /** How many games a universe's page asks for at once. */
 const GAME_PAGE = 100;
+
+/**
+ * How many universes one account may make.
+ *
+ * Anybody who can sign in can make one — there is no list of who may. This is
+ * the only limit, and it is not a rule about how the game is played: it is
+ * what keeps a mistake, or somebody bored with a script, from filling a free
+ * tier that everybody here shares. Nobody will ever reach it by playing.
+ */
+const MAX_UNIVERSES_PER_ACCOUNT = 20;
 
 export const universes = new Hono<AppEnv>();
 
 universes.post("/", async (context) => {
   const account = context.get("account");
 
-  requireCreator(context.env, account.id);
+  if ((await countUniversesOwnedBy(context.env.DB, account.id)) >= MAX_UNIVERSES_PER_ACCOUNT) {
+    refuse(409, "this account has made as many universes as it may");
+  }
 
   const fields = await body(context);
   const universe = {
