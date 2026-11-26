@@ -40,3 +40,20 @@
   font-size: $text-sm;
   color: $c-negative;
 }
+
+.resumeLead {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.resumeDetail {
+  margin-top: $space-2;
+  font-weight: 600;
+}
+
+.resumeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+  margin-top: $space-4;
+}

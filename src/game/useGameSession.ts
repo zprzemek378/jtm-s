@@ -22,7 +22,10 @@ import { useLyrics } from "@/lyrics/useLyrics";
 import { refusalText } from "@/spotify/types";
 import { useSpotify } from "@/spotify/useSpotify";
 
-import { createGameState, gameReducer, type GameState } from "./gameState";
+import { createGameState, gameReducer, type GameAction, type GameState } from "./gameState";
+import { replay } from "./eventLog";
+import type { StoredGame } from "./gameStore";
+import { useGameLog } from "./useGameLog";
 import { readPlayedTracks, writePlayedTracks } from "./playHistory";
 import { lyricLinesFor, openingLine, visibleLineCount } from "./lyricsRound";
 import { pickTitleOptions } from "./titleChoice";
@@ -72,6 +75,11 @@ export type GameSession = {
   nextRound: () => void;
   /** Starts over with the same players, target and playlist. */
   restart: () => void;
+  /**
+   * The host is leaving the game for good. Closes it in the stored log, so it
+   * is not offered back on the next visit.
+   */
+  abandon: () => void;
   /** Edit mode: rewrites the standings and the line-up between rounds. */
   applyEdit: (
     accounts: Accounts,
@@ -89,15 +97,62 @@ export function useGameSession(
    * playlists keeps its history — and a different selection starts afresh.
    */
   historyKey: string,
+  /**
+   * A stored game to pick up where it was left, or null to start a new one.
+   * Its own line-up, rules and track list are the ones that count — the
+   * arguments above describe the game that would otherwise have been started.
+   */
+  resumed: StoredGame | null = null,
 ): GameSession {
   const { playTrackAt, pause, resume, silence } = useSpotify();
-  const [state, dispatch] = useReducer(
+  const [state, rawDispatch] = useReducer(
     gameReducer,
     undefined,
-    // Seeded from storage, so returning to the setup screen and starting again
+    // A resumed game is its own log played back. Otherwise a new one, seeded
+    // from storage so that returning to the setup screen and starting again
     // does not bring the already-heard songs back.
-    () => createGameState(players, rules, tracks, readPlayedTracks(historyKey)),
+    () =>
+      (resumed && replay(resumed.origin, resumed.catalogue, resumed.events)) ??
+      createGameState(players, rules, tracks, readPlayedTracks(historyKey)),
   );
+
+  const {
+    record,
+    close: closeLog,
+    rotate: rotateLog,
+  } = useGameLog({
+    resumedId: resumed?.id ?? null,
+    historyKey,
+    origin: { players, rules, playedIds: state.playedIds },
+    catalogue: tracks,
+  });
+
+  /**
+   * Every action goes through here: it is written down before it is applied,
+   * which is what makes the log the game rather than a report of it.
+   *
+   * Stable for the life of the session, because the callbacks below capture it.
+   */
+  const dispatch = useCallback(
+    (action: GameAction) => {
+      record(action);
+      rawDispatch(action);
+    },
+    [record],
+  );
+
+  // A game picked up in the middle of a round cannot carry on with it: the
+  // music stopped when the tab closed. The round is given up on — which is an
+  // event like any other, so the log still says what the screen shows — and
+  // the game resumes at the point a round is started from.
+  const resumedRef = useRef(resumed !== null);
+
+  useEffect(() => {
+    if (resumedRef.current) {
+      resumedRef.current = false;
+      dispatch({ type: "abandon-round" });
+    }
+  }, [dispatch]);
 
   useEffect(() => {
     writePlayedTracks(historyKey, state.playedIds);
@@ -205,7 +260,7 @@ export function useGameSession(
       setPreRollKey(null);
       startingRef.current = false;
     }
-  }, [pending, playTrackAt, rules.lyricsOnly, silence]);
+  }, [dispatch, pending, playTrackAt, rules.lyricsOnly, silence]);
 
   const preRollRemainingMs = useCountdown({
     durationMs: PRE_ROLL_MS,
@@ -278,7 +333,7 @@ export function useGameSession(
     onElapsed: useCallback(() => {
       dispatch({ type: "guess-window-elapsed" });
       playAfterSilentRound();
-    }, [playAfterSilentRound]),
+    }, [dispatch, playAfterSilentRound]),
   });
 
   /**
@@ -402,7 +457,15 @@ export function useGameSession(
         resolve,
       };
     },
-    [collectionMs, currentMoney, playAfterSilentRound, rules.tieThresholdMs, shownLines, state],
+    [
+      collectionMs,
+      currentMoney,
+      dispatch,
+      playAfterSilentRound,
+      rules.tieThresholdMs,
+      shownLines,
+      state,
+    ],
   );
 
   // Only a buzz stops the music. When the window simply runs out the track
@@ -417,8 +480,11 @@ export function useGameSession(
   useEffect(() => {
     if (state.phase === GamePhase.Finished) {
       void pause();
+      // Nothing left to resume, and nothing left to draw from: the log keeps
+      // what happened and gives up the track list.
+      closeLog();
     }
-  }, [pause, state.phase]);
+  }, [closeLog, pause, state.phase]);
 
   /**
    * How many lines the words have reached, counting the seconds a lifeline
@@ -439,7 +505,7 @@ export function useGameSession(
       // extra listen and now owe the table an answer.
       void pause();
       dispatch({ type: "extra-time-elapsed", lyricsShown: linesWithExtraTime(EXTRA_TIME_MS) });
-    }, [linesWithExtraTime, pause]),
+    }, [dispatch, linesWithExtraTime, pause]),
   });
 
   const canUseExtraTime =
@@ -459,7 +525,7 @@ export function useGameSession(
     if (!state.lyricsOnly) {
       void resume();
     }
-  }, [canUseExtraTime, resume, state.lyricsOnly]);
+  }, [canUseExtraTime, dispatch, resume, state.lyricsOnly]);
 
   const canUseTitles =
     state.phase === GamePhase.Buzzed &&
@@ -474,7 +540,7 @@ export function useGameSession(
     // Drawn here rather than in the reducer, which must stay predictable: the
     // five wrong ones are a draw, and a draw has no place in a pure function.
     dispatch({ type: "use-titles", options: pickTitleOptions(state.track, tracks) });
-  }, [canUseTitles, state.track, tracks]);
+  }, [canUseTitles, dispatch, state.track, tracks]);
 
   const pickTitle = useCallback(
     (trackId: string) => {
@@ -495,7 +561,7 @@ export function useGameSession(
         void resume();
       }
     },
-    [playAfterSilentRound, resume, state.phase, state.track],
+    [dispatch, playAfterSilentRound, resume, state.phase, state.track],
   );
 
   const reveal = useCallback(() => {
@@ -505,25 +571,37 @@ export function useGameSession(
       // Picks the snippet up where it was paused.
       void resume();
     }
-  }, [playAfterSilentRound, resume]);
+  }, [dispatch, playAfterSilentRound, resume]);
 
-  const judge = useCallback((verdict: Verdict) => {
-    // The track plays on under the verdict, as it does when nobody guessed;
-    // `nextRound` is what silences it.
-    dispatch({ type: "judge", verdict });
-  }, []);
+  const judge = useCallback(
+    (verdict: Verdict) => {
+      // The track plays on under the verdict, as it does when nobody guessed;
+      // `nextRound` is what silences it.
+      dispatch({ type: "judge", verdict });
+    },
+    [dispatch],
+  );
 
   const restart = useCallback(() => {
+    // A rematch is a game of its own in the log, opened on the history the one
+    // before it leaves behind — which is exactly what the reducer does with
+    // the reset, so the new log replays to the same state from no events at
+    // all. Hence the raw dispatch: the reset belongs to neither game.
+    rotateLog({ players: state.players, rules, playedIds: state.playedIds });
     // A rematch keeps whatever edit mode made of the line-up — the names,
     // colours and seating are the table's, not the game's.
-    dispatch({ type: "reset", players: state.players, rules, tracks });
-  }, [rules, state.players, tracks]);
+    rawDispatch({ type: "reset", players: state.players, rules, tracks });
+  }, [rotateLog, rules, state.playedIds, state.players, tracks]);
+
+  const abandon = useCallback(() => {
+    closeLog();
+  }, [closeLog]);
 
   const applyEdit = useCallback(
     (accounts: Accounts, suspendedNext: readonly PlayerId[], players: readonly GamePlayer[]) => {
       dispatch({ type: "apply-edit", accounts, suspendedNext, players });
     },
-    [],
+    [dispatch],
   );
 
   useBuzzerKeys(state.players, state.phase === GamePhase.Listening, buzz);
@@ -549,6 +627,7 @@ export function useGameSession(
     judge,
     nextRound,
     restart,
+    abandon,
     applyEdit,
   };
 }

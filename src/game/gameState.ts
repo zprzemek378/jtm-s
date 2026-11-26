@@ -104,6 +104,11 @@ export type GameAction =
     }
   | { type: "reveal" }
   | { type: "judge"; verdict: Verdict }
+  /**
+   * The round was interrupted and does not count — the tab was closed in the
+   * middle of it and the game is being picked up again.
+   */
+  | { type: "abandon-round" }
   /** Edit mode: the host rewrites the standings and the line-up directly. */
   | {
       type: "apply-edit";
@@ -354,6 +359,43 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         lastVerdict: { playerId, verdict: action.verdict, amount: won },
         pendingSuspension: null,
         winnerId: hasWon ? playerId : null,
+      };
+    }
+
+    case "abandon-round": {
+      // Only a round actually in play can be given up on; between rounds there
+      // is nothing to interrupt.
+      const inPlay =
+        state.phase === GamePhase.Listening ||
+        state.phase === GamePhase.Buzzed ||
+        state.phase === GamePhase.ExtraTime ||
+        state.phase === GamePhase.Titles ||
+        state.phase === GamePhase.Revealed;
+
+      if (!inPlay) {
+        return state;
+      }
+
+      return {
+        ...state,
+        // Back to where a round is started from, so the game resumes by
+        // playing the round that was lost rather than by skipping it.
+        phase: GamePhase.Idle,
+        // It never finished, so it never counted: the next round takes its
+        // number back and the table's count stays unbroken.
+        round: Math.max(0, state.round - 1),
+        track: null,
+        buzzedPlayerId: null,
+        pendingAmount: null,
+        tiedPlayerIds: [],
+        titleOptions: [],
+        lyricsShown: null,
+        lastVerdict: null,
+        // A ban being served in the round that was lost has not been served at
+        // all, so it waits for the round that replaces it. A lifeline spent
+        // stays spent: the player had what they paid for.
+        suspension: null,
+        pendingSuspension: state.suspension ?? state.pendingSuspension,
       };
     }
 
