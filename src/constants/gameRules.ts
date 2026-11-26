@@ -120,3 +120,11 @@ export const EXTRA_TIME_MS = 10_000;
 
 /** How many titles that lifeline puts on screen, the right one among them. */
 export const TITLE_OPTIONS = 6;
+
+/**
+ * How many moves edit mode will take back.
+ *
+ * Deep enough to undo a verdict given to the wrong player and the round it was
+ * given in, shallow enough that nobody can quietly rewind the evening.
+ */
+export const UNDO_STEPS = 5;

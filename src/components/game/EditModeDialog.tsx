@@ -31,6 +31,16 @@ type EditModeDialogProps = {
     players: readonly GamePlayer[],
   ) => void;
   onCancel: () => void;
+  /**
+   * Takes the last move back, or null when there is none to take.
+   *
+   * It belongs here rather than on the board for the reason the rest of this
+   * screen does: it rewrites what happened, and the host is the only one who
+   * should be able to reach it.
+   */
+  onUndo?: (() => void) | null;
+  /** Puts the last taken-back move back, or null when none is waiting. */
+  onRedo?: (() => void) | null;
 };
 
 /** Whatever was typed, reduced to a sum a game can hold. */
@@ -54,6 +64,8 @@ export function EditModeDialog({
   targetMoney,
   onApply,
   onCancel,
+  onUndo = null,
+  onRedo = null,
 }: EditModeDialogProps) {
   const { t } = useLanguage();
 
@@ -150,6 +162,28 @@ export function EditModeDialog({
         </>
       }
     >
+      <div className={styles.history}>
+        <div className={styles.historyButtons}>
+          <Button
+            small
+            variant={ButtonVariant.Secondary}
+            disabled={!onUndo}
+            onClick={onUndo ?? undefined}
+          >
+            {t("edit.undo")}
+          </Button>
+          <Button
+            small
+            variant={ButtonVariant.Secondary}
+            disabled={!onRedo}
+            onClick={onRedo ?? undefined}
+          >
+            {t("edit.redo")}
+          </Button>
+        </div>
+        <p className={styles.historyHint}>{t("edit.undoHint")}</p>
+      </div>
+
       <ul className={styles.list} {...reorder.listProps}>
         {lineUp.map((player, index) => {
           const draft = drafts[player.id] ?? "0";

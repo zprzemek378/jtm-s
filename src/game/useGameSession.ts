@@ -1,7 +1,7 @@
 // Wires the pure round rules to real playback: draws a track, starts it at a
 // random point, and pauses or resumes Spotify as the phase changes.
 
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 import { playSound } from "@/audio/player";
 import { SoundEvent } from "@/constants/soundChoices";
@@ -10,6 +10,7 @@ import {
   BUZZ_COLLECTION_MS,
   EXTRA_TIME_MS,
   PRE_ROLL_MS,
+  UNDO_STEPS,
 } from "@/constants/gameRules";
 import { useBuzzerKeys } from "@/hooks/useBuzzerKeys";
 import { useCountdown } from "@/hooks/useCountdown";
@@ -23,7 +24,8 @@ import { refusalText } from "@/spotify/types";
 import { useSpotify } from "@/spotify/useSpotify";
 
 import { createGameState, gameReducer, type GameAction, type GameState } from "./gameState";
-import { replay } from "./eventLog";
+import { replay, type LoggedEvent } from "./eventLog";
+import { previousMove } from "./undo";
 import type { StoredGame } from "./gameStore";
 import { useGameLog } from "./useGameLog";
 import { readPlayedTracks, writePlayedTracks } from "./playHistory";
@@ -37,6 +39,13 @@ import { GamePhase, Verdict, type GamePlayer, type GameRules, type PlayerId } fr
 
 export type GameSession = {
   state: GameState;
+  /**
+   * Changes whenever the game's log does — including when a move is taken
+   * back, which is the one thing that can change the state without anything
+   * having happened in the game. Anything holding a copy of the standings can
+   * key on it to start again from them.
+   */
+  revision: number;
   /**
    * The words for the track in play, asked for as the count-in starts so a
    * round that means to show them has them in hand before it opens.
@@ -76,6 +85,16 @@ export type GameSession = {
   /** Starts over with the same players, target and playlist. */
   restart: () => void;
   /**
+   * Takes the last move back, up to five of them, by cutting the log short and
+   * replaying it. Null when there is nothing to take back.
+   *
+   * Only ever offered from edit mode: it is a correction, not a game mechanic,
+   * and it deliberately has no keyboard shortcut.
+   */
+  undo: (() => void) | null;
+  /** Puts the last taken-back move back. Null when none is waiting. */
+  redo: (() => void) | null;
+  /**
    * The host is leaving the game for good. Closes it in the stored log, so it
    * is not offered back on the next visit.
    */
@@ -87,6 +106,21 @@ export type GameSession = {
     players: readonly GamePlayer[],
   ) => void;
 };
+
+/**
+ * The reducer the session runs: the rules, plus one thing the rules have no
+ * business knowing about — a state worked out by replaying the log, handed
+ * back whole. It is dispatched directly and never written down, because it is
+ * not something that happened in the game.
+ */
+type SessionAction = GameAction | { type: "restore"; state: GameState };
+
+function sessionReducer(state: GameState, action: SessionAction): GameState {
+  return action.type === "restore" ? action.state : gameReducer(state, action);
+}
+
+/** A move taken back: the events that made it, kept in case it is wanted again. */
+type UndoneMove = readonly LoggedEvent[];
 
 export function useGameSession(
   players: readonly GamePlayer[],
@@ -106,7 +140,7 @@ export function useGameSession(
 ): GameSession {
   const { playTrackAt, pause, resume, silence } = useSpotify();
   const [state, rawDispatch] = useReducer(
-    gameReducer,
+    sessionReducer,
     undefined,
     // A resumed game is its own log played back. Otherwise a new one, seeded
     // from storage so that returning to the setup screen and starting again
@@ -117,9 +151,13 @@ export function useGameSession(
   );
 
   const {
+    revision,
     record,
     close: closeLog,
     rotate: rotateLog,
+    snapshot,
+    truncate,
+    restore,
   } = useGameLog({
     resumedId: resumed?.id ?? null,
     historyKey,
@@ -133,10 +171,15 @@ export function useGameSession(
    *
    * Stable for the life of the session, because the callbacks below capture it.
    */
+  /** Moves taken back, newest last, waiting to be wanted again. */
+  const [undone, setUndone] = useState<readonly UndoneMove[]>([]);
+
   const dispatch = useCallback(
     (action: GameAction) => {
       record(action);
       rawDispatch(action);
+      // The game has moved on, so there is nothing to put back any more.
+      setUndone((moves) => (moves.length === 0 ? moves : []));
     },
     [record],
   );
@@ -582,6 +625,55 @@ export function useGameSession(
     [dispatch],
   );
 
+  /**
+   * The move before this one: how far back the log has to go, and the state
+   * that leaves. Null when there is nothing to go back to.
+   *
+   * A move is not one event. Undoing a verdict leaves the answer on screen
+   * waiting to be judged again, which is the point; undoing from there has to
+   * carry on past the press and the round's start to the end of the round
+   * before, because none of those are states a game can sit in.
+   */
+  const undoable = useMemo(
+    () => (undone.length >= UNDO_STEPS ? null : previousMove(snapshot())),
+    // The log is kept outside of React, so that writing to it costs no render.
+    // `revision` is how a change in it reaches this side, and the rule cannot
+    // see that from the body.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+    [revision, snapshot, undone.length],
+  );
+
+  const undo = useCallback(() => {
+    if (!undoable) {
+      return;
+    }
+
+    const dropped = truncate(undoable.seq);
+
+    setUndone((moves) => [...moves, dropped]);
+    rawDispatch({ type: "restore", state: undoable.state });
+  }, [truncate, undoable]);
+
+  const redo = useCallback(() => {
+    const move = undone[undone.length - 1];
+    const stored = snapshot();
+
+    if (!move || !stored) {
+      return;
+    }
+
+    const events = [...stored.events, ...move];
+    const state = replay(stored.origin, stored.catalogue, events);
+
+    if (!state) {
+      return;
+    }
+
+    restore(move);
+    setUndone((moves) => moves.slice(0, -1));
+    rawDispatch({ type: "restore", state });
+  }, [restore, snapshot, undone]);
+
   const restart = useCallback(() => {
     // A rematch is a game of its own in the log, opened on the history the one
     // before it leaves behind — which is exactly what the reducer does with
@@ -608,6 +700,7 @@ export function useGameSession(
 
   return {
     state,
+    revision,
     lyrics,
     guessRemainingMs,
     extraTimeRemainingMs,
@@ -627,6 +720,8 @@ export function useGameSession(
     judge,
     nextRound,
     restart,
+    undo: undoable ? undo : null,
+    redo: undone.length > 0 ? redo : null,
     abandon,
     applyEdit,
   };

@@ -127,6 +127,40 @@ export function markConfirmed(log: GameLog, id: string, seq: number): GameLog {
   );
 }
 
+/** The game with this id, or null when the store has never heard of it. */
+export function findGame(log: GameLog, id: string): StoredGame | null {
+  return log.games.find((game) => game.id === id) ?? null;
+}
+
+/**
+ * Drops everything after `seq`, which is how a move is taken back.
+ *
+ * Events are cut from the end rather than contradicted, because a log the
+ * reducer can simply be replayed over is the whole point of keeping one. Once
+ * there is a backend to sync with, a cut that reaches events it has already
+ * accepted will have to travel as an event of its own — it cannot be undone by
+ * saying less than before.
+ */
+export function truncateEvents(log: GameLog, id: string, seq: number): GameLog {
+  return replace(log, id, (game) => ({
+    ...game,
+    events: game.events.filter((event) => event.seq <= seq),
+  }));
+}
+
+/**
+ * Puts taken-back events back, with the numbers they had.
+ *
+ * Keeping the numbers is what makes redoing free: the backend stores by
+ * (game, seq), so an event that goes back where it was is the same event.
+ */
+export function restoreEvents(log: GameLog, id: string, events: readonly LoggedEvent[]): GameLog {
+  return replace(log, id, (game) => ({
+    ...game,
+    events: [...game.events, ...events].sort((first, second) => first.seq - second.seq),
+  }));
+}
+
 /** Forgets a game outright, sent or not — the host said to drop it. */
 export function forgetGame(log: GameLog, id: string): GameLog {
   return {

@@ -152,3 +152,24 @@
   font-size: $text-sm;
   color: $c-negative;
 }
+
+.history {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2 $space-3;
+  margin-bottom: $space-4;
+  padding-bottom: $space-3;
+  border-bottom: 1px solid $c-border;
+}
+
+.historyButtons {
+  display: flex;
+  gap: $space-2;
+}
+
+.historyHint {
+  flex: 1 1 14rem;
+  font-size: $text-xs;
+  color: $c-text-muted;
+}
