@@ -230,7 +230,7 @@ const pl = {
 
   "resume.title": "Niedokończona gra",
   "resume.lead":
-    "Poprzednia gra nie została dokończona — możesz do niej wrócić albo zacząć zupełnie nową.",
+    "Poprzednia gra nie została dokończona — możesz do niej wrócić albo zacząć zupełnie nową. Runda, której nikt nie zdążył odgadnąć, zostanie powtórzona.",
   "resume.detail": "Tura {round} · {names}",
   "resume.continue": "Wznów tę grę",
   "resume.discard": "Porzuć ją",
@@ -706,7 +706,7 @@ const en: Record<TranslationKey, string> = {
 
   "resume.title": "An unfinished game",
   "resume.lead":
-    "The last game never finished — you can pick it up where it stopped, or start a new one.",
+    "The last game never finished — you can pick it up where it stopped, or start a new one. A round nobody had answered yet is played again.",
   "resume.detail": "Round {round} · {names}",
   "resume.continue": "Carry on with it",
   "resume.discard": "Drop it",

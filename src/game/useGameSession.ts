@@ -187,18 +187,29 @@ export function useGameSession(
     [record],
   );
 
-  // A game picked up in the middle of a round cannot carry on with it: the
-  // music stopped when the tab closed. The round is given up on — which is an
-  // event like any other, so the log still says what the screen shows — and
-  // the game resumes at the point a round is started from.
+  /** Whether this session still has a resumed game to see to. */
   const resumedRef = useRef(resumed !== null);
 
+  // A round that was being listened to cannot be carried on: the music stopped
+  // when the tab closed, and the guessing clock would start again over
+  // silence. So that round is given up on — an event like any other, so the
+  // log still says what the screen shows — and the game resumes where a round
+  // is started from.
+  //
+  // Every other state is one the game was already waiting in: somebody had
+  // buzzed, or the answer was on screen to be judged. Those carry on as they
+  // are, and giving them up would throw away an answer that was given.
   useEffect(() => {
-    if (resumedRef.current) {
-      resumedRef.current = false;
+    if (!resumedRef.current) {
+      return;
+    }
+
+    resumedRef.current = false;
+
+    if (state.phase === GamePhase.Listening || state.phase === GamePhase.ExtraTime) {
       dispatch({ type: "abandon-round" });
     }
-  }, [dispatch]);
+  }, [dispatch, state.phase]);
 
   useEffect(() => {
     writePlayedTracks(historyKey, state.playedIds);

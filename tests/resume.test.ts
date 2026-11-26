@@ -110,6 +110,23 @@ describe("the state a resumed game comes back in", () => {
     assert.equal(state?.phase, GamePhase.Buzzed);
   });
 
+  test("a round that was only being listened to is the one that is given up", () => {
+    // What the session does on arrival: the state it comes back in decides
+    // whether the round can be carried on at all.
+    const listening = replay(origin, [SONG], logOf([firstRound]));
+    const buzzed = replay(origin, [SONG], logOf(played));
+
+    assert.equal(listening?.phase, GamePhase.Listening, "nobody had answered yet");
+    assert.equal(buzzed?.phase, GamePhase.Buzzed, "somebody had");
+
+    assert.ok(listening);
+    assert.equal(gameReducer(listening, { type: "abandon-round" }).phase, GamePhase.Idle);
+    // And the other one is left alone, because the answer still counts: the
+    // session only gives up a round the room was still listening to.
+    assert.ok(buzzed);
+    assert.equal(gameReducer(buzzed, { type: "reveal" }).phase, GamePhase.Revealed);
+  });
+
   test("and the interrupted round is seen off as its own event", () => {
     // What the session does on arrival: replay, then give up on the round the
     // tab was closed in the middle of — so the log still says what the screen
