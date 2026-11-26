@@ -208,16 +208,31 @@ npx wrangler d1 create jtm-s     # wypisze database_id
 ### Lokalnie
 
 ```bash
-npm run server:dev               # wrangler dev, własna lokalna baza
+npm run dev:all
 ```
 
-Sekrety lokalnie trzymaj w `server/.dev.vars` (plik jest w `.gitignore`):
+Jedno polecenie, jeden Ctrl+C: zakłada tabele w lokalnej bazie, startuje Workera,
+czeka aż naprawdę odpowie, i dopiero wtedy podnosi front z `VITE_API_URL`
+wskazującym na niego. Przy pierwszym uruchomieniu zakłada `server/.dev.vars`
+(plik jest w `.gitignore`) z losowym `SESSION_SECRET` — i nigdy go potem nie
+nadpisuje, bo zmiana tego klucza wylogowuje.
 
-```
-SESSION_SECRET=cokolwiek-losowego
+Żeby móc lokalnie **tworzyć** uniwersa, trzeba wpisać swoje ID konta Spotify na
+listę twórców. Zobaczysz je na ekranie **Uniwersum** po połączeniu konta, a
+potem wystarczy:
+
+```bash
+JTM_CREATOR=<twoje-id-spotify> npm run dev:all   # zapisze je w .dev.vars
+PORT=8788 npm run dev:all                        # gdy 8787 jest zajęty
 ```
 
-Front z lokalnym serwerem: `VITE_API_URL=http://127.0.0.1:8787 npm run dev`.
+Po kawałku, w trzech terminalach, da się tak:
+
+```bash
+npm run --workspace @jtm-s/server db:local       # tabele w lokalnej bazie
+npm run server:dev                               # wrangler dev
+VITE_API_URL=http://127.0.0.1:8787 npm run dev   # front
+```
 
 ### Co serwer wie, a czego nie
 
