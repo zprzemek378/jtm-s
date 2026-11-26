@@ -246,37 +246,46 @@ export function BackendProvider({ children }: { children: ReactNode }) {
     }
   }, [refresh, session]);
 
-  const notePending = useCallback(() => {
-    setPending(pendingGames(readGameLog()).length);
-  }, []);
+  /**
+   * Counts what is waiting, and arms a push only if anything is.
+   *
+   * The count comes from the same read, and the condition matters: the sync
+   * writes to the store itself when it records what arrived, which brings this
+   * straight back — and without the condition it would arm a push that has
+   * nothing to send, every single time something is sent.
+   */
+  const lookAgain = useCallback(() => {
+    const waiting = pendingGames(readGameLog()).length;
 
-  const pushSoon = useCallback(() => arm(PUSH_DELAY_MS), [arm]);
+    setPending(waiting);
+
+    if (waiting > 0) {
+      arm(PUSH_DELAY_MS);
+    }
+  }, [arm]);
 
   useEffect(() => {
     if (!session) {
       return;
     }
 
-    const changed = () => {
-      notePending();
-      pushSoon();
-    };
-    const stopWatching = watchGameLog(changed);
+    const stopWatching = watchGameLog(lookAgain);
 
-    window.addEventListener("online", changed);
+    window.addEventListener("online", lookAgain);
     // Whatever was written down before this machine signed in is waiting too.
-    pushSoon();
+    // oxlint-disable-next-line react/set-state-in-effect
+    lookAgain();
 
     return () => {
       stopWatching();
-      window.removeEventListener("online", changed);
+      window.removeEventListener("online", lookAgain);
 
       if (pushRef.current !== null) {
         clearTimeout(pushRef.current);
         pushRef.current = null;
       }
     };
-  }, [notePending, pushSoon, session]);
+  }, [lookAgain, session]);
 
   const value = useMemo<BackendContextValue>(
     () => ({

@@ -9,7 +9,7 @@
 // without a browser.
 
 import type { PooledTrack } from "@/helpers/trackUnion";
-import { STORAGE_KEYS, readStoredJson, tryWriteStoredJson } from "@/storage/localStorage";
+import { STORAGE_KEYS, readStoredJson, tryWriteStoredString } from "@/storage/localStorage";
 
 import { compact, type GameOrigin, type LoggedEvent } from "./eventLog";
 import type { GameAction } from "./gameState";
@@ -26,6 +26,17 @@ export type PlayedTrack = { id: string; name: string; artists: string };
  * for being old — an evening played offline must survive until it syncs.
  */
 export const MAX_STORED_GAMES = 4;
+
+/**
+ * How much of the browser's store this is allowed to take, in characters.
+ *
+ * A limit of our own, well inside the browser's. `localStorage` belongs to the
+ * origin, not to the page, and on GitHub Pages that means every project of the
+ * same owner shares it — so filling it would quietly break the neighbours.
+ * This gives things up at two megabytes rather than waiting to be refused at
+ * five.
+ */
+export const MAX_STORED_CHARS = 2_000_000;
 
 export type StoredGame = {
   id: string;
@@ -321,16 +332,20 @@ function* shrinking(log: GameLog): Generator<GameLog> {
     games: log.games.map((game) => (game.id === log.currentId ? game : { ...game, catalogue: [] })),
   };
 
-  yield { ...log, games: log.games.filter((game) => game.id === log.currentId) };
+  // Then the list of the game being played, which costs resuming it and
+  // nothing else: the round in progress is in memory and plays on.
+  yield { ...log, games: log.games.map((game) => ({ ...game, catalogue: [] })) };
+
+  // Only with nothing left to give up is a game itself dropped, and with it
+  // whatever it had not sent — the last resort before storing nothing at all.
+  yield {
+    ...log,
+    games: log.games
+      .filter((game) => game.id === log.currentId)
+      .map((game) => ({ ...game, catalogue: [] })),
+  };
 }
 
-/**
- * Stores the log, giving things up until it fits.
- *
- * Storage can be denied outright — a private window, blocked site data — and
- * that is not an error either: the game carries on in memory, and only
- * resuming is lost. The answer says which happened.
- */
 /**
  * Takes the acknowledgements from the stored copy.
  *
@@ -338,6 +353,12 @@ function* shrinking(log: GameLog): Generator<GameLog> {
  * and knows nothing about syncing, and the sync, which knows nothing about the
  * round in progress. Each would otherwise undo the other's work, so a write
  * keeps whichever acknowledgement is further along.
+ *
+ * Which games exist, on the other hand, is decided by whoever is writing —
+ * otherwise forgetting one would be impossible. That is why the sync always
+ * starts from a fresh read, and why only the game being played is allowed to
+ * hold a copy for any length of time: one board at a time, which is also all
+ * one Spotify device can play.
  */
 function withStoredConfirmations(log: GameLog): GameLog {
   const stored = readGameLog();
@@ -381,9 +402,25 @@ export function watchGameLog(watcher: () => void): () => void {
   return () => void watchers.delete(watcher);
 }
 
+/**
+ * Stores the log, giving things up until it fits — in this app's own budget as
+ * well as in the browser's.
+ *
+ * Storage can also be denied outright — a private window, blocked site data —
+ * and that is not an error: the game carries on in memory, and only resuming
+ * is lost. The answer says whether anything was stored at all.
+ */
 export function writeGameLog(log: GameLog): boolean {
   for (const candidate of shrinking(prune(withStoredConfirmations(log)))) {
-    if (tryWriteStoredJson(STORAGE_KEYS.games, candidate)) {
+    const json = JSON.stringify(candidate);
+
+    // Measured before it is offered, because the browser would accept far more
+    // than this app has any business taking from the pages beside it.
+    if (json.length > MAX_STORED_CHARS) {
+      continue;
+    }
+
+    if (tryWriteStoredString(STORAGE_KEYS.games, json)) {
       for (const watcher of watchers) {
         watcher();
       }
