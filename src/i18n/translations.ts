@@ -287,6 +287,15 @@ const pl = {
   "universe.gameUnfinished": "niedokończona",
   "universe.deleteGame": "Usuń",
   "universe.gone": "Tego uniwersum już nie ma.",
+  "universe.settings": "Ustawienia uniwersum",
+  "universe.rename": "Zmień nazwę",
+  "universe.delete": "Usuń uniwersum",
+  "universe.deleteHint":
+    "Usunięcie zabiera ze sobą historię: wszystkie gry, ich zdarzenia i listę graczy. Tego się nie cofa.",
+  "universe.deleteConfirm":
+    "Usunąć uniwersum \u201E{name}\u201D wraz z {count} grami i wszystkimi graczami? Tego nie da się cofnąć.",
+  "universe.deleteConfirmYes": "Usuń",
+  "universe.freeGames": "Twoje gry poza uniwersum",
   "universe.noPlayersYet":
     "W tym uniwersum nie ma jeszcze graczy — dodaj ich na ekranie Uniwersum.",
   "universe.lineUpHint":
@@ -754,6 +763,15 @@ const en: Record<TranslationKey, string> = {
   "universe.gameUnfinished": "unfinished",
   "universe.deleteGame": "Delete",
   "universe.gone": "That universe is gone.",
+  "universe.settings": "Universe settings",
+  "universe.rename": "Rename",
+  "universe.delete": "Delete the universe",
+  "universe.deleteHint":
+    "Deleting takes the history with it: every game, every event in them and the list of players. It cannot be undone.",
+  "universe.deleteConfirm":
+    "Delete the universe \u201C{name}\u201D along with {count} games and all of its players? This cannot be undone.",
+  "universe.deleteConfirmYes": "Delete",
+  "universe.freeGames": "Your games outside any universe",
   "universe.noPlayersYet": "This universe has no players yet — add them on the Universe screen.",
   "universe.lineUpHint":
     "Tick who is playing tonight and give each of them a key on this keyboard. Names and colours belong to the universe — they are changed on the Universe screen, so one person is one colour everywhere.",

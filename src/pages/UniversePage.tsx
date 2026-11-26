@@ -12,6 +12,7 @@ import { BackendStatus } from "@/backend/BackendContext";
 import { useBackend } from "@/backend/useBackend";
 import { useSpotify } from "@/spotify/useSpotify";
 import { SpotifyStatus } from "@/spotify/SpotifyContext";
+import { FreePlayHistory } from "@/components/universe/FreePlayHistory";
 import { UniverseDetail } from "@/components/universe/UniverseDetail";
 import { Button } from "@/components/ui/Button";
 import { ButtonVariant } from "@/components/ui/buttonVariant";
@@ -168,7 +169,20 @@ export function UniversePage() {
             )}
           </Panel>
 
-          {selected ? <UniverseDetail universeId={selected} /> : null}
+          {selected ? (
+            <UniverseDetail
+              universeId={selected}
+              onDeleted={() => {
+                setSelected(null);
+                void refresh();
+              }}
+            />
+          ) : null}
+
+          {/* Free play keeps a history too, and it is the mode the app starts
+              in — so the games played outside any universe are read here, from
+              the same list and the same step-by-step view. */}
+          <FreePlayHistory />
         </>
       ) : null}
     </div>

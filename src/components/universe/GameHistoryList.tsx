@@ -14,6 +14,8 @@ import { GameHistory } from "./GameHistory";
 import styles from "./UniverseDetail.module.scss";
 
 type GameHistoryListProps = {
+  /** The heading, since this list is read for a universe and for free play. */
+  title?: string;
   games: readonly GameRecord[];
   /** Whether this account may delete history, which is the owner's alone. */
   mayDelete: boolean;
@@ -31,21 +33,28 @@ function when(at: number, locale: string): string {
   });
 }
 
-export function GameHistoryList({ games, mayDelete, onChanged, onFailure }: GameHistoryListProps) {
+export function GameHistoryList({
+  title,
+  games,
+  mayDelete,
+  onChanged,
+  onFailure,
+}: GameHistoryListProps) {
   const { t, language } = useLanguage();
   const { request } = useBackend();
   const [opened, setOpened] = useState<string | null>(null);
+  const heading = title ?? t("universe.history");
 
   if (games.length === 0) {
     return (
-      <Panel title={t("universe.history")}>
+      <Panel title={heading}>
         <p className={styles.hint}>{t("universe.historyEmpty")}</p>
       </Panel>
     );
   }
 
   return (
-    <Panel title={t("universe.history")} meta={games.length}>
+    <Panel title={heading} meta={games.length}>
       <ul className={styles.rows}>
         {games.map((game) => (
           <li key={game.id} className={styles.row}>
