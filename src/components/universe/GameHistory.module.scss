@@ -1,0 +1,95 @@
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-4;
+}
+
+.steps {
+  flex: 1 1 18rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 24rem;
+  overflow-y: auto;
+  list-style: none;
+  counter-reset: step;
+}
+
+.step,
+.stepCurrent {
+  width: 100%;
+  padding: $space-2 $space-3;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  background: none;
+  font: inherit;
+  font-size: $text-sm;
+  color: $c-text;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $c-surface-alt;
+  }
+}
+
+.stepCurrent {
+  border-color: $c-border-accent;
+  background-color: $c-surface-accent;
+  font-weight: 600;
+}
+
+.standings {
+  flex: 1 1 14rem;
+}
+
+.standingsTitle {
+  margin-bottom: $space-3;
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.scores {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  list-style: none;
+}
+
+.score {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
+.dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+.scoreName {
+  flex: 1 1 auto;
+}
+
+.scoreMoney {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.winner {
+  margin-top: $space-3;
+  font-weight: 600;
+  color: $c-positive;
+}
+
+.stepButtons {
+  display: flex;
+  gap: $space-2;
+  margin-top: $space-4;
+}
+
+.failure {
+  font-size: $text-sm;
+  color: $c-negative;
+}

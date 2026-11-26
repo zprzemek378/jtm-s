@@ -161,7 +161,26 @@ export function replay(
   catalogue: readonly PooledTrack[],
   events: readonly LoggedEvent[],
 ): GameState | null {
+  const steps = replaySteps(origin, catalogue, events);
+
+  return steps?.[steps.length - 1] ?? null;
+}
+
+/**
+ * Every state the game passed through: before the first event, and after each
+ * one.
+ *
+ * What a history is read from. Needs no more of the track list than the songs
+ * that were actually played — the pool it works out along the way is nonsense
+ * when given only those, and nothing that reads a history looks at it.
+ */
+export function replaySteps(
+  origin: GameOrigin,
+  catalogue: readonly PooledTrack[],
+  events: readonly LoggedEvent[],
+): readonly GameState[] | null {
   let state = createGameState(origin.players, origin.rules, catalogue, origin.playedIds);
+  const steps: GameState[] = [state];
 
   for (const event of events) {
     const action = inflate(event.action, state, catalogue);
@@ -171,7 +190,8 @@ export function replay(
     }
 
     state = gameReducer(state, action);
+    steps.push(state);
   }
 
-  return state;
+  return steps;
 }

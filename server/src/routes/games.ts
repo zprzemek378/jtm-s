@@ -92,6 +92,7 @@ games.put("/:id", async (context) => {
       closedAt: nullableNumber(fields.closedAt, "closedAt"),
       origin: fields.origin ?? null,
       catalogue: fields.catalogue ?? null,
+      tracks: fields.tracks ?? null,
     },
     Date.now(),
   );
@@ -168,6 +169,7 @@ games.get("/:id", async (context) => {
     game: stored.game,
     events: await listEvents(context.env.DB, id),
     catalogue: stored.catalogue,
+    tracks: stored.tracks,
   });
 });
 

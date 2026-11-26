@@ -14,6 +14,7 @@ import { API, type SyncEventsResponse } from "@jtm-s/shared";
 import {
   markConfirmed,
   pendingGames,
+  playedTracks,
   readGameLog,
   writeGameLog,
   type StoredGame,
@@ -69,6 +70,9 @@ async function putGame(token: string, game: StoredGame): Promise<void> {
       closedAt: game.closedAt,
       origin: game.origin,
       catalogue: catalogueFor(game),
+      // Always, and whatever is known: the titles are what a finished game's
+      // history reads, and they weigh a round or two rather than a playlist.
+      tracks: game.tracks.length > 0 ? game.tracks : playedTracks(game),
     },
   });
 }

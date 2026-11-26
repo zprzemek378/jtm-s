@@ -96,3 +96,9 @@
   font-size: $text-sm;
   color: $c-negative;
 }
+
+/* A game's own history, opened inside the row that lists it. */
+.openedGame {
+  flex: 1 1 100%;
+  margin: $space-3 0 $space-2;
+}

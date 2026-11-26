@@ -334,20 +334,25 @@ export async function putGame(
     closedAt: number | null;
     origin: unknown;
     catalogue: unknown;
+    tracks: unknown;
   },
   now: number,
 ): Promise<void> {
   await db
     .prepare(
       `INSERT INTO games
-         (id, universe_id, host_id, history_key, started_at, closed_at, origin, catalogue, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+         (id, universe_id, host_id, history_key, started_at, closed_at, origin,
+          catalogue, tracks, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (id) DO UPDATE SET
          closed_at = excluded.closed_at,
          origin = excluded.origin,
          -- A game that has ended has no use for its track list, and it is by
          -- far the largest thing stored here.
          catalogue = CASE WHEN excluded.closed_at IS NULL THEN excluded.catalogue ELSE NULL END,
+         -- The titles that were played are kept, and never thrown away by a
+         -- later write that happens not to carry them.
+         tracks = COALESCE(excluded.tracks, games.tracks),
          updated_at = excluded.updated_at`,
     )
     .bind(
@@ -361,6 +366,7 @@ export async function putGame(
       game.catalogue === undefined || game.catalogue === null
         ? null
         : JSON.stringify(game.catalogue),
+      game.tracks === undefined || game.tracks === null ? null : JSON.stringify(game.tracks),
       now,
     )
     .run();
@@ -369,13 +375,15 @@ export async function putGame(
 export async function getGame(
   db: D1Database,
   id: string,
-): Promise<{ game: GameRecord; catalogue: unknown } | null> {
+): Promise<{ game: GameRecord; catalogue: unknown; tracks: unknown } | null> {
   const row = await db
-    .prepare(`SELECT ${GAME_COLUMNS}, games.catalogue FROM games WHERE games.id = ?`)
+    .prepare(`SELECT ${GAME_COLUMNS}, games.catalogue, games.tracks FROM games WHERE games.id = ?`)
     .bind(id)
-    .first<GameRow & { catalogue: string | null }>();
+    .first<GameRow & { catalogue: string | null; tracks: string | null }>();
 
-  return row ? { game: toGame(row), catalogue: parse(row.catalogue) } : null;
+  return row
+    ? { game: toGame(row), catalogue: parse(row.catalogue), tracks: parse(row.tracks) }
+    : null;
 }
 
 /** The games of a universe, or the ones an account played outside any. */

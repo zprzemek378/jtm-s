@@ -1,5 +1,7 @@
 // What has been played in a universe.
 
+import { useState } from "react";
+
 import { API, type GameRecord } from "@jtm-s/shared";
 
 import { useBackend } from "@/backend/useBackend";
@@ -8,6 +10,7 @@ import { ButtonVariant } from "@/components/ui/buttonVariant";
 import { Panel } from "@/components/ui/Panel";
 import { useLanguage } from "@/i18n/useLanguage";
 
+import { GameHistory } from "./GameHistory";
 import styles from "./UniverseDetail.module.scss";
 
 type GameHistoryListProps = {
@@ -31,6 +34,7 @@ function when(at: number, locale: string): string {
 export function GameHistoryList({ games, mayDelete, onChanged, onFailure }: GameHistoryListProps) {
   const { t, language } = useLanguage();
   const { request } = useBackend();
+  const [opened, setOpened] = useState<string | null>(null);
 
   if (games.length === 0) {
     return (
@@ -51,8 +55,16 @@ export function GameHistoryList({ games, mayDelete, onChanged, onFailure }: Game
               {game.closedAt === null ? ` · ${t("universe.gameUnfinished")}` : ""}
             </span>
 
-            {mayDelete ? (
-              <div className={styles.rowActions}>
+            <div className={styles.rowActions}>
+              <Button
+                small
+                variant={opened === game.id ? ButtonVariant.Primary : ButtonVariant.Secondary}
+                onClick={() => setOpened(opened === game.id ? null : game.id)}
+              >
+                {t("history.open")}
+              </Button>
+
+              {mayDelete ? (
                 <Button
                   small
                   variant={ButtonVariant.Ghost}
@@ -66,6 +78,12 @@ export function GameHistoryList({ games, mayDelete, onChanged, onFailure }: Game
                 >
                   {t("universe.deleteGame")}
                 </Button>
+              ) : null}
+            </div>
+
+            {opened === game.id ? (
+              <div className={styles.openedGame}>
+                <GameHistory gameId={game.id} onClose={() => setOpened(null)} />
               </div>
             ) : null}
           </li>
