@@ -319,6 +319,43 @@ describe("storing it in the browser", () => {
     );
   });
 
+  test("the rules a game was played under survive the round trip", () => {
+    // Read explicitly rather than trusted, so this is the test that says the
+    // explicit reading is complete: a resumed game has to come back with the
+    // modifiers it was played with, not with the defaults.
+    storage = stubStorage();
+
+    const rules = {
+      ...RULES,
+      targetMoney: 2500,
+      roundDurationMs: 21_000,
+      answerDurationMs: 7000,
+      tieThresholdMs: 3,
+      lyricsOnly: "often" as const,
+      extraTime: true,
+      titles: true,
+      mode: "falling" as const,
+    };
+    const log = beginGame(EMPTY_LOG, {
+      id: "g1",
+      historyKey: "p1",
+      universeId: "u9",
+      origin: { players: [ALA, BO], rules, playedIds: ["t9"] },
+      catalogue,
+      at: 1000,
+    });
+
+    writeGameLog(log);
+
+    const back = readGameLog().games[0];
+
+    assert.deepEqual(back?.origin.rules, rules);
+    assert.deepEqual(back?.origin.players, [ALA, BO]);
+    assert.deepEqual([...(back?.origin.playedIds ?? [])], ["t9"]);
+    assert.equal(back?.universeId, "u9");
+    assert.equal(back?.catalogue.length, catalogue.length);
+  });
+
   test("a stored game with no line-up at all is dropped rather than half read", () => {
     storage = stubStorage();
     localStorage.setItem(
