@@ -35,6 +35,9 @@ import { pushPending } from "./sync";
 /** How long to leave a push after a write before making it. */
 const PUSH_DELAY_MS = 2000;
 
+/** How long to leave a push that failed before trying it again. */
+const RETRY_DELAY_MS = 60_000;
+
 /** Whether this machine has been told to stay signed out. */
 function optedOut(): boolean {
   return readStoredString(STORAGE_KEYS.backendOptOut) === "true";
@@ -54,6 +57,13 @@ export function BackendProvider({ children }: { children: ReactNode }) {
   const [syncing, setSyncing] = useState(false);
 
   const sessionRef = useRef(session);
+  /** Guards against two sign-ins or two pushes at once, without a render. */
+  const signingInRef = useRef(false);
+  const syncingRef = useRef(false);
+  /** Whether this machine has already tried signing itself in. */
+  const attemptedRef = useRef(false);
+  const pushRef = useRef<number | null>(null);
+  const syncRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   useEffect(() => {
     sessionRef.current = session;
@@ -108,10 +118,11 @@ export function BackendProvider({ children }: { children: ReactNode }) {
   }, [request]);
 
   const signIn = useCallback(async () => {
-    if (!hasBackend || sessionRef.current || signingIn) {
+    if (!hasBackend || sessionRef.current || signingInRef.current) {
       return;
     }
 
+    signingInRef.current = true;
     setSigningIn(true);
     setError(null);
 
@@ -139,9 +150,10 @@ export function BackendProvider({ children }: { children: ReactNode }) {
     } catch (thrown) {
       setError(thrown instanceof Error ? thrown.message : String(thrown));
     } finally {
+      signingInRef.current = false;
       setSigningIn(false);
     }
-  }, [getAccessToken, signingIn]);
+  }, [getAccessToken]);
 
   const signOut = useCallback(() => {
     // Remembered, so that being signed out is a decision rather than something
@@ -150,13 +162,33 @@ export function BackendProvider({ children }: { children: ReactNode }) {
     forget();
   }, [forget]);
 
-  const syncNow = useCallback(async () => {
-    const token = sessionRef.current?.token;
-
-    if (!token || syncing) {
+  /**
+   * Arms the next push.
+   *
+   * One timer, whoever asks: a write, a connection coming back, or a failure
+   * that is worth trying again. Reaches the newest `syncNow` through a ref, so
+   * arming a timer is not something that changes on every render — which is
+   * what would otherwise turn a backend that is down into a tight loop.
+   */
+  const arm = useCallback((delayMs: number) => {
+    if (pushRef.current !== null) {
       return;
     }
 
+    pushRef.current = window.setTimeout(() => {
+      pushRef.current = null;
+      void syncRef.current();
+    }, delayMs);
+  }, []);
+
+  const syncNow = useCallback(async () => {
+    const token = sessionRef.current?.token;
+
+    if (!token || syncingRef.current) {
+      return;
+    }
+
+    syncingRef.current = true;
     setSyncing(true);
 
     try {
@@ -164,10 +196,22 @@ export function BackendProvider({ children }: { children: ReactNode }) {
 
       setPending(outcome.pending);
       setError(outcome.failure ? outcome.failure.message : null);
+
+      // Nothing answered and there is still something to send. Try again, but
+      // in a while: an evening waiting to be stored is in no hurry, and a
+      // Worker that is down must not be hammered until it comes back.
+      if (outcome.failure?.worthRetrying && outcome.pending > 0) {
+        arm(RETRY_DELAY_MS);
+      }
     } finally {
+      syncingRef.current = false;
       setSyncing(false);
     }
-  }, [syncing]);
+  }, [arm]);
+
+  useEffect(() => {
+    syncRef.current = syncNow;
+  }, [syncNow]);
 
   // Signing in by itself, once, when there is a backend to sign in to and a
   // Spotify account to do it with. Being signed out on purpose is remembered.
@@ -175,7 +219,18 @@ export function BackendProvider({ children }: { children: ReactNode }) {
   // This is exactly what an effect is for — reaching an outside system when
   // the conditions for it appear — and signing in does set state, at the end.
   useEffect(() => {
-    if (hasBackend && !session && !optedOut() && spotifyStatus === SpotifyStatus.LoggedIn) {
+    if (spotifyStatus !== SpotifyStatus.LoggedIn) {
+      // Logging in to Spotify again is worth another attempt here.
+      attemptedRef.current = false;
+
+      return;
+    }
+
+    // Once, and not again until something changes: a backend that refuses —
+    // or is simply not there — would otherwise be asked again on every render
+    // that follows the failure.
+    if (hasBackend && !session && !optedOut() && !attemptedRef.current) {
+      attemptedRef.current = true;
       // oxlint-disable-next-line react/set-state-in-effect
       void signIn();
     }
@@ -191,27 +246,11 @@ export function BackendProvider({ children }: { children: ReactNode }) {
     }
   }, [refresh, session]);
 
-  /**
-   * Pushes a little after anything is written down, and whenever the machine
-   * finds a connection again.
-   *
-   * Deliberately not on a timer: the store is only read when something has
-   * changed, and parsing it means parsing the track lists with it.
-   */
-  const pushRef = useRef<number | null>(null);
-
   const notePending = useCallback(() => {
     setPending(pendingGames(readGameLog()).length);
   }, []);
 
-  const pushSoon = useCallback(() => {
-    if (pushRef.current === null) {
-      pushRef.current = window.setTimeout(() => {
-        pushRef.current = null;
-        void syncNow();
-      }, PUSH_DELAY_MS);
-    }
-  }, [syncNow]);
+  const pushSoon = useCallback(() => arm(PUSH_DELAY_MS), [arm]);
 
   useEffect(() => {
     if (!session) {
