@@ -10,7 +10,6 @@ import {
   BUZZ_COLLECTION_MS,
   EXTRA_TIME_MS,
   PRE_ROLL_MS,
-  UNDO_STEPS,
 } from "@/constants/gameRules";
 import { useBuzzerKeys } from "@/hooks/useBuzzerKeys";
 import { useCountdown } from "@/hooks/useCountdown";
@@ -649,7 +648,7 @@ export function useGameSession(
    * before, because none of those are states a game can sit in.
    */
   const undoable = useMemo(
-    () => (undone.length >= UNDO_STEPS ? null : previousMove(snapshot())),
+    () => previousMove(snapshot(), undone.length),
     // The log is kept outside of React, so that writing to it costs no render.
     // `revision` is how a change in it reaches this side, and the rule cannot
     // see that from the body.
