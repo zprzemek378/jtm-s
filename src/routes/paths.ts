@@ -2,6 +2,7 @@
 export const ROUTES = {
   home: "/",
   game: "/game",
+  universe: "/universe",
   settings: "/settings",
 } as const;
 

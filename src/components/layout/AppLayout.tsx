@@ -25,6 +25,7 @@ export function AppLayout() {
   const navItems = [
     { to: ROUTES.home, label: t("nav.home"), icon: "⌂" },
     { to: ROUTES.game, label: t("nav.game"), icon: "♪" },
+    { to: ROUTES.universe, label: t("nav.universe"), icon: "✦" },
     { to: ROUTES.settings, label: t("nav.settings"), icon: "⚙" },
   ];
 
