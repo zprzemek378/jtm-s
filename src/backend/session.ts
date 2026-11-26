@@ -41,6 +41,18 @@ export function writeSession(session: BackendSession): void {
   writeStoredJson(STORAGE_KEYS.backendSession, session);
 }
 
+/**
+ * Whether these are the same account, as far as anything here cares.
+ *
+ * Asked before the held session is replaced with a freshly read one. Replacing
+ * it with an equal copy is not harmless: the session is a value other things
+ * watch for change, so a new object that says the same thing sets them all off
+ * again — and one of those things is what read the account in the first place.
+ */
+export function sameAccount(held: Account, read: Account): boolean {
+  return held.id === read.id && held.displayName === read.displayName;
+}
+
 export function clearSession(): void {
   removeStored(STORAGE_KEYS.backendSession);
 }
