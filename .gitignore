@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Wrangler's own state: a local copy of the database, build output and
+# whatever it caches about the account it is logged into.
+.wrangler
+.dev.vars
+
 # Spotify credentials — never commit these.
 .env
 .env.local

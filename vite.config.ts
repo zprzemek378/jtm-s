@@ -97,6 +97,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // The types and the few rules both sides have to agree on. Resolved by
+      // path as well as through the workspace link, so the app, the Worker and
+      // the test run all read the same source.
+      "@jtm-s/shared": fileURLToPath(new URL("./shared/src/index.ts", import.meta.url)),
+      "@server": fileURLToPath(new URL("./server/src", import.meta.url)),
     },
   },
   css: {
