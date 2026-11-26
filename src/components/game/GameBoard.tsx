@@ -24,6 +24,8 @@ type GameBoardProps = {
   tracks: readonly PooledTrack[];
   /** Identifies the playlist selection, for the no-repeats history. */
   historyKey: string;
+  /** The universe whose history this game joins, or null for free play. */
+  universeId?: string | null;
   /** The stored game this one carries on from, or null for a new one. */
   resumed?: StoredGame | null;
   /** Leaves the game and returns to the setup screen. */
@@ -42,12 +44,13 @@ export function GameBoard({
   rules,
   tracks,
   historyKey,
+  universeId = null,
   resumed = null,
   onChangeSettings,
   onPlayersEdited,
 }: GameBoardProps) {
   const { t } = useLanguage();
-  const session = useGameSession(players, rules, tracks, historyKey, resumed);
+  const session = useGameSession(players, rules, tracks, historyKey, resumed, universeId);
 
   useGameSounds(session);
   const [confirmingAbandon, setConfirmingAbandon] = useState(false);

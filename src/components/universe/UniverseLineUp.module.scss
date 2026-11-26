@@ -1,0 +1,39 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-2 0;
+  border-bottom: 1px solid $c-border;
+}
+
+.colour {
+  /* The universe owns the colour; this is the table being recognised, not set. */
+  pointer-events: none;
+}
+
+.keyCell {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  margin-left: auto;
+}
+
+.hint {
+  margin-top: $space-3;
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.problem {
+  margin-top: $space-2;
+  font-size: $text-sm;
+  color: $c-negative;
+}

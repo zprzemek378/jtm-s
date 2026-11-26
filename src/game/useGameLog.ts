@@ -53,10 +53,12 @@ export function useGameLog(params: {
   /** The id of the game being picked up again, or null for a new one. */
   resumedId: string | null;
   historyKey: string;
+  /** The universe this game belongs to, or null for a game outside any. */
+  universeId?: string | null;
   origin: GameOrigin;
   catalogue: readonly PooledTrack[];
 }): GameLogHandle {
-  const { resumedId, historyKey, origin, catalogue } = params;
+  const { resumedId, historyKey, universeId = null, origin, catalogue } = params;
   // Settled when the session mounts: later renders must not open a second game.
   const [gameId, setGameId] = useState(() => resumedId ?? crypto.randomUUID());
   /**
@@ -75,11 +77,11 @@ export function useGameLog(params: {
    * What the game was opened with, for a rematch to be opened the same way.
    * Held in a ref because none of it belongs to a render.
    */
-  const openedWith = useRef({ historyKey, origin, catalogue });
+  const openedWith = useRef({ historyKey, universeId, origin, catalogue });
 
   useEffect(() => {
-    openedWith.current = { historyKey, origin, catalogue };
-  }, [catalogue, historyKey, origin]);
+    openedWith.current = { historyKey, universeId, origin, catalogue };
+  }, [catalogue, historyKey, origin, universeId]);
 
   /**
    * The log with this game in it, opening the game if that has not happened.
@@ -194,6 +196,7 @@ export function useGameLog(params: {
       logRef.current = beginGame(closed, {
         id,
         historyKey: openedWith.current.historyKey,
+        universeId: openedWith.current.universeId,
         origin: next,
         // The same tracks: a rematch is played on the playlists already loaded.
         catalogue: openedWith.current.catalogue,

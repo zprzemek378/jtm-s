@@ -36,6 +36,8 @@ export const STORAGE_KEYS = {
   backendSession: "jtm-s.backend-session",
   /** Set when the host signed out of the backend and meant it. */
   backendOptOut: "jtm-s.backend-signed-out",
+  /** Whether the last game was played in a universe, and which. */
+  gamePool: "jtm-s.game-pool",
 } as const;
 
 /** Keys that only live for as long as the tab — the PKCE handshake state. */

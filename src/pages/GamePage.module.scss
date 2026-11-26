@@ -57,3 +57,31 @@
   gap: $space-3;
   margin-top: $space-4;
 }
+
+.poolRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+  margin-top: $space-3;
+}
+
+.poolLabel {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.poolSelect {
+  padding: $space-2 $space-3;
+  border: 1px solid $c-border-strong;
+  border-radius: $radius-sm;
+  background-color: $c-surface;
+  font: inherit;
+  color: $c-text;
+}
+
+.poolHint {
+  margin-top: $space-3;
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
