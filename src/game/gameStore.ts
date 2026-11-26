@@ -204,15 +204,20 @@ export function findGame(log: GameLog, id: string): StoredGame | null {
  * Drops everything after `seq`, which is how a move is taken back.
  *
  * Events are cut from the end rather than contradicted, because a log the
- * reducer can simply be replayed over is the whole point of keeping one. Once
- * there is a backend to sync with, a cut that reaches events it has already
- * accepted will have to travel as an event of its own — it cannot be undone by
- * saying less than before.
+ * reducer can simply be replayed over is the whole point of keeping one.
+ *
+ * The acknowledgement comes back with it. The backend may already hold the
+ * events that have just gone, and it stores them by (game, seq) — so what has
+ * to happen is that the numbers from here on are sent again and overwrite
+ * them. Leaving the acknowledgement where it was would mean the replayed moves
+ * counted as already stored, and the two sides would quietly disagree about
+ * how the evening went.
  */
 export function truncateEvents(log: GameLog, id: string, seq: number): GameLog {
   return replace(log, id, (game) => ({
     ...game,
     events: game.events.filter((event) => event.seq <= seq),
+    confirmedUpTo: Math.min(game.confirmedUpTo, seq),
   }));
 }
 
@@ -348,7 +353,14 @@ function withStoredConfirmations(log: GameLog): GameLog {
 
       return {
         ...game,
-        confirmedUpTo: Math.max(game.confirmedUpTo, known.confirmedUpTo),
+        // The further-along acknowledgement wins, but never beyond the events
+        // the writer actually holds: that is what tells a stale copy (which
+        // must not undo an acknowledgement) from a log that has just been cut
+        // short on purpose (which must).
+        confirmedUpTo: Math.min(
+          Math.max(game.confirmedUpTo, known.confirmedUpTo),
+          game.events[game.events.length - 1]?.seq ?? 0,
+        ),
         closedSent: game.closedSent || known.closedSent,
       };
     }),

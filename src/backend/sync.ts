@@ -75,6 +75,8 @@ async function putGame(token: string, game: StoredGame): Promise<void> {
       startedAt: game.startedAt,
       closedAt: game.closedAt,
       origin: game.origin,
+      // What this client holds, so a move taken back here is taken back there.
+      upTo: game.events[game.events.length - 1]?.seq ?? 0,
       catalogue: catalogueFor(game),
       // Always, and whatever is known: the titles are what a finished game's
       // history reads, and they weigh a round or two rather than a playlist.

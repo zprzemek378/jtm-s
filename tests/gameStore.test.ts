@@ -18,11 +18,13 @@ import {
   prune,
   readGameLog,
   resumableGame,
+  truncateEvents,
   writeGameLog,
   type GameLog,
 } from "@/game/gameStore";
 import { replay } from "@/game/eventLog";
 import { createGameState } from "@/game/gameState";
+import { Verdict } from "@/game/types";
 
 import { ALA, BO, RULES, track } from "./support/game";
 import { stubStorage, type FakeStorage } from "./support/storage";
@@ -336,6 +338,56 @@ describe("storing it in the browser", () => {
 
     assert.equal(writeGameLog(withARound(EMPTY_LOG, "g1")), false);
     assert.deepEqual(readGameLog(), EMPTY_LOG);
+  });
+});
+
+describe("taking a move back", () => {
+  /** A game with three events, all of them acknowledged by the backend. */
+  const sent = () => {
+    let log = withARound(EMPTY_LOG, "g1");
+
+    log = appendAction(log, "g1", { type: "reveal" }, 2000);
+    log = appendAction(log, "g1", { type: "judge", verdict: Verdict.Correct }, 2100);
+
+    return markConfirmed(log, "g1", 3);
+  };
+
+  test("cuts the log short", () => {
+    const log = truncateEvents(sent(), "g1", 1);
+
+    assert.deepEqual(
+      log.games[0]?.events.map((event) => event.seq),
+      [1],
+    );
+  });
+
+  test("and brings the acknowledgement back with it, so the replay is sent again", () => {
+    // The backend stores events by (game, seq). The numbers from here on have
+    // to go again and overwrite what it holds, or the two sides would disagree
+    // about how the evening went.
+    const log = truncateEvents(sent(), "g1", 1);
+
+    assert.equal(log.games[0]?.confirmedUpTo, 1);
+    assert.deepEqual(
+      pendingGames(appendAction(log, "g1", { type: "reveal" }, 3000)).map((game) => game.id),
+      ["g1"],
+    );
+  });
+
+  test("an acknowledgement further along is left alone when nothing was cut", () => {
+    assert.equal(truncateEvents(sent(), "g1", 3).games[0]?.confirmedUpTo, 3);
+  });
+
+  test("and a stale copy of the log cannot restore it", () => {
+    storage = stubStorage();
+
+    const confirmed = sent();
+
+    writeGameLog(confirmed);
+    // The host takes a move back; the write has to lower what was stored.
+    writeGameLog(truncateEvents(confirmed, "g1", 1));
+
+    assert.equal(readGameLog().games[0]?.confirmedUpTo, 1);
   });
 });
 
