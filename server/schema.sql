@@ -58,6 +58,10 @@ CREATE TABLE IF NOT EXISTS games (
   -- Dropped when the game ends, and never stored at all for a list too large
   -- to be worth it.
   catalogue TEXT,
+  -- The songs that were played, by title: a round or two of them rather than a
+  -- whole playlist, so this is kept for ever. Without it a finished game's
+  -- history could name no songs at all.
+  tracks TEXT,
   updated_at INTEGER NOT NULL
 );
 

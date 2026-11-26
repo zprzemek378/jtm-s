@@ -16,6 +16,9 @@ import type { GameAction } from "./gameState";
 
 const STORE_VERSION = 1;
 
+/** A song that was played, as little of it as the history needs. */
+export type PlayedTrack = { id: string; name: string; artists: string };
+
 /**
  * How many games are kept at once.
  *
@@ -40,6 +43,14 @@ export type StoredGame = {
    * is far and away the largest thing here.
    */
   catalogue: readonly PooledTrack[];
+  /**
+   * The songs that were played, by title.
+   *
+   * Kept when the game ends and the track list is given up: it is a round or
+   * two of titles rather than a whole playlist, and without it the history of
+   * a finished game could name no songs at all.
+   */
+  tracks: readonly PlayedTrack[];
   events: readonly LoggedEvent[];
   /** The highest sequence number the backend has acknowledged. */
   confirmedUpTo: number;
@@ -91,6 +102,7 @@ export function beginGame(
         universeId: game.universeId ?? null,
         origin: game.origin,
         catalogue: game.catalogue,
+        tracks: [],
         events: [],
         confirmedUpTo: 0,
         closedAt: null,
@@ -118,7 +130,36 @@ export function appendAction(log: GameLog, id: string, action: GameAction, at: n
  * is going to be drawn from it again. The events stay until they are sent.
  */
 export function closeGame(log: GameLog, id: string, at: number): GameLog {
-  return prune(replace(log, id, (game) => ({ ...game, closedAt: at, catalogue: [] })));
+  return prune(
+    replace(log, id, (game) => ({
+      ...game,
+      closedAt: at,
+      // The titles are taken out of the list before the list goes, because
+      // they are what the history reads.
+      tracks: game.tracks.length > 0 ? game.tracks : playedTracks(game),
+      catalogue: [],
+    })),
+  );
+}
+
+/** The songs this game actually played, in the order they were drawn. */
+export function playedTracks(game: Pick<StoredGame, "catalogue" | "events">): PlayedTrack[] {
+  const played: PlayedTrack[] = [];
+
+  for (const event of game.events) {
+    if (event.action.type !== "start-round") {
+      continue;
+    }
+
+    const { trackId } = event.action;
+    const track = game.catalogue.find((candidate) => candidate.id === trackId);
+
+    if (track && !played.some((other) => other.id === trackId)) {
+      played.push({ id: track.id, name: track.name, artists: track.artists });
+    }
+  }
+
+  return played;
 }
 
 /** Records how far the backend has accepted this game's events. */

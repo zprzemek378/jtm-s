@@ -54,6 +54,14 @@ export type PutGameRequest = {
    * Left out when the list is too large to be worth storing.
    */
   catalogue?: unknown;
+  /**
+   * The songs that were actually played, by title.
+   *
+   * Kept for ever, unlike the list above: it is a round or two of titles
+   * rather than a whole playlist, and without it the history of a finished
+   * game could name no songs at all.
+   */
+  tracks?: unknown;
 };
 
 export type SyncEventsRequest = {
@@ -73,6 +81,8 @@ export type GameDetail = {
   events: readonly SyncedEvent[];
   /** The track list, when the backend was given one. */
   catalogue: unknown;
+  /** The songs that were played, by title. */
+  tracks: unknown;
 };
 
 /** Every route, named once. */
