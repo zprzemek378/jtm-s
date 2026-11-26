@@ -153,6 +153,10 @@ export function GameBoard({
 
       {editing ? (
         <EditModeDialog
+          // Taking a move back rewrites the standings under the dialog, and
+          // every field in it is a copy of them: it starts again from what the
+          // undo left behind rather than from what was on screen before.
+          key={session.revision}
           players={lineUp}
           accounts={state.accounts}
           suspendedNext={state.pendingSuspension?.playerIds ?? []}
@@ -163,6 +167,8 @@ export function GameBoard({
             setEditing(false);
           }}
           onCancel={() => setEditing(false)}
+          onUndo={session.undo}
+          onRedo={session.redo}
         />
       ) : null}
 

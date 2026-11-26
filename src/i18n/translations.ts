@@ -51,6 +51,10 @@ const pl = {
   "edit.money": "Konto gracza {name}",
   "edit.ban": "Pauza w następnej turze",
   "edit.apply": "Zastosuj",
+  "edit.undo": "Cofnij ruch",
+  "edit.redo": "Ponów ruch",
+  "edit.undoHint":
+    "Cofa ostatnią decyzję — werdykt, zgłoszenie albo całą turę — i odtwarza grę z dziennika zdarzeń. Muzyki nie przewija.",
   "edit.willEndGame": "Uwaga: taka kwota kończy grę — cel to {target}.",
 
   "spotify.title": "Spotify",
@@ -428,6 +432,10 @@ const en: Record<TranslationKey, string> = {
   "edit.money": "{name}'s balance",
   "edit.ban": "Sits out the next round",
   "edit.apply": "Apply",
+  "edit.undo": "Take the move back",
+  "edit.redo": "Put it back",
+  "edit.undoHint":
+    "Takes the last decision back — a verdict, a press, or the whole round — and replays the game from its event log. It does not rewind the music.",
   "edit.willEndGame": "Careful: that sum ends the game — the target is {target}.",
 
   "spotify.title": "Spotify",

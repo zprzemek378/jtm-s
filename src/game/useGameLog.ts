@@ -10,24 +10,43 @@ import type { PooledTrack } from "@/helpers/trackUnion";
 
 import type { GameOrigin } from "./eventLog";
 import type { GameAction } from "./gameState";
+import type { LoggedEvent } from "./eventLog";
 import {
   appendAction,
   beginGame,
   closeGame,
+  findGame,
   readGameLog,
+  restoreEvents,
+  truncateEvents,
   writeGameLog,
   type GameLog,
+  type StoredGame,
 } from "./gameStore";
 
 export type GameLogHandle = {
   /** Which game in the store this session is writing to. */
   gameId: string;
+  /**
+   * Changes whenever the log does.
+   *
+   * The log itself is held outside of React, because writing to it must not
+   * cost a render. This is how anything derived from it — whether there is a
+   * move to take back — knows to be worked out again.
+   */
+  revision: number;
   /** Writes down what just happened. */
   record: (action: GameAction) => void;
   /** It is over — won, or walked away from. */
   close: () => void;
   /** A rematch: the game just played is closed and a new one opened. */
   rotate: (origin: GameOrigin) => void;
+  /** The game as it stands in the store, to be replayed from. */
+  snapshot: () => StoredGame | null;
+  /** Takes the log back to `seq`, and answers with what was dropped. */
+  truncate: (seq: number) => readonly LoggedEvent[];
+  /** Puts dropped events back, with the numbers they had. */
+  restore: (events: readonly LoggedEvent[]) => void;
 };
 
 export function useGameLog(params: {
@@ -50,6 +69,7 @@ export function useGameLog(params: {
    */
   const idRef = useRef(gameId);
   const logRef = useRef<GameLog | null>(null);
+  const [revision, setRevision] = useState(0);
   const flushRef = useRef<number | null>(null);
   /**
    * What the game was opened with, for a rematch to be opened the same way.
@@ -118,22 +138,53 @@ export function useGameLog(params: {
     return persist;
   }, [gameId, open, persist]);
 
+  const bump = useCallback(() => setRevision((count) => count + 1), []);
+
   const record = useCallback(
     (action: GameAction) => {
       const id = idRef.current;
 
       logRef.current = appendAction(open(id), id, action, Date.now());
+      bump();
       later();
     },
-    [later, open],
+    [bump, later, open],
+  );
+
+  const snapshot = useCallback(() => findGame(open(idRef.current), idRef.current), [open]);
+
+  const truncate = useCallback(
+    (seq: number) => {
+      const id = idRef.current;
+      const dropped = (findGame(open(id), id)?.events ?? []).filter((event) => event.seq > seq);
+
+      logRef.current = truncateEvents(open(id), id, seq);
+      bump();
+      persist();
+
+      return dropped;
+    },
+    [bump, open, persist],
+  );
+
+  const restore = useCallback(
+    (events: readonly LoggedEvent[]) => {
+      const id = idRef.current;
+
+      logRef.current = restoreEvents(open(id), id, events);
+      bump();
+      persist();
+    },
+    [bump, open, persist],
   );
 
   const close = useCallback(() => {
     const id = idRef.current;
 
     logRef.current = closeGame(open(id), id, Date.now());
+    bump();
     persist();
-  }, [open, persist]);
+  }, [bump, open, persist]);
 
   const rotate = useCallback(
     (next: GameOrigin) => {
@@ -150,10 +201,11 @@ export function useGameLog(params: {
       });
       idRef.current = id;
       setGameId(id);
+      bump();
       persist();
     },
-    [open, persist],
+    [bump, open, persist],
   );
 
-  return { gameId, record, close, rotate };
+  return { gameId, revision, record, close, rotate, snapshot, truncate, restore };
 }
