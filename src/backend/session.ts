@@ -17,8 +17,6 @@ export type BackendSession = {
   token: string;
   expiresAt: number;
   account: Account;
-  /** Whether this account may start a universe of its own. */
-  mayCreateUniverse: boolean;
 };
 
 /** The stored session, or null when there is none or it has run out. */

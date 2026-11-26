@@ -7,7 +7,6 @@ import type { Account, SessionResponse } from "@jtm-s/shared";
 import { identify, mintSession } from "../auth";
 import { listAccounts, listUniversesFor, touchAccount } from "../db";
 import type { AppEnv } from "../env";
-import { mayCreateUniverse } from "../settings";
 import { body, refuse, text } from "../guards";
 
 export const session = new Hono<AppEnv>();
@@ -17,6 +16,14 @@ export const session = new Hono<AppEnv>();
  *
  * The Spotify token is spent once, here, and never stored: what it buys is the
  * account id, and from then on the client carries our own token instead.
+ *
+ * Worth being clear about what this does *not* check. Spotify will say whose
+ * token it is, and nothing more — there is no way to ask which application it
+ * was issued to. So this lets in anybody holding any valid Spotify token who
+ * knows the address, which is on purpose: every account that can sign in may
+ * play and may make universes. What keeps that from costing anything is the
+ * address not being published, CORS, and the one limit on how many universes
+ * an account may make.
  */
 session.post("/session", async (context) => {
   const fields = await body(context);
@@ -33,12 +40,7 @@ session.post("/session", async (context) => {
 
   const { token, expiresAt } = await mintSession(context.env.SESSION_SECRET, account, now);
 
-  return context.json<SessionResponse>({
-    token,
-    expiresAt,
-    account,
-    mayCreateUniverse: mayCreateUniverse(context.env, account.id),
-  });
+  return context.json<SessionResponse>({ token, expiresAt, account });
 });
 
 /** Who the caller is, and what they can reach. */
@@ -47,7 +49,6 @@ session.get("/me", async (context) => {
 
   return context.json({
     account,
-    mayCreateUniverse: mayCreateUniverse(context.env, account.id),
     universes: await listUniversesFor(context.env.DB, account.id),
   });
 });
@@ -56,14 +57,15 @@ session.get("/me", async (context) => {
  * Everyone who has ever signed in — the list a universe's members are picked
  * from, since there are no invitations to accept.
  *
- * Only for somebody who is already in a universe or can start one: a stranger
- * who signs in has no business reading a list of the people who play here.
+ * Only for somebody who is already in a universe: this list is needed to add
+ * people to one, and whoever is in none has nobody to add. A stranger who
+ * signs in has no business reading who plays here.
  */
 session.get("/accounts", async (context) => {
   const account = context.get("account");
   const universes = await listUniversesFor(context.env.DB, account.id);
 
-  if (universes.length === 0 && !mayCreateUniverse(context.env, account.id)) {
+  if (universes.length === 0) {
     refuse(403, "only somebody in a universe can see who plays here");
   }
 

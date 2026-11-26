@@ -11,13 +11,6 @@ export type Env = {
    * Changing it signs everybody out, which is also how to sign everybody out.
    */
   SESSION_SECRET: string;
-  /**
-   * Spotify account ids allowed to create a universe, comma separated.
-   *
-   * The only thing standing between a public URL and strangers filling the
-   * free tier. Anybody can be *added* to a universe; only these can start one.
-   */
-  UNIVERSE_CREATORS?: string;
   /** Origins allowed to call this, comma separated. */
   ALLOWED_ORIGINS?: string;
 };

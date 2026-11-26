@@ -101,16 +101,10 @@ export function BackendProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const me = await request<{
-        account: Account;
-        mayCreateUniverse: boolean;
-        universes: readonly Universe[];
-      }>(API.me);
+      const me = await request<{ account: Account; universes: readonly Universe[] }>(API.me);
 
       setUniverses(me.universes);
-      setSession((held) =>
-        held ? { ...held, account: me.account, mayCreateUniverse: me.mayCreateUniverse } : held,
-      );
+      setSession((held) => (held ? { ...held, account: me.account } : held));
       setError(null);
     } catch (thrown) {
       setError(thrown instanceof Error ? thrown.message : String(thrown));
@@ -138,7 +132,6 @@ export function BackendProvider({ children }: { children: ReactNode }) {
         token: answer.token,
         expiresAt: answer.expiresAt,
         account: answer.account,
-        mayCreateUniverse: answer.mayCreateUniverse,
       };
 
       writeSession(held);
@@ -297,7 +290,6 @@ export function BackendProvider({ children }: { children: ReactNode }) {
             ? BackendStatus.Ready
             : BackendStatus.SignedOut,
       account: session?.account ?? null,
-      mayCreateUniverse: session?.mayCreateUniverse ?? false,
       universes,
       error,
       signIn,

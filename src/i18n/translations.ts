@@ -261,8 +261,6 @@ const pl = {
   "universe.noneYet": "Nie należysz jeszcze do żadnego uniwersum.",
   "universe.newName": "Nazwa uniwersum",
   "universe.create": "Utwórz",
-  "universe.cannotCreate":
-    "Tworzyć uniwersa mogą tylko wskazane konta. Do istniejącego może Cię dodać każdy, kto już w nim jest.",
   "universe.members": "Członkowie",
   "universe.owner": "właściciel",
   "universe.you": "to Ty",
@@ -737,8 +735,6 @@ const en: Record<TranslationKey, string> = {
   "universe.noneYet": "You are not in a universe yet.",
   "universe.newName": "Name of the universe",
   "universe.create": "Create",
-  "universe.cannotCreate":
-    "Only named accounts can create a universe. Anybody already in one can add you to it.",
   "universe.members": "Members",
   "universe.owner": "owner",
   "universe.you": "you",

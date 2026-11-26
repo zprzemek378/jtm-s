@@ -123,6 +123,16 @@ export async function createUniverse(db: D1Database, universe: Universe): Promis
   ]);
 }
 
+/** How many universes this account has made, for the one limit there is. */
+export async function countUniversesOwnedBy(db: D1Database, accountId: string): Promise<number> {
+  const row = await db
+    .prepare(`SELECT COUNT(*) AS made FROM universes WHERE owner_id = ?`)
+    .bind(accountId)
+    .first<{ made: number }>();
+
+  return row?.made ?? 0;
+}
+
 export async function getUniverse(db: D1Database, id: string): Promise<Universe | null> {
   const row = await db
     .prepare(`SELECT id, name, owner_id, created_at FROM universes WHERE id = ?`)
