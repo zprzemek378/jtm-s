@@ -165,14 +165,34 @@ export function readCatalogue(value: unknown): readonly PooledTrack[] {
     .filter((track): track is PooledTrack => track !== null);
 }
 
-/** The events of a stored game, in order, dropping anything unreadable. */
-export function readEvents(events: readonly { seq: number; at: number; action: unknown }[]) {
-  return events
-    .filter(
-      (event): event is LoggedEvent =>
-        event.action !== null &&
-        typeof event.action === "object" &&
-        typeof (event.action as LoggedAction).type === "string",
-    )
+/**
+ * The events of a stored game, in order, dropping anything unreadable.
+ *
+ * Takes whatever it is given: this reads both what came back from the backend
+ * and what is in the browser's store, and neither is beyond having been
+ * written by a different version of this app.
+ */
+export function readEvents(value: unknown): readonly LoggedEvent[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter((event: unknown): event is LoggedEvent => {
+      if (event === null || typeof event !== "object") {
+        return false;
+      }
+
+      const { seq, at, action } = event as Record<string, unknown>;
+
+      return (
+        typeof seq === "number" &&
+        Number.isInteger(seq) &&
+        typeof at === "number" &&
+        action !== null &&
+        typeof action === "object" &&
+        typeof (action as LoggedAction).type === "string"
+      );
+    })
     .toSorted((first, second) => first.seq - second.seq);
 }

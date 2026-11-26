@@ -278,6 +278,93 @@ describe("storing it in the browser", () => {
     assert.deepEqual(readGameLog(), EMPTY_LOG);
   });
 
+  test("a game stored by an older version of the app is read, not crashed on", () => {
+    // Fields this app writes today did not exist in every build that has ever
+    // written here: `tracks`, `closedSent` and the universe were all added to
+    // a store that already had games in it. Reading one as though they were
+    // there is how a game in progress falls over.
+    storage = stubStorage();
+    localStorage.setItem(
+      "jtm-s.games",
+      JSON.stringify({
+        version: 1,
+        currentId: "old",
+        games: [
+          {
+            id: "old",
+            startedAt: 1000,
+            updatedAt: 1001,
+            historyKey: "p1",
+            origin: { players: [ALA, BO], rules: RULES, playedIds: [] },
+            catalogue: [...catalogue],
+            events: [{ seq: 1, at: 1000, action: { type: "reveal" } }],
+            confirmedUpTo: 0,
+            closedAt: null,
+          },
+        ],
+      }),
+    );
+
+    const game = readGameLog().games[0];
+
+    assert.deepEqual(game?.tracks, []);
+    assert.equal(game?.closedSent, false);
+    assert.equal(game?.universeId, null);
+    // And it is a game: it can be carried on, ended and sent like any other.
+    assert.equal(resumableGame(readGameLog())?.id, "old");
+    assert.deepEqual(closeGame(readGameLog(), "old", 2000).games[0]?.catalogue, []);
+    assert.deepEqual(
+      pendingGames(readGameLog()).map((stored) => stored.id),
+      ["old"],
+    );
+  });
+
+  test("a stored game with no line-up at all is dropped rather than half read", () => {
+    storage = stubStorage();
+    localStorage.setItem(
+      "jtm-s.games",
+      JSON.stringify({
+        version: 1,
+        currentId: "broken",
+        games: [{ id: "broken", events: [] }, { startedAt: 1 }],
+      }),
+    );
+
+    const log = readGameLog();
+
+    assert.deepEqual(log.games, []);
+    assert.equal(log.currentId, null, "nothing left to be the current game");
+  });
+
+  test("an acknowledgement for events that are no longer stored is not believed", () => {
+    storage = stubStorage();
+    localStorage.setItem(
+      "jtm-s.games",
+      JSON.stringify({
+        version: 1,
+        currentId: "g1",
+        games: [
+          {
+            id: "g1",
+            startedAt: 1,
+            updatedAt: 1,
+            historyKey: "p",
+            universeId: null,
+            origin: { players: [ALA], rules: RULES, playedIds: [] },
+            catalogue: [],
+            tracks: [],
+            events: [{ seq: 1, at: 1, action: { type: "reveal" } }],
+            confirmedUpTo: 9,
+            closedAt: null,
+            closedSent: false,
+          },
+        ],
+      }),
+    );
+
+    assert.equal(readGameLog().games[0]?.confirmedUpTo, 1);
+  });
+
   test("a log from a future version of the app is not guessed at", () => {
     storage = stubStorage();
     localStorage.setItem("jtm-s.games", JSON.stringify({ version: 99, games: [] }));
