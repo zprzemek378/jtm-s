@@ -27,7 +27,7 @@ const pl = {
 
   "home.title": "Jaka To Melodia",
   "home.lead":
-    "Lokalna gra dla 2–8 osób przy jednym komputerze. Muzyka leci z Twojej playlisty na Spotify, każdy gracz ma własny klawisz.",
+    "Lokalna gra dla 2–50 osób przy jednym komputerze. Muzyka leci z Twojej playlisty na Spotify, każdy gracz ma własny klawisz.",
   "home.howTo": "Jak to działa",
   "home.step.login": "Zaloguj się kontem Spotify Premium — muzyka odtwarza się w tej karcie.",
   "home.step.players":
@@ -409,7 +409,7 @@ const en: Record<TranslationKey, string> = {
 
   "home.title": "Name That Tune",
   "home.lead":
-    "A local game for 2–8 people around one computer. The music comes from your Spotify playlist and every player gets their own key.",
+    "A local game for 2–50 people around one computer. The music comes from your Spotify playlist and every player gets their own key.",
   "home.howTo": "How it works",
   "home.step.login": "Log in with a Spotify Premium account — the music plays in this tab.",
   "home.step.players": "Set up the players, give each one a key and pick the score to play to.",
