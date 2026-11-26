@@ -1,0 +1,98 @@
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  list-style: none;
+}
+
+.row,
+.rowAside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-2 0;
+  border-bottom: 1px solid $c-border;
+}
+
+/* A player who has been put aside: still named, because the history names them. */
+.rowAside {
+  opacity: 0.55;
+}
+
+.rowName {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  font-weight: 600;
+}
+
+.rowMeta,
+.rowNumber {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.rowInput {
+  flex: 1 1 10rem;
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  margin-left: auto;
+}
+
+.badge {
+  padding: 0.1rem $space-2;
+  border-radius: $radius-sm;
+  background-color: $c-surface-alt;
+  font-size: $text-xs;
+  font-weight: 500;
+  color: $c-text-muted;
+  text-transform: uppercase;
+}
+
+.addRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: $space-3;
+  margin-top: $space-4;
+}
+
+.addLabel {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.select {
+  padding: $space-2 $space-3;
+  border: 1px solid $c-border-strong;
+  border-radius: $radius-sm;
+  background-color: $c-surface;
+  font: inherit;
+  color: $c-text;
+}
+
+.hint {
+  margin-top: $space-3;
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.failure {
+  padding: $space-3 $space-4;
+  border: 1px solid $c-negative;
+  border-radius: $radius-sm;
+  background-color: $c-negative-surface;
+  font-size: $text-sm;
+  color: $c-negative;
+}
