@@ -17,6 +17,16 @@ interface ViteTypeOptions {
  * `MODE`, `DEV`, `PROD` and `SSR`.
  */
 interface ImportMetaEnv {
+  /**
+   * Where our own backend lives — the Worker that keeps the history and the
+   * shared universes.
+   *
+   * Absent on purpose in a plain checkout: with nothing here the app is what
+   * it was before any backend existed, which is also the fallback when the
+   * backend is broken.
+   */
+  readonly VITE_API_URL?: string;
+
   // The Spotify applications are deliberately absent. They are numbered from
   // 1 upwards with no ceiling, which no interface can enumerate, so
   // `auth/clientId.ts` reads them from the environment object by name. Nothing

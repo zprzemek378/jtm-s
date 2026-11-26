@@ -31,6 +31,8 @@ export type StoredGame = {
   updatedAt: number;
   /** The playlist selection it is played against. */
   historyKey: string;
+  /** The universe it belongs to, or null for a game played outside any. */
+  universeId: string | null;
   origin: GameOrigin;
   /**
    * Every track the game can draw, so it can be picked up on a machine that
@@ -70,6 +72,7 @@ export function beginGame(
   game: {
     id: string;
     historyKey: string;
+    universeId?: string | null;
     origin: GameOrigin;
     catalogue: readonly PooledTrack[];
     at: number;
@@ -85,6 +88,7 @@ export function beginGame(
         startedAt: game.at,
         updatedAt: game.at,
         historyKey: game.historyKey,
+        universeId: game.universeId ?? null,
         origin: game.origin,
         catalogue: game.catalogue,
         events: [],
@@ -245,9 +249,50 @@ function* shrinking(log: GameLog): Generator<GameLog> {
  * that is not an error either: the game carries on in memory, and only
  * resuming is lost. The answer says which happened.
  */
+/**
+ * Takes the acknowledgements from the stored copy.
+ *
+ * Two things write here: the game being played, which holds the log in memory
+ * and knows nothing about syncing, and the sync, which knows nothing about the
+ * round in progress. Each would otherwise undo the other's work, so a write
+ * keeps whichever acknowledgement is further along.
+ */
+function withStoredConfirmations(log: GameLog): GameLog {
+  const stored = readGameLog();
+
+  return {
+    ...log,
+    games: log.games.map((game) => {
+      const known = stored.games.find((other) => other.id === game.id);
+
+      return known && known.confirmedUpTo > game.confirmedUpTo
+        ? { ...game, confirmedUpTo: known.confirmedUpTo }
+        : game;
+    }),
+  };
+}
+
+const watchers = new Set<() => void>();
+
+/**
+ * Called whenever the stored games change, so the sync can look again.
+ *
+ * `localStorage` tells a tab nothing about its own writes, and polling would
+ * mean parsing the whole store — track lists and all — on a timer.
+ */
+export function watchGameLog(watcher: () => void): () => void {
+  watchers.add(watcher);
+
+  return () => void watchers.delete(watcher);
+}
+
 export function writeGameLog(log: GameLog): boolean {
-  for (const candidate of shrinking(prune(log))) {
+  for (const candidate of shrinking(prune(withStoredConfirmations(log)))) {
     if (tryWriteStoredJson(STORAGE_KEYS.games, candidate)) {
+      for (const watcher of watchers) {
+        watcher();
+      }
+
       return true;
     }
   }
