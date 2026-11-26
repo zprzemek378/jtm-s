@@ -350,8 +350,14 @@ export async function putGame(
          closed_at = excluded.closed_at,
          origin = excluded.origin,
          -- A game that has ended has no use for its track list, and it is by
-         -- far the largest thing stored here.
-         catalogue = CASE WHEN excluded.closed_at IS NULL THEN excluded.catalogue ELSE NULL END,
+         -- far the largest thing stored here. Short of that the list is kept:
+         -- a client that no longer carries one — it gave the list up to fit in
+         -- its own store — must not take away the copy that lets the game be
+         -- picked up on another machine.
+         catalogue = CASE
+           WHEN excluded.closed_at IS NOT NULL THEN NULL
+           ELSE COALESCE(excluded.catalogue, games.catalogue)
+         END,
          -- The titles that were played are kept, and never thrown away by a
          -- later write that happens not to carry them.
          tracks = COALESCE(excluded.tracks, games.tracks),

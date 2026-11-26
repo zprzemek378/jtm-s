@@ -4,6 +4,7 @@ import { afterEach, describe, test } from "vitest";
 
 import {
   EMPTY_LOG,
+  MAX_STORED_CHARS,
   MAX_STORED_GAMES,
   adoptGame,
   appendAction,
@@ -331,6 +332,60 @@ describe("storing it in the browser", () => {
 
     assert.equal(stored?.confirmedUpTo, 1);
     assert.equal(stored?.closedSent, true);
+  });
+
+  test("the budget is this app's own, not whatever the browser would allow", () => {
+    // `localStorage` belongs to the origin, and on GitHub Pages that is shared
+    // with every other project of the same owner — so a store that would
+    // happily take ten megabytes still only gets two.
+    storage = stubStorage();
+
+    const heavy = (id: string, at: number) => {
+      const log = withARound(EMPTY_LOG, id, at);
+      const big = Array.from({ length: 12_000 }, (_, index) => track(`${id}-${index}`));
+
+      return { ...log, games: [{ ...log.games[0]!, catalogue: big }] };
+    };
+    const first = heavy("g1", 1000);
+
+    assert.ok(JSON.stringify(first).length > MAX_STORED_CHARS, "the fixture has to be too large");
+    assert.equal(writeGameLog(first), true);
+    assert.ok(storage.size() <= MAX_STORED_CHARS);
+    // The game is kept and can still be sent; only carrying it on is lost.
+    assert.equal(readGameLog().games.length, 1);
+    assert.deepEqual(readGameLog().games[0]?.catalogue, []);
+    assert.deepEqual(
+      pendingGames(readGameLog()).map((game) => game.id),
+      ["g1"],
+    );
+  });
+
+  test("an evening played offline keeps its events when the lists have to go", () => {
+    storage = stubStorage();
+
+    let log = EMPTY_LOG;
+
+    for (const id of ["g1", "g2", "g3"]) {
+      const played = withARound(log, id, 1000);
+      const big = Array.from({ length: 6000 }, (_, index) => track(`${id}-${index}`));
+
+      log = {
+        ...played,
+        games: played.games.map((game) => (game.id === id ? { ...game, catalogue: big } : game)),
+      };
+    }
+
+    assert.equal(writeGameLog(log), true);
+
+    const stored = readGameLog();
+
+    assert.deepEqual(
+      [...stored.games.map((game) => game.id)].sort(),
+      ["g1", "g2", "g3"],
+      "nothing with unsent events was thrown away",
+    );
+    assert.ok(stored.games.every((game) => game.events.length === 1));
+    assert.ok(storage.size() <= MAX_STORED_CHARS);
   });
 
   test("a store that refuses everything is not an error, only a game that cannot be resumed", () => {

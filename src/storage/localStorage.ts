@@ -98,14 +98,18 @@ export function writeStoredJson(key: string, value: unknown): void {
  * will not fit, something has to be given up on purpose, so the caller has to
  * be able to tell.
  */
-export function tryWriteStoredJson(key: string, value: unknown): boolean {
+export function tryWriteStoredString(key: string, value: string): boolean {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    localStorage.setItem(key, value);
 
     return true;
   } catch {
     return false;
   }
+}
+
+export function tryWriteStoredJson(key: string, value: unknown): boolean {
+  return tryWriteStoredString(key, JSON.stringify(value));
 }
 
 export function readSessionString(key: string): string | null {
