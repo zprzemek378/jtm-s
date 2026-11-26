@@ -206,6 +206,21 @@ export function restoreEvents(log: GameLog, id: string, events: readonly LoggedE
   }));
 }
 
+/**
+ * Takes a game from the backend into this machine's store, as the current one.
+ *
+ * What makes an evening continuable on another computer: the game keeps its id,
+ * so whatever is played from here on carries on numbering the same log and the
+ * backend stores it by the same (game, seq) as everything before it.
+ */
+export function adoptGame(log: GameLog, game: StoredGame): GameLog {
+  return prune({
+    ...log,
+    currentId: game.id,
+    games: [...log.games.filter((stored) => stored.id !== game.id), game],
+  });
+}
+
 /** Forgets a game outright, sent or not — the host said to drop it. */
 export function forgetGame(log: GameLog, id: string): GameLog {
   return {

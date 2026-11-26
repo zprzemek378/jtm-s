@@ -119,6 +119,52 @@ export function readTracks(tracks: unknown, catalogue: unknown): readonly Pooled
     .filter((track): track is PooledTrack => track !== null);
 }
 
+/**
+ * The full track list a game was played against, when the backend still holds
+ * one — the only thing that makes a game continuable somewhere else.
+ *
+ * Stricter than `readTracks`: this one has to be playable, so a track with no
+ * address or no length is not one.
+ */
+export function readCatalogue(value: unknown): readonly PooledTrack[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((entry: unknown): PooledTrack | null => {
+      if (entry === null || typeof entry !== "object") {
+        return null;
+      }
+
+      const fields = entry as Record<string, unknown>;
+      const id = text(fields.id);
+      const uri = text(fields.uri);
+      const durationMs = count(fields.durationMs, 0);
+
+      return id === "" || uri === "" || durationMs <= 0
+        ? null
+        : {
+            id,
+            uri,
+            name: text(fields.name, id),
+            artists: text(fields.artists),
+            durationMs,
+            albumName: text(fields.albumName),
+            albumImageUrl: typeof fields.albumImageUrl === "string" ? fields.albumImageUrl : null,
+            playlistNames: Array.isArray(fields.playlistNames)
+              ? fields.playlistNames.filter((name): name is string => typeof name === "string")
+              : [],
+            playlistIds: Array.isArray(fields.playlistIds)
+              ? fields.playlistIds.filter(
+                  (playlistId): playlistId is string => typeof playlistId === "string",
+                )
+              : [],
+          };
+    })
+    .filter((track): track is PooledTrack => track !== null);
+}
+
 /** The events of a stored game, in order, dropping anything unreadable. */
 export function readEvents(events: readonly { seq: number; at: number; action: unknown }[]) {
   return events

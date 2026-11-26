@@ -1,0 +1,43 @@
+.lead {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  margin-top: $space-4;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-2 0;
+  border-bottom: 1px solid $c-border;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.meta {
+  font-size: $text-sm;
+  color: $c-text-muted;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  margin-left: auto;
+}
+
+.failure {
+  margin-top: $space-3;
+  font-size: $text-sm;
+  color: $c-negative;
+}

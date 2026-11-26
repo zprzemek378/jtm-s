@@ -5,6 +5,7 @@ import { afterEach, describe, test } from "vitest";
 import {
   EMPTY_LOG,
   MAX_STORED_GAMES,
+  adoptGame,
   appendAction,
   beginGame,
   closeGame,
@@ -286,5 +287,36 @@ describe("storing it in the browser", () => {
 
     assert.equal(writeGameLog(withARound(EMPTY_LOG, "g1")), false);
     assert.deepEqual(readGameLog(), EMPTY_LOG);
+  });
+});
+
+describe("taking a game over from the backend", () => {
+  test("it becomes the game this machine is playing, with its own id kept", () => {
+    const pulled = {
+      ...withARound(EMPTY_LOG, "g9", 9000).games[0]!,
+      confirmedUpTo: 1,
+    };
+    const log = adoptGame(withARound(EMPTY_LOG, "g1"), pulled);
+
+    assert.equal(log.currentId, "g9");
+    assert.equal(resumableGame(log)?.id, "g9");
+    assert.deepEqual(
+      log.games.map((game) => game.id),
+      ["g1", "g9"],
+    );
+  });
+
+  test("taking the same game over again replaces it rather than keeping two", () => {
+    const pulled = withARound(EMPTY_LOG, "g9", 9000).games[0]!;
+    const log = adoptGame(adoptGame(EMPTY_LOG, pulled), { ...pulled, updatedAt: 9999 });
+
+    assert.equal(log.games.length, 1);
+    assert.equal(log.games[0]?.updatedAt, 9999);
+  });
+
+  test("what the backend had already is not sent back to it", () => {
+    const pulled = { ...withARound(EMPTY_LOG, "g9", 9000).games[0]!, confirmedUpTo: 1 };
+
+    assert.deepEqual(pendingGames(adoptGame(EMPTY_LOG, pulled)), []);
   });
 });
