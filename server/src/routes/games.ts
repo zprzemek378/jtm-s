@@ -9,7 +9,15 @@ import { Hono, type Context } from "hono";
 
 import { clockSkewMs, correctedAt, type GameDetail, type SyncEventsResponse } from "@jtm-s/shared";
 
-import { appendEvents, getGame, isMember, listEvents, listGames, putGame } from "../db";
+import {
+  appendEvents,
+  getGame,
+  isMember,
+  listEvents,
+  listGames,
+  putGame,
+  touchAccount,
+} from "../db";
 import type { AppEnv } from "../env";
 import { body, nullableNumber, number, refuse, text, universeFor } from "../guards";
 
@@ -79,6 +87,9 @@ games.put("/:id", async (context) => {
     refuse(404, "no such game");
   }
 
+  // A game names the account that hosted it, and a session can outlive the row
+  // that names that account.
+  await touchAccount(context.env.DB, account, Date.now());
   await putGame(
     context.env.DB,
     {
