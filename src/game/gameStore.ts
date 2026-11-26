@@ -12,6 +12,7 @@ import type { PooledTrack } from "@/helpers/trackUnion";
 import { STORAGE_KEYS, readStoredJson, tryWriteStoredString } from "@/storage/localStorage";
 
 import { compact, type GameOrigin, type LoggedEvent } from "./eventLog";
+import { readCatalogue, readEvents, readOrigin } from "./gameRecord";
 import type { GameAction } from "./gameState";
 
 const STORE_VERSION = 1;
@@ -311,14 +312,102 @@ export function pendingGames(log: GameLog): readonly StoredGame[] {
   return log.games.filter(needsSync).sort((first, second) => first.startedAt - second.startedAt);
 }
 
+const whole = (value: unknown, fallback: number): number =>
+  typeof value === "number" && Number.isFinite(value) ? value : fallback;
+
+/** The titles of what was played, as little of them as the history needs. */
+function readPlayed(value: unknown): readonly PlayedTrack[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((entry: unknown) => {
+    if (entry === null || typeof entry !== "object") {
+      return [];
+    }
+
+    const { id, name, artists } = entry as Record<string, unknown>;
+
+    return typeof id === "string" && id !== ""
+      ? [
+          {
+            id,
+            name: typeof name === "string" ? name : id,
+            artists: typeof artists === "string" ? artists : "",
+          },
+        ]
+      : [];
+  });
+}
+
+/**
+ * One stored game, read as carefully as anything from outside.
+ *
+ * What is in the browser's store was written by *some* version of this app,
+ * not necessarily this one: a field that did not exist then is missing now,
+ * and reading it as though it were there is how a game in progress crashes.
+ * So every field is read rather than trusted, and a game that cannot be
+ * replayed at all — no line-up, no id — is dropped instead of kept as a
+ * half-thing.
+ */
+function readGame(value: unknown): StoredGame | null {
+  if (value === null || typeof value !== "object") {
+    return null;
+  }
+
+  const fields = value as Record<string, unknown>;
+  const id = typeof fields.id === "string" ? fields.id : "";
+  const origin = readOrigin(fields.origin);
+
+  if (id === "" || !origin) {
+    return null;
+  }
+
+  const events = readEvents(fields.events);
+  const startedAt = whole(fields.startedAt, 0);
+
+  return {
+    id,
+    startedAt,
+    updatedAt: whole(fields.updatedAt, startedAt),
+    historyKey: typeof fields.historyKey === "string" ? fields.historyKey : "",
+    universeId: typeof fields.universeId === "string" ? fields.universeId : null,
+    origin,
+    catalogue: readCatalogue(fields.catalogue),
+    tracks: readPlayed(fields.tracks),
+    events,
+    // Never beyond what is actually here: an acknowledgement for events this
+    // store no longer holds would stop them from ever being sent again.
+    confirmedUpTo: Math.min(
+      Math.max(0, whole(fields.confirmedUpTo, 0)),
+      events[events.length - 1]?.seq ?? 0,
+    ),
+    closedAt: typeof fields.closedAt === "number" ? fields.closedAt : null,
+    closedSent: fields.closedSent === true,
+  };
+}
+
 export function readGameLog(): GameLog {
-  const stored = readStoredJson<GameLog>(STORAGE_KEYS.games);
+  const stored = readStoredJson<Record<string, unknown>>(STORAGE_KEYS.games);
 
   if (!stored || stored.version !== STORE_VERSION || !Array.isArray(stored.games)) {
     return EMPTY_LOG;
   }
 
-  return stored;
+  const games = stored.games.flatMap((game: unknown) => {
+    const read = readGame(game);
+
+    return read ? [read] : [];
+  });
+  const currentId = typeof stored.currentId === "string" ? stored.currentId : null;
+
+  return {
+    version: STORE_VERSION,
+    // Pointing at a game that did not survive the read is the same as pointing
+    // at nothing.
+    currentId: games.some((game) => game.id === currentId) ? currentId : null,
+    games,
+  };
 }
 
 /** The same log with less in it, each step more drastic than the last. */
