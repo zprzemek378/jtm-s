@@ -32,6 +32,10 @@ export const STORAGE_KEYS = {
   spotifyTokens: "jtm-s.spotify-tokens",
   /** Games as their event logs: the current one, and any not yet sent. */
   games: "jtm-s.games",
+  /** The session this machine holds with our own backend. */
+  backendSession: "jtm-s.backend-session",
+  /** Set when the host signed out of the backend and meant it. */
+  backendOptOut: "jtm-s.backend-signed-out",
 } as const;
 
 /** Keys that only live for as long as the tab — the PKCE handshake state. */

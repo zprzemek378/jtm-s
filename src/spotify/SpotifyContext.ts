@@ -44,6 +44,14 @@ export type SpotifyContextValue = {
   login: (returnPath: string) => void;
   logout: () => void;
   /**
+   * A valid Spotify access token, refreshed first if the one in hand has
+   * expired.
+   *
+   * Exposed for one thing only: proving to our own backend which Spotify
+   * account is calling. It is spent once on that and never stored there.
+   */
+  getAccessToken: () => Promise<string>;
+  /**
    * Re-reads the configured Client ID. The settings screen calls it after a
    * save, so a freshly entered ID takes effect without a page reload.
    */
