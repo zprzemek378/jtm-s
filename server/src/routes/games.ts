@@ -48,9 +48,13 @@ async function reachable(
   return game.universeId !== null && (await isMember(context.env.DB, game.universeId, account.id));
 }
 
-/** The games of a universe, or the ones this account played outside any. */
+/**
+ * The games of a universe, the ones this account played outside any, or —
+ * with `?unfinished` — everything still unfinished that it can reach at all.
+ */
 games.get("/", async (context) => {
   const universeId = context.req.query("universeId");
+  const account = context.get("account");
 
   if (universeId !== undefined) {
     await universeFor(context, universeId);
@@ -58,7 +62,11 @@ games.get("/", async (context) => {
     return context.json({ games: await listGames(context.env.DB, { universeId }, PAGE) });
   }
 
-  const account = context.get("account");
+  if (context.req.query("unfinished") !== undefined) {
+    return context.json({
+      games: await listGames(context.env.DB, { unfinishedFor: account.id }, PAGE),
+    });
+  }
 
   return context.json({ games: await listGames(context.env.DB, { hostId: account.id }, PAGE) });
 });

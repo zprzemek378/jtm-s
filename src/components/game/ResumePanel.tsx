@@ -1,9 +1,13 @@
 // Games that were never finished, offered back.
 //
-// Two sources, which the host should not have to think about: what this
-// machine was playing when the tab was closed, and what the universe knows is
-// still unfinished — the same evening left on somebody else's computer. The
-// local one needs nothing to carry on; a game from the universe is pulled down
+// Two sources, which the host should not have to think about: whatever this
+// machine has left unfinished, and whatever the backend knows is unfinished
+// anywhere this account can reach — the same evening left on somebody else's
+// computer. All of them, not only the last one and not only the ones from the
+// universe currently chosen: an evening interrupted two days ago is as worth
+// finishing as this afternoon's, and the host is the one who knows which.
+//
+// A local game needs nothing to carry on; one from the backend is pulled down
 // first, keeping its id, so it goes on numbering the same log.
 
 import { useCallback, useEffect, useState } from "react";
@@ -22,10 +26,8 @@ import { useLanguage } from "@/i18n/useLanguage";
 import styles from "./ResumePanel.module.scss";
 
 type ResumePanelProps = {
-  /** The game this machine was playing, if there is one. */
-  local: StoredGame | null;
-  /** The universe whose unfinished games are worth offering, or null. */
-  universeId: string | null;
+  /** What this machine has left unfinished, the one it was playing first. */
+  local: readonly StoredGame[];
   busy: boolean;
   onResume: (game: StoredGame) => void;
   onDiscard: (game: StoredGame) => void;
@@ -64,9 +66,9 @@ function toStoredGame(detail: GameDetail): StoredGame | null {
   };
 }
 
-export function ResumePanel({ local, universeId, busy, onResume, onDiscard }: ResumePanelProps) {
+export function ResumePanel({ local, busy, onResume, onDiscard }: ResumePanelProps) {
   const { t, language } = useLanguage();
-  const { status, request } = useBackend();
+  const { status, request, universes } = useBackend();
   const [elsewhere, setElsewhere] = useState<readonly GameRecord[]>([]);
   const [pulling, setPulling] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -79,21 +81,18 @@ export function ResumePanel({ local, universeId, busy, onResume, onDiscard }: Re
     }
 
     try {
-      const answer = await request<{ games: readonly GameRecord[] }>(
-        universeId === null ? API.games : `${API.games}?universeId=${universeId}`,
-      );
+      const answer = await request<{ games: readonly GameRecord[] }>(API.unfinishedGames);
 
-      setElsewhere(
-        answer.games.filter(
-          (game) => game.closedAt === null && game.upTo > 0 && game.id !== local?.id,
-        ),
-      );
+      // Everything unfinished the backend will show this account, minus what
+      // is already here: the same game offered twice is a question nobody can
+      // answer.
+      setElsewhere(answer.games.filter((game) => game.upTo > 0));
     } catch {
-      // Nothing to show is the right answer here: these are an extra, and the
-      // game this machine holds is offered whatever the backend says.
+      // Nothing to show is the right answer here: these are an extra, and what
+      // this machine holds is offered whatever the backend says.
       setElsewhere([]);
     }
-  }, [local?.id, request, status, universeId]);
+  }, [request, status]);
 
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect
@@ -125,7 +124,10 @@ export function ResumePanel({ local, universeId, busy, onResume, onDiscard }: Re
     }
   };
 
-  if (!local && elsewhere.length === 0) {
+  const mine = new Set(local.map((game) => game.id));
+  const others = elsewhere.filter((game) => !mine.has(game.id));
+
+  if (local.length === 0 && others.length === 0) {
     return null;
   }
 
@@ -137,8 +139,19 @@ export function ResumePanel({ local, universeId, busy, onResume, onDiscard }: Re
       minute: "2-digit",
     });
 
+  /** Where a game belongs, which is what tells two of them apart on this list. */
+  const belongsTo = (universeId: string | null) => {
+    if (universeId === null) {
+      return t("resume.outsideUniverse");
+    }
+
+    const universe = universes.find((candidate) => candidate.id === universeId);
+
+    return universe ? t("resume.inUniverse", { name: universe.name }) : t("resume.inSomeUniverse");
+  };
+
   return (
-    <Panel title={t("resume.title")}>
+    <Panel title={t("resume.title")} meta={local.length + others.length}>
       <p className={styles.lead}>{t("resume.lead")}</p>
 
       {failure ? (
@@ -148,39 +161,39 @@ export function ResumePanel({ local, universeId, busy, onResume, onDiscard }: Re
       ) : null}
 
       <ul className={styles.rows}>
-        {local ? (
-          <li className={styles.row}>
+        {local.map((game) => (
+          <li key={game.id} className={styles.row}>
             <span className={styles.name}>
               {t("resume.detail", {
-                round: roundsOf(local),
-                names: local.origin.players.map((player) => player.name).join(", "),
+                round: roundsOf(game),
+                names: game.origin.players.map((player) => player.name).join(", "),
               })}
             </span>
-            <span className={styles.meta}>{t("resume.here")}</span>
+            <span className={styles.meta}>
+              {belongsTo(game.universeId)} · {t("resume.here")}
+            </span>
 
             <div className={styles.actions}>
               <Button
                 variant={ButtonVariant.Primary}
                 disabled={busy}
-                onClick={() => onResume(local)}
+                onClick={() => onResume(game)}
               >
                 {t("resume.continue")}
               </Button>
-              <Button
-                variant={ButtonVariant.Ghost}
-                disabled={busy}
-                onClick={() => onDiscard(local)}
-              >
+              <Button variant={ButtonVariant.Ghost} disabled={busy} onClick={() => onDiscard(game)}>
                 {t("resume.discard")}
               </Button>
             </div>
           </li>
-        ) : null}
+        ))}
 
-        {elsewhere.map((record) => (
+        {others.map((record) => (
           <li key={record.id} className={styles.row}>
             <span className={styles.name}>{when(record.startedAt)}</span>
-            <span className={styles.meta}>{t("resume.elsewhere")}</span>
+            <span className={styles.meta}>
+              {belongsTo(record.universeId)} · {t("universe.gameEvents", { count: record.upTo })}
+            </span>
 
             <div className={styles.actions}>
               <Button

@@ -108,6 +108,8 @@ export const API = {
   players: (id: string) => `/universes/${id}/players`,
   player: (id: string, number: number) => `/universes/${id}/players/${number}`,
   games: "/games",
+  /** Everything still unfinished that the caller can reach, to be offered back. */
+  unfinishedGames: "/games?unfinished=1",
   game: (id: string) => `/games/${id}`,
   gameEvents: (id: string) => `/games/${id}/events`,
 } as const;

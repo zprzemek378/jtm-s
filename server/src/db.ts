@@ -414,29 +414,57 @@ export async function getGame(
     : null;
 }
 
-/** The games of a universe, or the ones an account played outside any. */
+/**
+ * Which games to answer with.
+ *
+ * Three questions, each asked by a different screen: what has been played in
+ * this universe, what this account has played outside any, and what is still
+ * unfinished anywhere this account can reach — which is what the screen that
+ * offers a game back needs, because an evening left unfinished on somebody
+ * else's computer is exactly the one worth being offered.
+ */
+export type GameScope = { universeId: string } | { hostId: string } | { unfinishedFor: string };
+
 export async function listGames(
   db: D1Database,
-  scope: { universeId: string } | { hostId: string },
+  scope: GameScope,
   limit: number,
 ): Promise<readonly GameRecord[]> {
-  const { results } =
-    "universeId" in scope
-      ? await db
-          .prepare(
-            `SELECT ${GAME_COLUMNS} FROM games WHERE games.universe_id = ?
-             ORDER BY games.started_at DESC LIMIT ?`,
-          )
-          .bind(scope.universeId, limit)
-          .all<GameRow>()
-      : await db
-          .prepare(
-            `SELECT ${GAME_COLUMNS} FROM games
-             WHERE games.host_id = ? AND games.universe_id IS NULL
-             ORDER BY games.started_at DESC LIMIT ?`,
-          )
-          .bind(scope.hostId, limit)
-          .all<GameRow>();
+  const query = () => {
+    if ("universeId" in scope) {
+      return db
+        .prepare(
+          `SELECT ${GAME_COLUMNS} FROM games WHERE games.universe_id = ?
+           ORDER BY games.started_at DESC LIMIT ?`,
+        )
+        .bind(scope.universeId, limit);
+    }
+
+    if ("hostId" in scope) {
+      return db
+        .prepare(
+          `SELECT ${GAME_COLUMNS} FROM games
+           WHERE games.host_id = ? AND games.universe_id IS NULL
+           ORDER BY games.started_at DESC LIMIT ?`,
+        )
+        .bind(scope.hostId, limit);
+    }
+
+    // Reachable means hosted by this account, or played in a universe it
+    // belongs to — the same rule as reading one game, asked of all of them.
+    return db
+      .prepare(
+        `SELECT ${GAME_COLUMNS} FROM games
+         WHERE games.closed_at IS NULL
+           AND (games.host_id = ?1
+                OR games.universe_id IN (
+                  SELECT universe_id FROM members WHERE account_id = ?1
+                ))
+         ORDER BY games.started_at DESC LIMIT ?2`,
+      )
+      .bind(scope.unfinishedFor, limit);
+  };
+  const { results } = await query().all<GameRow>();
 
   return results.map(toGame);
 }

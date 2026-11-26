@@ -32,7 +32,7 @@ import { selectionKey } from "@/game/playHistory";
 import {
   forgetGame,
   readGameLog,
-  resumableGame,
+  resumableGames,
   writeGameLog,
   type StoredGame,
 } from "@/game/gameStore";
@@ -117,11 +117,11 @@ export function GamePage() {
   const [game, setGame] = useState<StartedGame | null>(null);
   const [connecting, setConnecting] = useState(false);
   /**
-   * A game left unfinished on this machine, offered back before a new one is
+   * Games left unfinished on this machine, offered back before a new one is
    * set up. Read once on arrival: the store only changes from here.
    */
-  const [unfinished, setUnfinished] = useState<StoredGame | null>(() =>
-    resumableGame(readGameLog()),
+  const [unfinished, setUnfinished] = useState<readonly StoredGame[]>(() =>
+    resumableGames(readGameLog()),
   );
   const backend = useBackend();
   const [choice, setChoice] = useState<PoolChoice>(readPoolChoice);
@@ -196,7 +196,7 @@ export function GamePage() {
       primeSounds();
       await connectPlayer();
       setGame(started);
-      setUnfinished(null);
+      setUnfinished([]);
       setStage(Stage.Play);
     } catch {
       // connectPlayer has already put the reason in the Spotify context.
@@ -219,7 +219,7 @@ export function GamePage() {
 
   const handleDiscardUnfinished = (stored: StoredGame) => {
     writeGameLog(forgetGame(readGameLog(), stored.id));
-    setUnfinished(null);
+    setUnfinished(resumableGames(readGameLog()));
   };
 
   const errorMessage = spotifyError ? t(spotifyError.key, spotifyError.params) : null;
@@ -239,7 +239,6 @@ export function GamePage() {
           <div className={styles.stack}>
             <ResumePanel
               local={unfinished}
-              universeId={universeId}
               busy={connecting}
               onResume={(game) => void handleResume(game)}
               onDiscard={handleDiscardUnfinished}
@@ -420,8 +419,9 @@ export function GamePage() {
             onChangeSettings={() => {
               setGame(null);
               // Whatever became of that game, the offer has to be asked again:
-              // it was either finished, given up on, or is now the stored one.
-              setUnfinished(resumableGame(readGameLog()));
+              // it was either finished, given up on, or is now one of the
+              // stored ones.
+              setUnfinished(resumableGames(readGameLog()));
               setStage(Stage.Setup);
             }}
             onPlayersEdited={setup.applyLineUp}
