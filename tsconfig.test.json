@@ -14,7 +14,9 @@
     "moduleResolution": "bundler",
     "module": "esnext",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@jtm-s/shared": ["./shared/src/index.ts"],
+      "@server/*": ["./server/src/*"]
     },
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,

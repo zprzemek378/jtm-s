@@ -1,0 +1,27 @@
+# The Worker that keeps the games.
+#
+# Nothing secret belongs in this file: it is committed. The session key is a
+# secret (`wrangler secret put SESSION_SECRET`), and the database id below is
+# filled in once, by whoever creates the database — `wrangler d1 create jtm-s`
+# prints it. See DEPLOYING.md.
+
+name = "jtm-s"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "jtm-s"
+# Replace with the id `wrangler d1 create jtm-s` printed.
+database_id = "PUT-THE-DATABASE-ID-HERE"
+
+[vars]
+# Who may create a universe. Everyone else can be added to one, which is what
+# stands between a public URL and strangers filling the free tier.
+# Comma separated Spotify account ids.
+UNIVERSE_CREATORS = ""
+# Where the app is served from. Comma separated, no trailing slash.
+ALLOWED_ORIGINS = "http://127.0.0.1:5173"
