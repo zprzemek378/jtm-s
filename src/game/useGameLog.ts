@@ -102,6 +102,7 @@ export function useGameLog(params: {
       : beginGame(stored, {
           id,
           historyKey: openedWith.current.historyKey,
+          universeId: openedWith.current.universeId,
           origin: openedWith.current.origin,
           catalogue: openedWith.current.catalogue,
           at: Date.now(),
