@@ -1,10 +1,14 @@
 import { useCallback, useState } from "react";
 
+import { BackendStatus } from "@/backend/BackendContext";
+import { useBackend } from "@/backend/useBackend";
 import { GameBoard } from "@/components/game/GameBoard";
 import { PlaylistPicker } from "@/components/game/PlaylistPicker";
 import { PlayerSetupList } from "@/components/game/PlayerSetupList";
 import { SpotifyGate } from "@/components/game/SpotifyGate";
+import { UniverseLineUp } from "@/components/universe/UniverseLineUp";
 import { Button } from "@/components/ui/Button";
+import { ButtonGroup } from "@/components/ui/ButtonGroup";
 import { ButtonVariant } from "@/components/ui/buttonVariant";
 import { NumberStepper } from "@/components/ui/NumberStepper";
 import { Panel } from "@/components/ui/Panel";
@@ -18,7 +22,7 @@ import {
   MIN_TARGET_MONEY,
   TARGET_MONEY_STEP,
 } from "@/constants/gameRules";
-import type { GamePlayer, GameRules } from "@/game/types";
+import type { GamePlayer, GameRules, PlayerDraft } from "@/game/types";
 import { ModePicker } from "@/components/game/ModePicker";
 import { ModifierPicker } from "@/components/game/ModifierPicker";
 import { formatMoney } from "@/game/rewards";
@@ -64,6 +68,32 @@ function resumedRound(stored: StoredGame): number {
   return stored.events.filter((event) => event.action.type === "start-round").length;
 }
 
+/**
+ * Which pool the evening is played from.
+ *
+ * Free play is the game as it has always been: this computer, these people,
+ * nothing kept anywhere else. A universe game is the same game played by the
+ * people of a universe, and it joins that universe's history.
+ */
+const Pool = {
+  Universe: "universe",
+  Free: "free",
+} as const;
+
+type Pool = (typeof Pool)[keyof typeof Pool];
+
+/** The pool and universe this machine played last, so it need not be chosen again. */
+type PoolChoice = { pool: Pool; universeId: string | null };
+
+function readPoolChoice(): PoolChoice {
+  const stored = readStoredJson<PoolChoice>(STORAGE_KEYS.gamePool);
+
+  return {
+    pool: stored?.pool === Pool.Universe ? Pool.Universe : Pool.Free,
+    universeId: typeof stored?.universeId === "string" ? stored.universeId : null,
+  };
+}
+
 /** Which screen of the game flow is on show. */
 const Stage = {
   Setup: "setup",
@@ -80,6 +110,8 @@ type StartedGame = {
   tracks: readonly PooledTrack[];
   /** The playlist selection this game runs on, for the no-repeats history. */
   historyKey: string;
+  /** The universe whose history this game joins, or null for free play. */
+  universeId: string | null;
   /** The stored game this one is carrying on from, if it is one. */
   resumed: StoredGame | null;
 };
@@ -100,13 +132,31 @@ export function GamePage() {
   const [unfinished, setUnfinished] = useState<StoredGame | null>(() =>
     resumableGame(readGameLog()),
   );
+  const backend = useBackend();
+  const [choice, setChoice] = useState<PoolChoice>(readPoolChoice);
+  /** Who is at the table tonight, when the people come from a universe. */
+  const [universeLineUp, setUniverseLineUp] = useState<readonly PlayerDraft[]>([]);
+
+  // A universe game needs a universe to play in, and one to have been chosen.
+  const universes = backend.universes;
+  const inUniverse =
+    choice.pool === Pool.Universe && backend.status === BackendStatus.Ready && universes.length > 0;
+  const universeId = inUniverse ? (choice.universeId ?? universes[0]?.id ?? null) : null;
+  const lineUp = universeId ? universeLineUp : setup.players;
+
+  const chooseePool = (pool: Pool, chosenUniverse: string | null = choice.universeId) => {
+    const next = { pool, universeId: chosenUniverse };
+
+    setChoice(next);
+    writeStoredJson(STORAGE_KEYS.gamePool, next);
+  };
 
   const defaultName = useCallback(
     (index: number) => t("setup.defaultPlayerName", { number: index + 1 }),
     [t],
   );
 
-  const problems = findSetupProblems(setup.players, defaultName);
+  const problems = findSetupProblems(lineUp, defaultName);
 
   const handleContinue = () => {
     if (problems.length > 0) {
@@ -120,7 +170,7 @@ export function GamePage() {
     chosenPlaylists: readonly PlaylistSummary[],
     tracks: readonly PooledTrack[],
   ) => {
-    const players = toGamePlayers(setup.players, defaultName);
+    const players = toGamePlayers(lineUp, defaultName);
 
     if (!players) {
       setStage(Stage.Setup);
@@ -137,6 +187,7 @@ export function GamePage() {
       rules: toGameRules(setup.setup, activeTieThreshold()),
       tracks,
       historyKey: selectionKey(chosenPlaylists.map((playlist) => playlist.id)),
+      universeId,
       resumed: null,
     });
   };
@@ -171,6 +222,7 @@ export function GamePage() {
       rules: stored.origin.rules,
       tracks: stored.catalogue,
       historyKey: stored.historyKey,
+      universeId: stored.universeId,
       resumed: stored,
     });
 
@@ -223,17 +275,70 @@ export function GamePage() {
               </Panel>
             ) : null}
 
+            {backend.status === BackendStatus.Ready && universes.length > 0 ? (
+              <Panel title={t("universe.pool")}>
+                <ButtonGroup ariaLabel={t("universe.pool")}>
+                  <Button
+                    variant={inUniverse ? ButtonVariant.Primary : ButtonVariant.Secondary}
+                    onClick={() => chooseePool(Pool.Universe)}
+                  >
+                    {t("universe.mode")}
+                  </Button>
+                  <Button
+                    variant={inUniverse ? ButtonVariant.Secondary : ButtonVariant.Primary}
+                    onClick={() => chooseePool(Pool.Free)}
+                  >
+                    {t("universe.freeMode")}
+                  </Button>
+                </ButtonGroup>
+
+                {inUniverse && universes.length > 1 ? (
+                  <div className={styles.poolRow}>
+                    <label className={styles.poolLabel} htmlFor="game-universe">
+                      {t("universe.pickUniverse")}
+                    </label>
+                    <select
+                      id="game-universe"
+                      className={styles.poolSelect}
+                      value={universeId ?? ""}
+                      onChange={(event) => {
+                        chooseePool(Pool.Universe, event.target.value);
+                        // The people are a different set now.
+                        setUniverseLineUp([]);
+                      }}
+                    >
+                      {universes.map((universe) => (
+                        <option key={universe.id} value={universe.id}>
+                          {universe.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
+
+                {!inUniverse ? <p className={styles.poolHint}>{t("universe.freeHint")}</p> : null}
+              </Panel>
+            ) : null}
+
             <Panel title={t("setup.step.players")}>
-              <PlayerSetupList
-                players={setup.players}
-                defaultName={defaultName}
-                onRename={setup.rename}
-                onAssignKey={setup.assignKey}
-                onSetColour={setup.setColour}
-                onMove={setup.movePlayer}
-                onAdd={setup.addPlayer}
-                onRemove={setup.removePlayer}
-              />
+              {universeId ? (
+                <UniverseLineUp
+                  universeId={universeId}
+                  value={universeLineUp}
+                  onChange={setUniverseLineUp}
+                />
+              ) : (
+                <PlayerSetupList
+                  players={setup.players}
+                  defaultName={defaultName}
+                  onRename={setup.rename}
+                  onAssignKey={setup.assignKey}
+                  onSetColour={setup.setColour}
+                  onMove={setup.movePlayer}
+                  onAdd={setup.addPlayer}
+                  onRemove={setup.removePlayer}
+                />
+              )}
             </Panel>
 
             <Panel title={t("setup.mode")}>
@@ -311,7 +416,7 @@ export function GamePage() {
             <div className={styles.summaryRow}>
               <span className={styles.summary}>
                 {t("setup.summary", {
-                  count: setup.players.length,
+                  count: lineUp.length,
                   target: formatMoney(setup.targetMoney),
                 })}
               </span>
@@ -340,6 +445,7 @@ export function GamePage() {
             rules={game.rules}
             tracks={game.tracks}
             historyKey={game.historyKey}
+            universeId={game.universeId}
             resumed={game.resumed}
             onChangeSettings={() => {
               setGame(null);

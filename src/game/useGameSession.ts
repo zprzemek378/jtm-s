@@ -137,6 +137,8 @@ export function useGameSession(
    * arguments above describe the game that would otherwise have been started.
    */
   resumed: StoredGame | null = null,
+  /** The universe whose history this game joins, or null for free play. */
+  universeId: string | null = null,
 ): GameSession {
   const { playTrackAt, pause, resume, silence } = useSpotify();
   const [state, rawDispatch] = useReducer(
@@ -161,6 +163,7 @@ export function useGameSession(
   } = useGameLog({
     resumedId: resumed?.id ?? null,
     historyKey,
+    universeId,
     origin: { players, rules, playedIds: state.playedIds },
     catalogue: tracks,
   });

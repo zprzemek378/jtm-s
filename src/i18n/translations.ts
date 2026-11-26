@@ -281,6 +281,15 @@ const pl = {
   "universe.gameUnfinished": "niedokończona",
   "universe.deleteGame": "Usuń",
   "universe.gone": "Tego uniwersum już nie ma.",
+  "universe.noPlayersYet":
+    "W tym uniwersum nie ma jeszcze graczy — dodaj ich na ekranie Uniwersum.",
+  "universe.lineUpHint":
+    "Zaznacz, kto dziś gra, i przypisz każdemu klawisz na tej klawiaturze. Nazwy i kolory należą do uniwersum — zmienia się je na ekranie Uniwersum, żeby jedna osoba miała wszędzie ten sam kolor.",
+  "universe.pool": "Skąd gracze",
+  "universe.mode": "Gra w uniwersum",
+  "universe.freeMode": "Gra swobodna",
+  "universe.pickUniverse": "Uniwersum",
+  "universe.freeHint": "Gra tylko na tym komputerze — nic nie zostaje zapisane w uniwersum.",
   "playlist.title": "Wybór playlist",
   "playlist.mine": "Moje playlisty",
   "playlist.multiHint":
@@ -708,6 +717,14 @@ const en: Record<TranslationKey, string> = {
   "universe.gameUnfinished": "unfinished",
   "universe.deleteGame": "Delete",
   "universe.gone": "That universe is gone.",
+  "universe.noPlayersYet": "This universe has no players yet — add them on the Universe screen.",
+  "universe.lineUpHint":
+    "Tick who is playing tonight and give each of them a key on this keyboard. Names and colours belong to the universe — they are changed on the Universe screen, so one person is one colour everywhere.",
+  "universe.pool": "Where the players come from",
+  "universe.mode": "A universe game",
+  "universe.freeMode": "Free play",
+  "universe.pickUniverse": "Universe",
+  "universe.freeHint": "Played on this computer alone — nothing is recorded in a universe.",
   "playlist.title": "Choose playlists",
   "playlist.mine": "My playlists",
   "playlist.multiHint":
