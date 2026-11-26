@@ -694,6 +694,10 @@ export function useGameSession(
     // the reset, so the new log replays to the same state from no events at
     // all. Hence the raw dispatch: the reset belongs to neither game.
     rotateLog({ players: state.players, rules, playedIds: state.playedIds });
+    // Whatever was taken back belonged to the game that has just ended, and
+    // putting it back into a new one would write somebody else's events into
+    // its log.
+    setUndone([]);
     // A rematch keeps whatever edit mode made of the line-up — the names,
     // colours and seating are the table's, not the game's.
     rawDispatch({ type: "reset", players: state.players, rules, tracks });
