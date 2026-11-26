@@ -235,7 +235,9 @@ const pl = {
   "resume.continue": "Wznów tę grę",
   "resume.discard": "Porzuć ją",
   "resume.here": "na tym komputerze",
-  "resume.elsewhere": "z uniwersum",
+  "resume.outsideUniverse": "poza uniwersum",
+  "resume.inUniverse": "uniwersum {name}",
+  "resume.inSomeUniverse": "w uniwersum",
   "resume.pulling": "Pobieranie…",
   "resume.noCatalogue":
     "Tej gry nie da się tu wznowić — komputer, na którym się zaczęła, miał za dużą listę utworów, żeby ją odłożyć na serwerze.",
@@ -709,7 +711,9 @@ const en: Record<TranslationKey, string> = {
   "resume.continue": "Carry on with it",
   "resume.discard": "Drop it",
   "resume.here": "on this computer",
-  "resume.elsewhere": "from the universe",
+  "resume.outsideUniverse": "outside any universe",
+  "resume.inUniverse": "the {name} universe",
+  "resume.inSomeUniverse": "in a universe",
   "resume.pulling": "Fetching…",
   "resume.noCatalogue":
     "This game cannot be carried on here — the computer it was started on had too large a track list to be worth storing on the server.",

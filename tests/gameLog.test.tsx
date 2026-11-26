@@ -4,6 +4,7 @@
 // the store, because everything downstream — the history, the shared pool,
 // whether an evening can be carried on elsewhere — reads it from there.
 import assert from "node:assert/strict";
+import { useEffect } from "react";
 import { render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, test, vi } from "vitest";
 
@@ -36,7 +37,13 @@ async function play(universeId: string | null) {
   let handle: GameLogHandle | null = null;
 
   function Probe() {
-    handle = useGameLog({ resumedId: null, historyKey: "p1", universeId, origin, catalogue });
+    const log = useGameLog({ resumedId: null, historyKey: "p1", universeId, origin, catalogue });
+
+    // Handed out from an effect rather than during the render: a render that
+    // writes to the world outside it is the very thing these tests are for.
+    useEffect(() => {
+      handle = log;
+    }, [log]);
 
     return null;
   }

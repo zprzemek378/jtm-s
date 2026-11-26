@@ -294,17 +294,38 @@ export function prune(log: GameLog): GameLog {
   return { ...log, games: dropped };
 }
 
-/** The game this machine could carry on with, if there is one. */
+/**
+ * Whether this game could be carried on where it stands.
+ *
+ * Nothing to carry on with before a track has been played, nothing to carry on
+ * at all once it has ended, and nothing to play without the list it was drawn
+ * from — a game that gave its list up to fit in the store can still be sent,
+ * just not resumed here.
+ */
+function resumable(game: StoredGame): boolean {
+  return game.closedAt === null && game.events.length > 0 && game.catalogue.length > 0;
+}
+
+/**
+ * Every game this machine could carry on with, the one it was playing first
+ * and the rest newest first.
+ *
+ * All of them rather than only the last: an evening interrupted two days ago
+ * is as worth finishing as the one interrupted this afternoon, and the host is
+ * the one who knows which.
+ */
+export function resumableGames(log: GameLog): readonly StoredGame[] {
+  const current = log.games.find((game) => game.id === log.currentId && resumable(game));
+  const rest = log.games
+    .filter((game) => game.id !== current?.id && resumable(game))
+    .sort((first, second) => second.updatedAt - first.updatedAt);
+
+  return current ? [current, ...rest] : rest;
+}
+
+/** The game this machine was playing, if it can be carried on. */
 export function resumableGame(log: GameLog): StoredGame | null {
-  const current = log.games.find((game) => game.id === log.currentId);
-
-  if (!current || current.closedAt !== null || current.events.length === 0) {
-    return null;
-  }
-
-  // Nothing to carry on with before a track has been played, and nothing to
-  // play without the list it was drawn from.
-  return current.catalogue.length > 0 ? current : null;
+  return resumableGames(log)[0] ?? null;
 }
 
 /** Every game with something the backend has not seen, oldest first. */

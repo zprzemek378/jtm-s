@@ -20,6 +20,7 @@ import {
   readGameLog,
   restoreEvents,
   resumableGame,
+  resumableGames,
   truncateEvents,
   writeGameLog,
   type GameLog,
@@ -123,6 +124,28 @@ describe("carrying one on", () => {
 
   test("nor is one that has been won, or walked away from", () => {
     assert.equal(resumableGame(closeGame(withARound(EMPTY_LOG, "g1"), "g1", 3000)), null);
+  });
+
+  test("every unfinished game is offered, the one being played first", () => {
+    // All of them rather than only the last: an evening interrupted two days
+    // ago is as worth finishing as this afternoon's.
+    const log = withARound(withARound(withARound(EMPTY_LOG, "g1", 1000), "g2", 9000), "g3", 5000);
+
+    assert.deepEqual(
+      resumableGames(log).map((game) => game.id),
+      ["g3", "g2", "g1"],
+      "the current one leads, then the rest newest first",
+    );
+  });
+
+  test("one that has ended, or never got going, is not among them", () => {
+    const played = withARound(withARound(EMPTY_LOG, "g1", 1000), "g2", 2000);
+    const log = opened(closeGame(played, "g1", 3000), "g3", 4000);
+
+    assert.deepEqual(
+      resumableGames(log).map((game) => game.id),
+      ["g2"],
+    );
   });
 
   test("nor an older one — only the game this machine was playing", () => {
