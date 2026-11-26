@@ -60,6 +60,7 @@ function toStoredGame(detail: GameDetail): StoredGame | null {
     // Everything the backend handed over is, by definition, stored there.
     confirmedUpTo: detail.game.upTo,
     closedAt: null,
+    closedSent: false,
   };
 }
 

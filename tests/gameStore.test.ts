@@ -11,7 +11,9 @@ import {
   closeGame,
   forgetGame,
   hasUnsentEvents,
+  markClosedSent,
   markConfirmed,
+  needsSync,
   pendingGames,
   prune,
   readGameLog,
@@ -169,12 +171,37 @@ describe("what the backend has not seen", () => {
 describe("making room", () => {
   test("a game that has ended and been sent is forgotten", () => {
     const sent = markConfirmed(withARound(EMPTY_LOG, "g1"), "g1", 1);
-    const log = opened(closeGame(sent, "g1", 2000), "g2", 5000);
+    const told = markClosedSent(closeGame(sent, "g1", 2000), "g1");
+    const log = opened(told, "g2", 5000);
 
     assert.deepEqual(
       log.games.map((game) => game.id),
       ["g2"],
     );
+  });
+
+  test("but not before the backend has been told that it ended", () => {
+    // Ending a game is not an event: a game abandoned long after its last
+    // round has nothing unsent, and forgetting it here would leave it
+    // unfinished in the backend for ever.
+    const sent = markConfirmed(withARound(EMPTY_LOG, "g1"), "g1", 1);
+    const closed = closeGame(sent, "g1", 2000);
+
+    assert.equal(hasUnsentEvents(closed.games[0]!), false);
+    assert.ok(needsSync(closed.games[0]!));
+    assert.deepEqual(
+      pendingGames(closed).map((game) => game.id),
+      ["g1"],
+    );
+    assert.ok(opened(closed, "g2", 5000).games.some((game) => game.id === "g1"));
+  });
+
+  test("closing a game twice does not make it look unsent again", () => {
+    const told = markClosedSent(closeGame(withARound(EMPTY_LOG, "g1"), "g1", 2000), "g1");
+    const again = closeGame(told, "g1", 7000);
+
+    assert.equal(again.games[0]?.closedAt, 2000);
+    assert.equal(again.games[0]?.closedSent, true);
   });
 
   test("one that has ended but not been sent is kept until it is", () => {
@@ -280,6 +307,28 @@ describe("storing it in the browser", () => {
       readGameLog().games.map((game) => game.id),
       ["g2"],
     );
+  });
+
+  test("a write from the game does not undo what the sync acknowledged", () => {
+    // Two writers: the game being played holds its own copy of the log and
+    // knows nothing about syncing, and the sync knows nothing about the round
+    // in progress. Neither may undo the other's work.
+    storage = stubStorage();
+
+    const playing = withARound(EMPTY_LOG, "g1");
+
+    writeGameLog(playing);
+    // The sync, meanwhile: the events arrived and the game ended.
+    writeGameLog(
+      markClosedSent(markConfirmed(closeGame(readGameLog(), "g1", 2000), "g1", 1), "g1"),
+    );
+    // The game writes its own copy again, which still says nothing was sent.
+    writeGameLog(playing);
+
+    const stored = readGameLog().games[0];
+
+    assert.equal(stored?.confirmedUpTo, 1);
+    assert.equal(stored?.closedSent, true);
   });
 
   test("a store that refuses everything is not an error, only a game that cannot be resumed", () => {

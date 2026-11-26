@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 
-import { API, type Universe } from "@jtm-s/shared";
+import { API, type CreateUniverseRequest, type Universe } from "@jtm-s/shared";
 
 import { BackendStatus } from "@/backend/BackendContext";
 import { useBackend } from "@/backend/useBackend";
@@ -50,7 +50,7 @@ export function UniversePage() {
     try {
       const { universe } = await request<{ universe: Universe }>(API.universes, {
         method: "POST",
-        body: { name: newName.trim() },
+        body: { name: newName.trim() } satisfies CreateUniverseRequest,
       });
 
       setNewName("");

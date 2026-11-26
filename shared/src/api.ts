@@ -37,7 +37,11 @@ export type UniverseDetail = {
 };
 
 export type CreateUniverseRequest = { name: string };
+/** Renaming one — the only thing about a universe that can change. */
+export type UpdateUniverseRequest = { name: string };
 export type AddMemberRequest = { accountId: AccountId };
+/** Handing a universe over, which is the only way an owner can leave it. */
+export type SetOwnerRequest = { accountId: AccountId };
 export type CreatePlayerRequest = { name: string; colour: string };
 export type UpdatePlayerRequest = { name?: string; colour?: string; active?: boolean };
 
