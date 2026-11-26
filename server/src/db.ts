@@ -427,8 +427,11 @@ export async function appendEvents(
   if (events.length > 0) {
     const insert = db.prepare(
       `INSERT INTO events (game_id, seq, at, server_at, action) VALUES (?, ?, ?, ?, ?)
+       -- A batch sent twice is the same batch, so the correction measured when
+       -- it first arrived is kept: an event already stored must not drift by a
+       -- few milliseconds every time a client retries.
        ON CONFLICT (game_id, seq) DO UPDATE SET
-         at = excluded.at, server_at = excluded.server_at, action = excluded.action`,
+         at = excluded.at, action = excluded.action`,
     );
 
     await db.batch(

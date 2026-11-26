@@ -35,7 +35,14 @@ app.use("*", async (context, next) =>
 
 /** Everything but signing in needs a session of ours. */
 app.use("*", async (context, next) => {
-  if (context.req.path === "/session" || context.req.method === "OPTIONS") {
+  // Signing in cannot need a session, the preflight carries no headers at all,
+  // and the root is there to answer "is this thing up?" — which is the first
+  // question anybody asks after deploying it.
+  if (
+    context.req.path === "/session" ||
+    context.req.path === "/" ||
+    context.req.method === "OPTIONS"
+  ) {
     return next();
   }
 
