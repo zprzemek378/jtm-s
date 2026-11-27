@@ -2,6 +2,55 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.6.0](https://github.com/zprzemek378/jtm-s/compare/v1.5.0...v1.6.0) (2026-11-27)
+
+### Features
+
+* **game:** add a half-stake verdict for an answer that was nearly right ([de6cda5](https://github.com/zprzemek378/jtm-s/commit/de6cda56200df114dc273f20eca692af84911598))
+* **game:** keep a game as the list of things that happened in it ([42afea6](https://github.com/zprzemek378/jtm-s/commit/42afea6cd28e31d4d2e7c1f54a7c176d9850c602))
+* **game:** pick a game up where the closed tab left it ([ccda184](https://github.com/zprzemek378/jtm-s/commit/ccda184fe8f45e005132487a543881b4a4d27dc7))
+* **game:** take a move back from the edit screen ([22020ec](https://github.com/zprzemek378/jtm-s/commit/22020ecdde33205d6554380c26805c8525c59054))
+* offer back every unfinished game, not only the last one ([bbcd738](https://github.com/zprzemek378/jtm-s/commit/bbcd73850ebfba232abd026e17d8b8ba44c8481a))
+* send what was played to the backend, once it can be reached ([d8e55b6](https://github.com/zprzemek378/jtm-s/commit/d8e55b663f719280bcbbcf09a29af4b3d8380659))
+* **server:** a Worker that keeps the games ([c92374b](https://github.com/zprzemek378/jtm-s/commit/c92374b91208737bb1f668d58d26c6d41c8525d9))
+* **universe:** a screen for the shared pool of games ([7b4df51](https://github.com/zprzemek378/jtm-s/commit/7b4df514e1740bb8f09c5be4e55017e16ca4978a))
+* **universe:** carry on an evening left on another computer ([d947129](https://github.com/zprzemek378/jtm-s/commit/d9471293ea63fb6d4cf86b61c89a4c565bc50d9b))
+* **universe:** every account that can sign in may make a universe ([0edd8b1](https://github.com/zprzemek378/jtm-s/commit/0edd8b1e272f43b29b10b497938a67c9b195c2e8))
+* **universe:** play an evening from a universe's people ([9ab80e3](https://github.com/zprzemek378/jtm-s/commit/9ab80e30e511a2b42460cbe92354dd7b29fc19cc))
+* **universe:** read a game back, step by step ([64aaed1](https://github.com/zprzemek378/jtm-s/commit/64aaed192f40264db7761eb1949b6769f60a5ddb))
+* **universe:** rename or delete a universe, and read back free play ([df8acd5](https://github.com/zprzemek378/jtm-s/commit/df8acd57572925e1f9558fea4c30f2017b72fa60))
+
+### Bug Fixes
+
+* a backend that is down must not be asked again and again ([2ec1ddf](https://github.com/zprzemek378/jtm-s/commit/2ec1ddffafecf7bba3f0ef86c8fd28176d806a3b))
+* a move taken back reaches the backend as well ([0e2faf1](https://github.com/zprzemek378/jtm-s/commit/0e2faf166677ab69dee18c29b63d3743c93cb474))
+* **game:** a rematch starts with nothing to put back ([e9d2f31](https://github.com/zprzemek378/jtm-s/commit/e9d2f3154b2e5e203d28e84c0cf3e849df857332))
+* **game:** a universe game was being written down as belonging to none ([6f164a1](https://github.com/zprzemek378/jtm-s/commit/6f164a11c4c1e40e16b3f8fa70efbdf56aa82bff))
+* **game:** resuming only gives up the round nobody had answered ([1b774b8](https://github.com/zprzemek378/jtm-s/commit/1b774b860f8798c0cde8a46b8bbffc40b4ef480d))
+* **i18n:** the home page still promised a game for eight ([a3b58dc](https://github.com/zprzemek378/jtm-s/commit/a3b58dc637ed0561f938f4f015213ed74e3e1c27))
+* read the stored games as carefully as anything else from outside ([1b251b3](https://github.com/zprzemek378/jtm-s/commit/1b251b301807f2731e742fa8141b3ea3a1af571b))
+* reading the account no longer asks for it hundreds of times a second ([02acc18](https://github.com/zprzemek378/jtm-s/commit/02acc18af3c75efcf6a726702e0707aadf6106b2))
+* **server:** a session can outlive the row that names its account ([2efd5f4](https://github.com/zprzemek378/jtm-s/commit/2efd5f4ac9802c8d8a32af4ff0ac627f75e823c2))
+* **server:** two things a local run of the Worker showed ([aa50614](https://github.com/zprzemek378/jtm-s/commit/aa50614733397eef72146120f7c39053b1541dd6))
+* tell the backend when a game ended, not only what happened in it ([6ddfe0e](https://github.com/zprzemek378/jtm-s/commit/6ddfe0ec86a885f1ac58f96caa6acfd8e7bef7f3))
+* the store's budget, the shedding order and the wiped track list ([d07ddc7](https://github.com/zprzemek378/jtm-s/commit/d07ddc746883c11464b8400324a908d8c948b2aa))
+
+### Documentation
+
+* how to put the server up, for whoever does it ([d73a44a](https://github.com/zprzemek378/jtm-s/commit/d73a44a0c3b321ebac656cc0c91cdc7bf2b704ea))
+
+### Maintenance
+
+* one command to run the whole thing locally ([8f83ce7](https://github.com/zprzemek378/jtm-s/commit/8f83ce7529315ccafea7b404a44375c205bb5322))
+* **server:** point at the database that was created, and at where the app lives ([e659a31](https://github.com/zprzemek378/jtm-s/commit/e659a317bcd322975a79a7f6698d460a3f4e3d0e))
+
+### Internal
+
+* cover the rules and the two races that broke in play ([ae6136a](https://github.com/zprzemek378/jtm-s/commit/ae6136aac844f727a0270ab0ec2652d29977a9a2))
+* hold each agreed requirement to something that checks it ([aa1e4c3](https://github.com/zprzemek378/jtm-s/commit/aa1e4c3442707645d03fc1f47d20c065925249fe))
+* run the suites from the repo with vitest ([d081c83](https://github.com/zprzemek378/jtm-s/commit/d081c838e7da861f17f5c80954012471ac93eb2d))
+* the rules a game was played under survive the store ([a616ed9](https://github.com/zprzemek378/jtm-s/commit/a616ed9698c29724ebf03bcdc836b8ad0d1872de))
+
 ## [1.5.0](https://github.com/zprzemek378/jtm-s/compare/v1.4.0...v1.5.0) (2026-10-28)
 
 ### Features
