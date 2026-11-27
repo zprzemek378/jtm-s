@@ -15,8 +15,10 @@ enabled = true
 [[d1_databases]]
 binding = "DB"
 database_name = "jtm-s"
-# Replace with the id `wrangler d1 create jtm-s` printed.
-database_id = "PUT-THE-DATABASE-ID-HERE"
+# From `wrangler d1 create jtm-s`. Not a secret: an identifier is of no use to
+# anybody without the account it belongs to, which is why this file is in the
+# repository and the signing key is not.
+database_id = "48570e36-8396-461c-a56d-8171595e6fa1"
 
 [vars]
 # Where the app is served from. Comma separated, no trailing slash.
@@ -24,4 +26,4 @@ database_id = "PUT-THE-DATABASE-ID-HERE"
 # The only thing that decides who may use this at all: every account that can
 # sign in may create universes and play, and signing in means having a Spotify
 # account that this app's own Spotify application lets through.
-ALLOWED_ORIGINS = "http://127.0.0.1:5173"
+ALLOWED_ORIGINS = "https://zprzemek378.github.io,http://127.0.0.1:5173"
